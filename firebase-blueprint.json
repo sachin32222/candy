@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Photographer profile details",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "portfolio": { "type": "string" },
+        "insta": { "type": "string" },
+        "gbp": { "type": "string" },
+        "youtube": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "phone": { "type": "string" },
+        "familyDiscount": { "type": "string" },
+        "corporateDiscount": { "type": "string" },
+        "driveConnected": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email"]
+    },
+    "Event": {
+      "title": "Event",
+      "description": "An event created by a photographer",
+      "type": "object",
+      "properties": {
+        "photographerId": { "type": "string" },
+        "name": { "type": "string" },
+        "venue": { "type": "string" },
+        "driveLink": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["photographerId", "name", "venue", "driveLink", "createdAt"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "A guest who scanned the QR code",
+      "type": "object",
+      "properties": {
+        "eventId": { "type": "string" },
+        "photographerId": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["eventId", "photographerId", "name", "phone", "email", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Photographer profiles"
+    },
+    "/events/{eventId}": {
+      "schema": "Event",
+      "description": "Events created by photographers"
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Leads collected from guests"
+    }
+  }
+}
