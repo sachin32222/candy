@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon } from 'lucide-react';
 
@@ -31,11 +31,16 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchEvents = async () => {
       if (!user) return;
-      const q = query(collection(db, 'events'), where('photographerId', '==', user.uid));
-      const querySnapshot = await getDocs(q);
-      const eventsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
-      setEvents(eventsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-      setLoading(false);
+      try {
+        const q = query(collection(db, 'events'), where('photographerId', '==', user.uid));
+        const querySnapshot = await getDocs(q);
+        const eventsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
+        setEvents(eventsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      } catch (error) {
+        handleFirestoreError(error, OperationType.LIST, 'events');
+      } finally {
+        setLoading(false);
+      }
     };
     fetchEvents();
   }, [user]);
@@ -53,7 +58,7 @@ export default function Dashboard() {
       setShowCreateModal(false);
       setNewEvent({ name: '', venue: '', driveLink: '' });
     } catch (error) {
-      console.error("Error creating event", error);
+      handleFirestoreError(error, OperationType.CREATE, 'events');
     }
   };
 

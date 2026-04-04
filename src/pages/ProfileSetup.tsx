@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { Camera, Save, ArrowLeft } from 'lucide-react';
+import { handleFirestoreError, OperationType } from '../firebase';
 
 export default function ProfileSetup() {
   const { profile, updateProfile } = useAuth();
@@ -42,7 +43,7 @@ export default function ProfileSetup() {
       await updateProfile(formData);
       navigate('/dashboard');
     } catch (error) {
-      console.error("Error updating profile", error);
+      handleFirestoreError(error, OperationType.UPDATE, 'users');
     } finally {
       setSaving(false);
     }

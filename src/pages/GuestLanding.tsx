@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc, addDoc, collection } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../firebase';
 import { Instagram, Youtube, Globe, MessageCircle, Phone, Star, ExternalLink } from 'lucide-react';
 
 interface Event {
@@ -53,7 +53,7 @@ export default function GuestLanding() {
           }
         }
       } catch (error) {
-        console.error("Error fetching event", error);
+        handleFirestoreError(error, OperationType.GET, `events/${eventId}`);
       } finally {
         setLoading(false);
       }
@@ -74,8 +74,7 @@ export default function GuestLanding() {
       });
       setAccessGranted(true);
     } catch (error) {
-      console.error("Error submitting lead", error);
-      alert("Something went wrong. Please try again.");
+      handleFirestoreError(error, OperationType.CREATE, 'leads');
     } finally {
       setSubmitting(false);
     }

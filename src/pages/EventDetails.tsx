@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
-import { ArrowLeft, Download, Users, UploadCloud, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Download, Users, UploadCloud, ExternalLink, Copy, Share2, Check } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -29,6 +29,7 @@ export default function EventDetails() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchEventAndLeads = async () => {
@@ -48,7 +49,7 @@ export default function EventDetails() {
           setLeads(leadsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
         }
       } catch (error) {
-        console.error("Error fetching event details", error);
+        handleFirestoreError(error, OperationType.GET, `events/${eventId}`);
       } finally {
         setLoading(false);
       }
@@ -104,6 +105,28 @@ export default function EventDetails() {
   if (!event) return <div className="min-h-screen bg-stone-50 flex items-center justify-center font-sans tracking-widest uppercase text-xs text-stone-500">Event not found</div>;
 
   const guestUrl = `${window.location.origin}/#/e/${event.id}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(guestUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.name,
+          text: 'Access your event photos here:',
+          url: guestUrl,
+        });
+      } catch (error) {
+        console.error('Error sharing', error);
+      }
+    } else {
+      handleCopy();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans pb-24">
@@ -178,10 +201,31 @@ export default function EventDetails() {
                   href={guestUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-stone-500 hover:text-stone-900 text-xs tracking-widest uppercase mb-6 break-all"
+                  className="block text-stone-500 hover:text-stone-900 text-xs tracking-widest uppercase mb-2"
                 >
                   View Guest Page
                 </a>
+                <div className="flex items-center gap-2">
+                  <div className="bg-stone-50 p-3 border border-stone-200 text-xs text-stone-500 break-all select-all text-left flex-1">
+                    {guestUrl}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={handleCopy}
+                      className="p-3 bg-stone-900 text-white hover:bg-stone-800 transition-colors flex items-center justify-center"
+                      title="Copy Link"
+                    >
+                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                    <button
+                      onClick={handleShare}
+                      className="p-3 border border-stone-200 text-stone-900 hover:bg-stone-50 transition-colors flex items-center justify-center"
+                      title="Share Link"
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

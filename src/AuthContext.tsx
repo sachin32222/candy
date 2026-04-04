@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged, signInWithPopup, signOut, GoogleAuthProvider } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db, googleProvider } from './firebase';
+import { auth, db, googleProvider, handleFirestoreError, OperationType } from './firebase';
 
 interface UserProfile {
   uid: string;
@@ -41,20 +41,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const docRef = doc(db, 'users', currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProfile(docSnap.data() as UserProfile);
-        } else {
-          // Create initial profile
-          const newProfile: UserProfile = {
-            uid: currentUser.uid,
-            name: currentUser.displayName || '',
-            email: currentUser.email || '',
-            createdAt: new Date().toISOString(),
-          };
-          await setDoc(docRef, newProfile);
-          setProfile(newProfile);
+        try {
+          const docRef = doc(db, 'users', currentUser.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setProfile(docSnap.data() as UserProfile);
+          } else {
+            // Create initial profile
+            const newProfile: UserProfile = {
+              uid: currentUser.uid,
+              name: currentUser.displayName || '',
+              email: currentUser.email || '',
+              createdAt: new Date().toISOString(),
+            };
+            await setDoc(docRef, newProfile);
+            setProfile(newProfile);
+          }
+        } catch (error) {
+          handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
         }
       } else {
         setProfile(null);
@@ -74,7 +78,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (credential?.accessToken) {
         setDriveToken(credential.accessToken);
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.code === 'auth/popup-closed-by-user') {
+        console.log('Sign-in popup closed by user');
+        return;
+      }
       console.error('Error signing in', error);
       throw error;
     }
@@ -86,10 +94,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return;
-    const docRef = doc(db, 'users', user.uid);
-    const updatedProfile = { ...profile, ...data } as UserProfile;
-    await setDoc(docRef, updatedProfile, { merge: true });
-    setProfile(updatedProfile);
+    try {
+      const docRef = doc(db, 'users', user.uid);
+      const updatedProfile = { ...profile, ...data } as UserProfile;
+      await setDoc(docRef, updatedProfile, { merge: true });
+      setProfile(updatedProfile);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
+    }
   };
 
   return (
