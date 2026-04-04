@@ -16,6 +16,7 @@
         "phone": { "type": "string" },
         "familyDiscount": { "type": "string" },
         "corporateDiscount": { "type": "string" },
+        "paymentStatus": { "type": "string", "enum": ["pending", "initiated", "approved", "declined"] },
         "driveConnected": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
       },

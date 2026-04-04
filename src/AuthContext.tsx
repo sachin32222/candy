@@ -17,6 +17,7 @@ interface UserProfile {
   corporateDiscount?: string;
   driveConnected?: boolean;
   createdAt?: string;
+  paymentStatus?: 'pending' | 'initiated' | 'approved' | 'declined';
 }
 
 interface AuthContextType {
@@ -53,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               name: currentUser.displayName || '',
               email: currentUser.email || '',
               createdAt: new Date().toISOString(),
+              paymentStatus: 'pending',
             };
             await setDoc(docRef, newProfile);
             setProfile(newProfile);

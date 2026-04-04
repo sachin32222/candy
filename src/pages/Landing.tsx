@@ -9,7 +9,11 @@ export default function Landing() {
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      if (user.email === 'dubeyjiinmirzapur@gmail.com') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     }
   }, [user, navigate]);
 
