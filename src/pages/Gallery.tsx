@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, getDocs, addDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { Camera, Sparkles, ArrowLeft, Loader2, Download, X } from 'lucide-react';
+import { Camera, Sparkles, ArrowLeft, Loader2, Download, X, RefreshCw } from 'lucide-react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useAuth } from '../AuthContext';
 
@@ -16,10 +16,13 @@ interface DriveFile {
 export default function Gallery() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const { user, driveToken } = useAuth();
+  const { user, driveToken, signIn } = useAuth();
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState('');
+  const [eventPhotographerId, setEventPhotographerId] = useState('');
+  const [driveLink, setDriveLink] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
   
   const [images, setImages] = useState<DriveFile[]>([]);
   const [filteredImages, setFilteredImages] = useState<DriveFile[] | null>(null);
@@ -33,6 +36,87 @@ export default function Gallery() {
     return match ? match[1] : null;
   };
 
+  const fetchPhotosFromFirestore = async () => {
+    if (!eventId) return;
+    const photosSnapshot = await getDocs(collection(db, 'events', eventId, 'photos'));
+    const photosData = photosSnapshot.docs.map(doc => {
+      const d = doc.data();
+      return {
+        id: d.driveFileId,
+        name: d.name,
+        thumbnailLink: d.thumbnailLink,
+        webContentLink: d.webContentLink
+      };
+    });
+    
+    if (photosData.length > 0) {
+      setImages(photosData);
+      setError(null);
+    } else {
+      setError("No photos have been uploaded to this gallery yet.");
+    }
+  };
+
+  const handleSync = async () => {
+    if (!driveToken) {
+      await signIn();
+      return; // The useEffect will catch the new driveToken and auto-sync, or they can click again
+    }
+    
+    setSyncing(true);
+    try {
+      const folderId = extractFolderId(driveLink);
+      if (folderId) {
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)`, {
+          headers: { Authorization: `Bearer ${driveToken}` }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.files && result.files.length > 0) {
+            const existingPhotosSnapshot = await getDocs(collection(db, 'events', eventId!, 'photos'));
+            const existingIds = new Set(existingPhotosSnapshot.docs.map(d => d.data().driveFileId));
+            
+            let addedCount = 0;
+            for (const file of result.files) {
+              if (!existingIds.has(file.id)) {
+                await addDoc(collection(db, 'events', eventId!, 'photos'), {
+                  eventId: eventId,
+                  photographerId: eventPhotographerId,
+                  name: file.name,
+                  driveFileId: file.id,
+                  thumbnailLink: file.thumbnailLink || '',
+                  webContentLink: file.webContentLink || '',
+                  createdAt: new Date().toISOString()
+                });
+                addedCount++;
+              }
+            }
+            if (addedCount > 0) {
+              await fetchPhotosFromFirestore();
+            } else {
+              alert('No new photos found to sync.');
+            }
+          } else {
+            alert('No images found in the Google Drive folder.');
+          }
+        } else {
+          const errText = await response.text();
+          console.error('Drive API Error:', errText);
+          if (response.status === 403 || response.status === 401) {
+            alert('Permission denied. Please sign out and sign in again to grant Google Drive permissions, or ensure the folder is accessible.');
+          } else {
+            alert('Failed to access Google Drive folder.');
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Manual sync failed", e);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   useEffect(() => {
     const fetchEventAndPhotos = async () => {
       if (!eventId) return;
@@ -41,8 +125,10 @@ export default function Gallery() {
         if (eventDoc.exists()) {
           const data = eventDoc.data();
           setEventName(data.name);
+          setEventPhotographerId(data.photographerId);
+          setDriveLink(data.driveLink);
           
-          // Auto-sync from Drive if photographer is viewing
+          // Auto-sync from Drive if photographer is viewing and has token
           if (driveToken && user?.uid === data.photographerId) {
             const folderId = extractFolderId(data.driveLink);
             if (folderId) {
@@ -78,23 +164,7 @@ export default function Gallery() {
             }
           }
           
-          // Fetch photos from Firestore
-          const photosSnapshot = await getDocs(collection(db, 'events', eventId, 'photos'));
-          const photosData = photosSnapshot.docs.map(doc => {
-            const d = doc.data();
-            return {
-              id: d.driveFileId,
-              name: d.name,
-              thumbnailLink: d.thumbnailLink,
-              webContentLink: d.webContentLink
-            };
-          });
-          
-          if (photosData.length > 0) {
-            setImages(photosData);
-          } else {
-            setError("No photos have been uploaded to this gallery yet.");
-          }
+          await fetchPhotosFromFirestore();
         } else {
           setError("Event not found.");
         }
@@ -250,7 +320,17 @@ export default function Gallery() {
           </div>
 
           {/* Find Me AI Button */}
-          <div className="relative z-10">
+          <div className="relative z-10 flex items-center gap-4">
+            {user?.uid === eventPhotographerId && (
+              <button
+                onClick={handleSync}
+                disabled={syncing}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-medium transition-all ${syncing ? 'bg-white/10 text-white/50' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'}`}
+              >
+                <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+                <span className="text-sm hidden sm:inline">{!driveToken ? 'Sign in to Sync' : 'Sync Photos'}</span>
+              </button>
+            )}
             <input 
               type="file" 
               accept="image/*" 

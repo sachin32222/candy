@@ -222,7 +222,13 @@ export default function EventDetails() {
                       alert('No images found in the Google Drive folder.');
                     }
                   } else {
-                    alert('Failed to access Google Drive folder.');
+                    const errText = await response.text();
+                    console.error('Drive API Error:', errText);
+                    if (response.status === 403 || response.status === 401) {
+                      alert('Permission denied. Please sign out and sign in again to grant Google Drive permissions, or ensure the folder is accessible.');
+                    } else {
+                      alert('Failed to access Google Drive folder.');
+                    }
                   }
                 } catch (error) {
                   console.error('Error syncing from Drive', error);
