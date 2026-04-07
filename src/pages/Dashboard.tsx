@@ -19,7 +19,7 @@ export default function Dashboard() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newEvent, setNewEvent] = useState({ name: '', venue: '' });
+  const [newEvent, setNewEvent] = useState({ name: '', venue: '', driveLink: '' });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,84 +47,30 @@ export default function Dashboard() {
     fetchEvents();
   }, [user]);
 
-  const createDriveFolder = async (folderName: string, token: string) => {
-    // 1. Create the folder
-    const response = await fetch('https://www.googleapis.com/drive/v3/files', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: folderName,
-        mimeType: 'application/vnd.google-apps.folder',
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to create Google Drive folder. Please try signing in again.');
-    }
-    
-    const data = await response.json();
-    
-    // 2. Make the folder accessible (anyone with link can view)
-    await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        role: 'reader',
-        type: 'anyone',
-      }),
-    });
-
-    // 3. Get the webViewLink
-    const fileResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}?fields=webViewLink`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    const fileData = await fileResponse.json();
-    
-    return {
-      webViewLink: fileData.webViewLink,
-      folderId: data.id
-    };
-  };
-
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    
-    if (!driveToken) {
-      setError("Google Drive access is required to create an event folder. Please sign in again to grant access.");
-      return;
-    }
 
     setCreating(true);
     setError(null);
 
     try {
-      // Create Drive Folder
-      const { webViewLink: driveLink, folderId } = await createDriveFolder(newEvent.name, driveToken);
-
       // Save to Firestore
       const docRef = await addDoc(collection(db, 'events'), {
-        ...newEvent,
-        driveLink,
-        driveFolderId: folderId,
+        name: newEvent.name,
+        venue: newEvent.venue,
+        driveLink: newEvent.driveLink,
         photographerId: user.uid,
         createdAt: new Date().toISOString()
       });
       
-      setEvents([{ id: docRef.id, ...newEvent, driveLink, createdAt: new Date().toISOString() }, ...events]);
+      setEvents([{ id: docRef.id, ...newEvent, createdAt: new Date().toISOString() }, ...events]);
       setShowCreateModal(false);
-      setNewEvent({ name: '', venue: '' });
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to create event. Please try again.");
+      setNewEvent({ name: '', venue: '', driveLink: '' });
+    } catch (error: any) {
+      console.error(error);
+      setError("Failed to create event. Please try again.");
+      handleFirestoreError(error, OperationType.CREATE, 'events');
     } finally {
       setCreating(false);
     }
@@ -217,6 +163,12 @@ export default function Dashboard() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-stone-900 border border-white/10 rounded-[2rem] max-w-md w-full p-8 md:p-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
             <h2 className="text-3xl font-serif text-white mb-8">New Event</h2>
+            {error && (
+              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-400">
+                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                <p className="text-sm">{error}</p>
+              </div>
+            )}
             <form onSubmit={handleCreateEvent}>
               <div className="space-y-6">
                 <div>
