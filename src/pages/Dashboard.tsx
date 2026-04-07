@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon } from 'lucide-react';
+import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -14,12 +14,14 @@ interface Event {
 }
 
 export default function Dashboard() {
-  const { user, profile, logout } = useAuth();
+  const { user, profile, logout, driveToken, signIn } = useAuth();
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newEvent, setNewEvent] = useState({ name: '', venue: '', driveLink: '' });
+  const [newEvent, setNewEvent] = useState({ name: '', venue: '' });
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile?.name || !profile?.portfolio) {
@@ -45,20 +47,95 @@ export default function Dashboard() {
     fetchEvents();
   }, [user]);
 
+  const createDriveFolder = async (folderName: string, token: string) => {
+    // 1. Create the folder
+    const response = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: folderName,
+        mimeType: 'application/vnd.google-apps.folder',
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to create Google Drive folder. Please try signing in again.');
+    }
+    
+    const data = await response.json();
+    
+    // 2. Make the folder accessible (anyone with link can view)
+    await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        role: 'reader',
+        type: 'anyone',
+      }),
+    });
+
+    // 3. Get the webViewLink
+    const fileResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}?fields=webViewLink`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
+    const fileData = await fileResponse.json();
+    
+    return {
+      webViewLink: fileData.webViewLink,
+      folderId: data.id
+    };
+  };
+
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    
+    if (!driveToken) {
+      setError("Google Drive access is required to create an event folder. Please sign in again to grant access.");
+      return;
+    }
+
+    setCreating(true);
+    setError(null);
+
     try {
+      // Create Drive Folder
+      const { webViewLink: driveLink, folderId } = await createDriveFolder(newEvent.name, driveToken);
+
+      // Save to Firestore
       const docRef = await addDoc(collection(db, 'events'), {
         ...newEvent,
+        driveLink,
+        driveFolderId: folderId,
         photographerId: user.uid,
         createdAt: new Date().toISOString()
       });
-      setEvents([{ id: docRef.id, ...newEvent, createdAt: new Date().toISOString() }, ...events]);
+      
+      setEvents([{ id: docRef.id, ...newEvent, driveLink, createdAt: new Date().toISOString() }, ...events]);
       setShowCreateModal(false);
-      setNewEvent({ name: '', venue: '', driveLink: '' });
-    } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, 'events');
+      setNewEvent({ name: '', venue: '' });
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to create event. Please try again.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleReauth = async () => {
+    try {
+      await signIn();
+      setError(null);
+    } catch (err) {
+      console.error("Reauth failed", err);
     }
   };
 

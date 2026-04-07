@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import ProfileSetup from './pages/ProfileSetup';
 import EventDetails from './pages/EventDetails';
 import GuestLanding from './pages/GuestLanding';
+import Gallery from './pages/Gallery';
 import Payment from './pages/Payment';
 import AdminPanel from './pages/AdminPanel';
 
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           <Route path="/events/:eventId" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
           <Route path="/e/:eventId" element={<GuestLanding />} />
+          <Route path="/gallery/:eventId" element={<Gallery />} />
         </Routes>
       </Router>
     </AuthProvider>

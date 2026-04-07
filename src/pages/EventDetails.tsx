@@ -11,6 +11,7 @@ interface Event {
   name: string;
   venue: string;
   driveLink: string;
+  driveFolderId?: string;
   photographerId: string;
 }
 

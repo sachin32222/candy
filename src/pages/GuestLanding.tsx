@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, addDoc, collection } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { Instagram, Youtube, Globe, MessageCircle, Phone, Star, ExternalLink } from 'lucide-react';
+import { Instagram, Youtube, Globe, MessageCircle, Phone, Star, ExternalLink, Images } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -26,6 +26,7 @@ interface PhotographerProfile {
 
 export default function GuestLanding() {
   const { eventId } = useParams<{ eventId: string }>();
+  const navigate = useNavigate();
   const [event, setEvent] = useState<Event | null>(null);
   const [photographer, setPhotographer] = useState<PhotographerProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -186,15 +187,13 @@ export default function GuestLanding() {
           <p className="text-white/70 mb-10 max-w-lg mx-auto font-light leading-relaxed">
             We've curated the best moments from {event.name}. Click below to view and download your high-resolution images.
           </p>
-          <a
-            href={event.driveLink}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => navigate(`/gallery/${event.id}`)}
             className="inline-flex items-center justify-center px-8 py-4 bg-white text-stone-900 rounded-xl font-medium hover:bg-stone-100 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
           >
-            <ExternalLink className="w-5 h-5 mr-3" />
+            <Images className="w-5 h-5 mr-3" />
             Open Gallery
-          </a>
+          </button>
         </div>
 
         {/* Grid for Reviews & Discounts */}
