@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, addDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { Camera, Sparkles, ArrowLeft, Loader2, Download, X } from 'lucide-react';
 import { GoogleGenAI, Type } from '@google/genai';
+import { useAuth } from '../AuthContext';
 
 interface DriveFile {
   id: string;
@@ -15,6 +16,7 @@ interface DriveFile {
 export default function Gallery() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
+  const { user, driveToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +28,11 @@ export default function Gallery() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const extractFolderId = (url: string) => {
+    const match = url.match(/folders\/([a-zA-Z0-9-_]+)/) || url.match(/id=([a-zA-Z0-9-_]+)/);
+    return match ? match[1] : null;
+  };
+
   useEffect(() => {
     const fetchEventAndPhotos = async () => {
       if (!eventId) return;
@@ -34,6 +41,42 @@ export default function Gallery() {
         if (eventDoc.exists()) {
           const data = eventDoc.data();
           setEventName(data.name);
+          
+          // Auto-sync from Drive if photographer is viewing
+          if (driveToken && user?.uid === data.photographerId) {
+            const folderId = extractFolderId(data.driveLink);
+            if (folderId) {
+              try {
+                const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)`, {
+                  headers: { Authorization: `Bearer ${driveToken}` }
+                });
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  if (result.files && result.files.length > 0) {
+                    const existingPhotosSnapshot = await getDocs(collection(db, 'events', eventId, 'photos'));
+                    const existingIds = new Set(existingPhotosSnapshot.docs.map(d => d.data().driveFileId));
+                    
+                    for (const file of result.files) {
+                      if (!existingIds.has(file.id)) {
+                        await addDoc(collection(db, 'events', eventId, 'photos'), {
+                          eventId: eventDoc.id,
+                          photographerId: data.photographerId,
+                          name: file.name,
+                          driveFileId: file.id,
+                          thumbnailLink: file.thumbnailLink || '',
+                          webContentLink: file.webContentLink || '',
+                          createdAt: new Date().toISOString()
+                        });
+                      }
+                    }
+                  }
+                }
+              } catch (e) {
+                console.error("Auto-sync failed", e);
+              }
+            }
+          }
           
           // Fetch photos from Firestore
           const photosSnapshot = await getDocs(collection(db, 'events', eventId, 'photos'));
@@ -63,7 +106,7 @@ export default function Gallery() {
       }
     };
     fetchEventAndPhotos();
-  }, [eventId]);
+  }, [eventId, driveToken, user]);
 
   const handleSelfieUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
