@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
-import { ArrowLeft, Download, Users, UploadCloud, ExternalLink, Copy, Share2, Check } from 'lucide-react';
+import { ArrowLeft, Download, Users, UploadCloud, ExternalLink, Copy, Share2, Check, RefreshCw } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -83,13 +83,27 @@ export default function EventDetails() {
         form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
         form.append('file', file);
 
-        await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,thumbnailLink,webContentLink', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${driveToken}`
           },
           body: form
         });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Save photo metadata to Firestore
+          await addDoc(collection(db, 'events', eventId, 'photos'), {
+            eventId: event.id,
+            photographerId: event.photographerId,
+            name: data.name,
+            driveFileId: data.id,
+            thumbnailLink: data.thumbnailLink || '',
+            webContentLink: data.webContentLink || '',
+            createdAt: new Date().toISOString()
+          });
+        }
       }
       alert('Photos uploaded successfully to Google Drive!');
     } catch (error) {
@@ -157,16 +171,75 @@ export default function EventDetails() {
                 <span className="w-1.5 h-1.5 bg-amber-400 rounded-full mr-2"></span>
                 {event.venue}
               </span>
-              <a href={event.driveLink} target="_blank" rel="noopener noreferrer" className="flex items-center hover:text-amber-400 transition-colors">
+              <Link to={`/gallery/${event.id}`} className="flex items-center hover:text-amber-400 transition-colors">
                 <ExternalLink className="w-4 h-4 mr-2" />
-                Google Drive Folder
-              </a>
+                Open Gallery
+              </Link>
             </div>
           </div>
-          <div className="relative">
+          <div className="relative flex items-center gap-4">
+            <button
+              onClick={async () => {
+                if (!driveToken || !event) return;
+                setUploading(true);
+                try {
+                  let folderId = 'root';
+                  const match = event.driveLink.match(/folders\/([a-zA-Z0-9-_]+)/);
+                  if (match && match[1]) {
+                    folderId = match[1];
+                  }
+                  
+                  const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)`, {
+                    headers: {
+                      Authorization: `Bearer ${driveToken}`
+                    }
+                  });
+                  
+                  if (response.ok) {
+                    const result = await response.json();
+                    if (result.files && result.files.length > 0) {
+                      // Check existing photos to avoid duplicates
+                      const existingPhotosSnapshot = await getDocs(collection(db, 'events', eventId, 'photos'));
+                      const existingIds = new Set(existingPhotosSnapshot.docs.map(d => d.data().driveFileId));
+                      
+                      let addedCount = 0;
+                      for (const file of result.files) {
+                        if (!existingIds.has(file.id)) {
+                          await addDoc(collection(db, 'events', eventId, 'photos'), {
+                            eventId: event.id,
+                            photographerId: event.photographerId,
+                            name: file.name,
+                            driveFileId: file.id,
+                            thumbnailLink: file.thumbnailLink || '',
+                            webContentLink: file.webContentLink || '',
+                            createdAt: new Date().toISOString()
+                          });
+                          addedCount++;
+                        }
+                      }
+                      alert(`Synced ${addedCount} new photos from Google Drive!`);
+                    } else {
+                      alert('No images found in the Google Drive folder.');
+                    }
+                  } else {
+                    alert('Failed to access Google Drive folder.');
+                  }
+                } catch (error) {
+                  console.error('Error syncing from Drive', error);
+                  alert('Error syncing photos.');
+                } finally {
+                  setUploading(false);
+                }
+              }}
+              disabled={uploading || !driveToken}
+              className={`px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] ${uploading ? 'bg-white/20 text-white/50' : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'}`}
+            >
+              <RefreshCw className={`w-5 h-5 ${uploading ? 'animate-spin' : ''}`} />
+              Sync Drive
+            </button>
             <label className={`cursor-pointer ${uploading ? 'bg-white/20 text-white/50' : 'bg-white text-stone-900 hover:bg-stone-100'} px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]`}>
               <UploadCloud className="w-5 h-5" />
-              {uploading ? 'Uploading...' : 'Bulk Upload Photos'}
+              {uploading ? 'Uploading...' : 'Upload Photos'}
               <input
                 type="file"
                 multiple

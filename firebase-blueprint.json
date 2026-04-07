@@ -48,6 +48,21 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["eventId", "photographerId", "name", "phone", "email", "createdAt"]
+    },
+    "Photo": {
+      "title": "Photo",
+      "description": "A photo uploaded to an event",
+      "type": "object",
+      "properties": {
+        "eventId": { "type": "string" },
+        "photographerId": { "type": "string" },
+        "name": { "type": "string" },
+        "driveFileId": { "type": "string" },
+        "thumbnailLink": { "type": "string" },
+        "webContentLink": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["eventId", "photographerId", "name", "driveFileId", "thumbnailLink", "createdAt"]
     }
   },
   "firestore": {
@@ -58,6 +73,10 @@
     "/events/{eventId}": {
       "schema": "Event",
       "description": "Events created by photographers"
+    },
+    "/events/{eventId}/photos/{photoId}": {
+      "schema": "Photo",
+      "description": "Photos for an event"
     },
     "/leads/{leadId}": {
       "schema": "Lead",

@@ -122,6 +122,17 @@ service cloud.firestore {
              data.createdAt is string && data.createdAt.size() > 0 && data.createdAt.size() < 50;
     }
 
+    function isValidPhoto(data) {
+      return hasRequiredFields(['eventId', 'photographerId', 'name', 'driveFileId', 'thumbnailLink', 'createdAt']) &&
+             data.eventId is string && data.eventId.size() > 0 && data.eventId.size() < 100 &&
+             data.photographerId is string && data.photographerId.size() > 0 && data.photographerId.size() < 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 500 &&
+             data.driveFileId is string && data.driveFileId.size() > 0 && data.driveFileId.size() < 200 &&
+             data.thumbnailLink is string && data.thumbnailLink.size() > 0 && data.thumbnailLink.size() < 1000 &&
+             isValidOptionalString('webContentLink', 0, 1000) &&
+             data.createdAt is string && data.createdAt.size() > 0 && data.createdAt.size() < 50;
+    }
+
     match /users/{userId} {
       allow get: if true; // Public profiles are needed for the guest landing page
       allow list: if isAdmin();
@@ -135,6 +146,13 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.resource.data.photographerId == request.auth.uid && isValidEvent(request.resource.data);
       allow update: if isAuthenticated() && resource.data.photographerId == request.auth.uid && request.resource.data.photographerId == request.auth.uid && isValidEvent(request.resource.data);
       allow delete: if isAuthenticated() && resource.data.photographerId == request.auth.uid;
+      
+      match /photos/{photoId} {
+        allow read: if true; // Anyone can view photos
+        allow create: if isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.photographerId == request.auth.uid && isValidPhoto(request.resource.data);
+        allow update: if false; // Photos shouldn't be updated
+        allow delete: if isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.photographerId == request.auth.uid;
+      }
     }
 
     match /leads/{leadId} {

@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { Camera, Sparkles, ArrowLeft, Loader2, Download, X } from 'lucide-react';
 import { GoogleGenAI, Type } from '@google/genai';
-import firebaseConfig from '../../firebase-applet-config.json';
 
 interface DriveFile {
   id: string;
@@ -27,11 +26,6 @@ export default function Gallery() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const extractFolderId = (url: string) => {
-    const match = url.match(/folders\/([a-zA-Z0-9-_]+)/) || url.match(/id=([a-zA-Z0-9-_]+)/);
-    return match ? match[1] : null;
-  };
-
   useEffect(() => {
     const fetchEventAndPhotos = async () => {
       if (!eventId) return;
@@ -41,24 +35,22 @@ export default function Gallery() {
           const data = eventDoc.data();
           setEventName(data.name);
           
-          const folderId = extractFolderId(data.driveLink);
-          if (folderId) {
-            // Fetch from Google Drive API
-            const apiKey = firebaseConfig.apiKey;
-            const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)&key=${apiKey}`);
-            
-            if (response.ok) {
-              const result = await response.json();
-              if (result.files && result.files.length > 0) {
-                setImages(result.files);
-              } else {
-                setError("No images found in this folder. Make sure the folder is public and contains images.");
-              }
-            } else {
-              setError("Could not access the Google Drive folder. Please ensure the folder's sharing settings are set to 'Anyone with the link can view'.");
-            }
+          // Fetch photos from Firestore
+          const photosSnapshot = await getDocs(collection(db, 'events', eventId, 'photos'));
+          const photosData = photosSnapshot.docs.map(doc => {
+            const d = doc.data();
+            return {
+              id: d.driveFileId,
+              name: d.name,
+              thumbnailLink: d.thumbnailLink,
+              webContentLink: d.webContentLink
+            };
+          });
+          
+          if (photosData.length > 0) {
+            setImages(photosData);
           } else {
-            setError("Invalid Google Drive link format.");
+            setError("No photos have been uploaded to this gallery yet.");
           }
         } else {
           setError("Event not found.");
