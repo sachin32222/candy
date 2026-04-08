@@ -5,6 +5,7 @@ import { db, handleFirestoreError, OperationType } from '../firebase';
 import { Camera, Sparkles, ArrowLeft, Loader2, Download, X, RefreshCw } from 'lucide-react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useAuth } from '../AuthContext';
+import firebaseConfig from '../../firebase-applet-config.json';
 
 interface DriveFile {
   id: string;
@@ -16,12 +17,12 @@ interface DriveFile {
 export default function Gallery() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const { user, driveToken, signIn } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState('');
   const [eventPhotographerId, setEventPhotographerId] = useState('');
   const [driveLink, setDriveLink] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<React.ReactNode | null>(null);
   const [syncing, setSyncing] = useState(false);
   
   const [images, setImages] = useState<DriveFile[]>([]);
@@ -58,18 +59,13 @@ export default function Gallery() {
   };
 
   const handleSync = async () => {
-    if (!driveToken) {
-      await signIn();
-      return; // The useEffect will catch the new driveToken and auto-sync, or they can click again
-    }
-    
     setSyncing(true);
+    setError(null);
     try {
       const folderId = extractFolderId(driveLink);
       if (folderId) {
-        const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)`, {
-          headers: { Authorization: `Bearer ${driveToken}` }
-        });
+        const apiKey = firebaseConfig.apiKey;
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)&key=${apiKey}`);
         
         if (response.ok) {
           const result = await response.json();
@@ -103,15 +99,24 @@ export default function Gallery() {
         } else {
           const errText = await response.text();
           console.error('Drive API Error:', errText);
-          if (response.status === 403 || response.status === 401) {
-            alert('Permission denied. Please sign out and sign in again to grant Google Drive permissions, or ensure the folder is accessible.');
+          if (response.status === 403 && errText.includes('has not been used')) {
+            const urlMatch = errText.match(/https:\/\/console\.developers\.google\.com[^\s"]+/);
+            const enableUrl = urlMatch ? urlMatch[0] : 'https://console.cloud.google.com/apis/library/drive.googleapis.com';
+            setError(
+              <span>
+                <strong>Action Required:</strong> Google Drive API is disabled for your project.<br/>
+                Please <a href={enableUrl} target="_blank" rel="noreferrer" className="text-amber-400 underline hover:text-amber-300">click here to enable it</a>.<br/>
+                After enabling, ensure your Drive folder is set to <strong>"Anyone with the link can view"</strong> and try syncing again.
+              </span>
+            );
           } else {
-            alert('Failed to access Google Drive folder.');
+            setError('Failed to access Google Drive folder. Please ensure the folder sharing settings are set to "Anyone with the link can view".');
           }
         }
       }
     } catch (e) {
       console.error("Manual sync failed", e);
+      setError('An error occurred while syncing.');
     } finally {
       setSyncing(false);
     }
@@ -128,14 +133,13 @@ export default function Gallery() {
           setEventPhotographerId(data.photographerId);
           setDriveLink(data.driveLink);
           
-          // Auto-sync from Drive if photographer is viewing and has token
-          if (driveToken && user?.uid === data.photographerId) {
+          // Auto-sync from Drive if photographer is viewing
+          if (user?.uid === data.photographerId) {
             const folderId = extractFolderId(data.driveLink);
             if (folderId) {
               try {
-                const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)`, {
-                  headers: { Authorization: `Bearer ${driveToken}` }
-                });
+                const apiKey = firebaseConfig.apiKey;
+                const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)&key=${apiKey}`);
                 
                 if (response.ok) {
                   const result = await response.json();
@@ -176,7 +180,7 @@ export default function Gallery() {
       }
     };
     fetchEventAndPhotos();
-  }, [eventId, driveToken, user]);
+  }, [eventId, user]);
 
   const handleSelfieUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -328,7 +332,7 @@ export default function Gallery() {
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-medium transition-all ${syncing ? 'bg-white/10 text-white/50' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'}`}
               >
                 <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-                <span className="text-sm hidden sm:inline">{!driveToken ? 'Sign in to Sync' : 'Sync Photos'}</span>
+                <span className="text-sm hidden sm:inline">Sync Photos</span>
               </button>
             )}
             <input 

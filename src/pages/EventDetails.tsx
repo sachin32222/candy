@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
 import { ArrowLeft, Download, Users, UploadCloud, ExternalLink, Copy, Share2, Check, RefreshCw } from 'lucide-react';
+import firebaseConfig from '../../firebase-applet-config.json';
 
 interface Event {
   id: string;
@@ -25,7 +27,7 @@ interface Lead {
 
 export default function EventDetails() {
   const { eventId } = useParams<{ eventId: string }>();
-  const { user, driveToken } = useAuth();
+  const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,55 +62,32 @@ export default function EventDetails() {
   }, [eventId, user]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0 || !driveToken || !event) return;
+    if (!e.target.files || e.target.files.length === 0 || !event) return;
     
     setUploading(true);
     const files: File[] = Array.from(e.target.files);
-    
-    // Extract folder ID from driveLink if possible
-    let folderId = 'root';
-    const match = event.driveLink.match(/folders\/([a-zA-Z0-9-_]+)/);
-    if (match && match[1]) {
-      folderId = match[1];
-    }
 
     try {
       for (const file of files) {
-        const metadata = {
-          name: file.name,
-          parents: [folderId]
-        };
-
-        const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        form.append('file', file);
-
-        const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,thumbnailLink,webContentLink', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${driveToken}`
-          },
-          body: form
-        });
+        const storageRef = ref(storage, `events/${eventId}/${Date.now()}-${file.name}`);
+        await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(storageRef);
         
-        if (response.ok) {
-          const data = await response.json();
-          // Save photo metadata to Firestore
-          await addDoc(collection(db, 'events', eventId, 'photos'), {
-            eventId: event.id,
-            photographerId: event.photographerId,
-            name: data.name,
-            driveFileId: data.id,
-            thumbnailLink: data.thumbnailLink || '',
-            webContentLink: data.webContentLink || '',
-            createdAt: new Date().toISOString()
-          });
-        }
+        // Save photo metadata to Firestore
+        await addDoc(collection(db, 'events', eventId!, 'photos'), {
+          eventId: event.id,
+          photographerId: event.photographerId,
+          name: file.name,
+          driveFileId: storageRef.fullPath, // Use storage path as ID
+          thumbnailLink: downloadUrl,
+          webContentLink: downloadUrl,
+          createdAt: new Date().toISOString()
+        });
       }
-      alert('Photos uploaded successfully to Google Drive!');
+      alert('Photos uploaded successfully!');
     } catch (error) {
-      console.error('Error uploading to Drive', error);
-      alert('Failed to upload photos. Please ensure you have granted Google Drive permissions.');
+      console.error('Error uploading', error);
+      alert('Failed to upload photos.');
     } finally {
       setUploading(false);
       // Reset input
@@ -180,7 +159,7 @@ export default function EventDetails() {
           <div className="relative flex items-center gap-4">
             <button
               onClick={async () => {
-                if (!driveToken || !event) return;
+                if (!event) return;
                 setUploading(true);
                 try {
                   let folderId = 'root';
@@ -189,23 +168,20 @@ export default function EventDetails() {
                     folderId = match[1];
                   }
                   
-                  const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)`, {
-                    headers: {
-                      Authorization: `Bearer ${driveToken}`
-                    }
-                  });
+                  const apiKey = firebaseConfig.apiKey;
+                  const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)&key=${apiKey}`);
                   
                   if (response.ok) {
                     const result = await response.json();
                     if (result.files && result.files.length > 0) {
                       // Check existing photos to avoid duplicates
-                      const existingPhotosSnapshot = await getDocs(collection(db, 'events', eventId, 'photos'));
+                      const existingPhotosSnapshot = await getDocs(collection(db, 'events', eventId!, 'photos'));
                       const existingIds = new Set(existingPhotosSnapshot.docs.map(d => d.data().driveFileId));
                       
                       let addedCount = 0;
                       for (const file of result.files) {
                         if (!existingIds.has(file.id)) {
-                          await addDoc(collection(db, 'events', eventId, 'photos'), {
+                          await addDoc(collection(db, 'events', eventId!, 'photos'), {
                             eventId: event.id,
                             photographerId: event.photographerId,
                             name: file.name,
@@ -217,17 +193,23 @@ export default function EventDetails() {
                           addedCount++;
                         }
                       }
-                      alert(`Synced ${addedCount} new photos from Google Drive!`);
+                      if (addedCount > 0) {
+                        alert(`Synced ${addedCount} new photos from Google Drive!`);
+                      } else {
+                        alert('No new photos found to sync.');
+                      }
                     } else {
                       alert('No images found in the Google Drive folder.');
                     }
                   } else {
                     const errText = await response.text();
                     console.error('Drive API Error:', errText);
-                    if (response.status === 403 || response.status === 401) {
-                      alert('Permission denied. Please sign out and sign in again to grant Google Drive permissions, or ensure the folder is accessible.');
+                    if (response.status === 403 && errText.includes('has not been used')) {
+                      const urlMatch = errText.match(/https:\/\/console\.developers\.google\.com[^\s"]+/);
+                      const enableUrl = urlMatch ? urlMatch[0] : 'https://console.cloud.google.com/apis/library/drive.googleapis.com';
+                      alert(`Action Required: Please enable the Google Drive API for your project by visiting this link: ${enableUrl}\n\nAfter enabling, ensure your Drive folder is set to 'Anyone with the link can view' and try syncing again.`);
                     } else {
-                      alert('Failed to access Google Drive folder.');
+                      alert('Failed to access Google Drive folder. Please ensure the folder sharing settings are set to "Anyone with the link can view".');
                     }
                   }
                 } catch (error) {
@@ -237,7 +219,7 @@ export default function EventDetails() {
                   setUploading(false);
                 }
               }}
-              disabled={uploading || !driveToken}
+              disabled={uploading}
               className={`px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] ${uploading ? 'bg-white/20 text-white/50' : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'}`}
             >
               <RefreshCw className={`w-5 h-5 ${uploading ? 'animate-spin' : ''}`} />
@@ -252,12 +234,9 @@ export default function EventDetails() {
                 accept="image/*"
                 className="hidden"
                 onChange={handleFileUpload}
-                disabled={uploading || !driveToken}
+                disabled={uploading}
               />
             </label>
-            {!driveToken && (
-              <p className="text-[10px] text-red-400 absolute top-full mt-2 right-0 w-full text-right">Sign in again to enable uploads</p>
-            )}
           </div>
         </div>
 
