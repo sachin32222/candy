@@ -1,11 +1,18 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { Camera, Users, Image as ImageIcon, Zap, QrCode, Smartphone, Share, TrendingUp, Star, Heart, Instagram, Youtube, MessageSquare, Palette, BarChart3, Lock, Globe, HelpCircle } from 'lucide-react';
+import { Camera, Users, Image as ImageIcon, Zap, QrCode, Smartphone, Share, TrendingUp, Star, Heart, Instagram, Youtube, MessageSquare, Palette, BarChart3, Lock, Globe, HelpCircle, ExternalLink } from 'lucide-react';
 
 export default function Landing() {
-  const { user, signIn } = useAuth();
+  const { user, signIn, authError } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
 
   useEffect(() => {
     if (user) {
@@ -16,6 +23,15 @@ export default function Landing() {
       }
     }
   }, [user, navigate]);
+
+  const handleSignIn = async () => {
+    try {
+      setError(null);
+      await signIn();
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in. If you are using Safari or a mobile browser, try opening the app in a new tab.');
+    }
+  };
 
   return (
     <div className="min-h-screen relative font-sans bg-stone-900">
@@ -85,7 +101,7 @@ export default function Landing() {
                   </div>
 
                   <button
-                    onClick={signIn}
+                    onClick={handleSignIn}
                     className="w-full bg-white text-stone-900 py-4 px-6 rounded-xl font-medium hover:bg-stone-100 transition-all flex items-center justify-center gap-3 group shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
                   >
                     <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
@@ -108,6 +124,18 @@ export default function Landing() {
                     </svg>
                     Continue with Google
                   </button>
+                  {error && (
+                    <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center flex flex-col items-center gap-3">
+                      <p>{error}</p>
+                      <button 
+                        onClick={() => window.open(window.location.href, '_blank')}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors flex items-center gap-2"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Open in New Tab
+                      </button>
+                    </div>
+                  )}
                   
                   <div className="mt-8 text-center border-t border-white/10 pt-6">
                     <p className="text-white/50 text-xs font-light">

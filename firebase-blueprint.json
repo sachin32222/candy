@@ -51,12 +51,13 @@
     },
     "Photo": {
       "title": "Photo",
-      "description": "A photo uploaded to an event",
+      "description": "A photo or video uploaded to an event",
       "type": "object",
       "properties": {
         "eventId": { "type": "string" },
         "photographerId": { "type": "string" },
         "name": { "type": "string" },
+        "type": { "type": "string" },
         "driveFileId": { "type": "string" },
         "thumbnailLink": { "type": "string" },
         "webContentLink": { "type": "string" },

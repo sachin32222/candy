@@ -10,6 +10,7 @@ import firebaseConfig from '../../firebase-applet-config.json';
 interface DriveFile {
   id: string;
   name: string;
+  type?: string;
   thumbnailLink?: string;
   webContentLink?: string;
 }
@@ -21,9 +22,7 @@ export default function Gallery() {
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState('');
   const [eventPhotographerId, setEventPhotographerId] = useState('');
-  const [driveLink, setDriveLink] = useState('');
   const [error, setError] = useState<React.ReactNode | null>(null);
-  const [syncing, setSyncing] = useState(false);
   
   const [images, setImages] = useState<DriveFile[]>([]);
   const [filteredImages, setFilteredImages] = useState<DriveFile[] | null>(null);
@@ -31,11 +30,6 @@ export default function Gallery() {
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const extractFolderId = (url: string) => {
-    const match = url.match(/folders\/([a-zA-Z0-9-_]+)/) || url.match(/id=([a-zA-Z0-9-_]+)/);
-    return match ? match[1] : null;
-  };
 
   const fetchPhotosFromFirestore = async () => {
     if (!eventId) return;
@@ -45,6 +39,7 @@ export default function Gallery() {
       return {
         id: d.driveFileId,
         name: d.name,
+        type: d.type,
         thumbnailLink: d.thumbnailLink,
         webContentLink: d.webContentLink
       };
@@ -58,70 +53,6 @@ export default function Gallery() {
     }
   };
 
-  const handleSync = async () => {
-    setSyncing(true);
-    setError(null);
-    try {
-      const folderId = extractFolderId(driveLink);
-      if (folderId) {
-        const apiKey = firebaseConfig.apiKey;
-        const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)&key=${apiKey}`);
-        
-        if (response.ok) {
-          const result = await response.json();
-          if (result.files && result.files.length > 0) {
-            const existingPhotosSnapshot = await getDocs(collection(db, 'events', eventId!, 'photos'));
-            const existingIds = new Set(existingPhotosSnapshot.docs.map(d => d.data().driveFileId));
-            
-            let addedCount = 0;
-            for (const file of result.files) {
-              if (!existingIds.has(file.id)) {
-                await addDoc(collection(db, 'events', eventId!, 'photos'), {
-                  eventId: eventId,
-                  photographerId: eventPhotographerId,
-                  name: file.name,
-                  driveFileId: file.id,
-                  thumbnailLink: file.thumbnailLink || '',
-                  webContentLink: file.webContentLink || '',
-                  createdAt: new Date().toISOString()
-                });
-                addedCount++;
-              }
-            }
-            if (addedCount > 0) {
-              await fetchPhotosFromFirestore();
-            } else {
-              alert('No new photos found to sync.');
-            }
-          } else {
-            alert('No images found in the Google Drive folder.');
-          }
-        } else {
-          const errText = await response.text();
-          console.error('Drive API Error:', errText);
-          if (response.status === 403 && errText.includes('has not been used')) {
-            const urlMatch = errText.match(/https:\/\/console\.developers\.google\.com[^\s"]+/);
-            const enableUrl = urlMatch ? urlMatch[0] : 'https://console.cloud.google.com/apis/library/drive.googleapis.com';
-            setError(
-              <span>
-                <strong>Action Required:</strong> Google Drive API is disabled for your project.<br/>
-                Please <a href={enableUrl} target="_blank" rel="noreferrer" className="text-amber-400 underline hover:text-amber-300">click here to enable it</a>.<br/>
-                After enabling, ensure your Drive folder is set to <strong>"Anyone with the link can view"</strong> and try syncing again.
-              </span>
-            );
-          } else {
-            setError('Failed to access Google Drive folder. Please ensure the folder sharing settings are set to "Anyone with the link can view".');
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Manual sync failed", e);
-      setError('An error occurred while syncing.');
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   useEffect(() => {
     const fetchEventAndPhotos = async () => {
       if (!eventId) return;
@@ -131,42 +62,6 @@ export default function Gallery() {
           const data = eventDoc.data();
           setEventName(data.name);
           setEventPhotographerId(data.photographerId);
-          setDriveLink(data.driveLink);
-          
-          // Auto-sync from Drive if photographer is viewing
-          if (user?.uid === data.photographerId) {
-            const folderId = extractFolderId(data.driveLink);
-            if (folderId) {
-              try {
-                const apiKey = firebaseConfig.apiKey;
-                const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,thumbnailLink,webContentLink)&key=${apiKey}`);
-                
-                if (response.ok) {
-                  const result = await response.json();
-                  if (result.files && result.files.length > 0) {
-                    const existingPhotosSnapshot = await getDocs(collection(db, 'events', eventId, 'photos'));
-                    const existingIds = new Set(existingPhotosSnapshot.docs.map(d => d.data().driveFileId));
-                    
-                    for (const file of result.files) {
-                      if (!existingIds.has(file.id)) {
-                        await addDoc(collection(db, 'events', eventId, 'photos'), {
-                          eventId: eventDoc.id,
-                          photographerId: data.photographerId,
-                          name: file.name,
-                          driveFileId: file.id,
-                          thumbnailLink: file.thumbnailLink || '',
-                          webContentLink: file.webContentLink || '',
-                          createdAt: new Date().toISOString()
-                        });
-                      }
-                    }
-                  }
-                }
-              } catch (e) {
-                console.error("Auto-sync failed", e);
-              }
-            }
-          }
           
           await fetchPhotosFromFirestore();
         } else {
@@ -179,6 +74,7 @@ export default function Gallery() {
         setLoading(false);
       }
     };
+
     fetchEventAndPhotos();
   }, [eventId, user]);
 
@@ -213,6 +109,8 @@ export default function Gallery() {
       
       for (let i = 0; i < maxImagesToAnalyze; i++) {
         try {
+          if (images[i].type?.startsWith('video/')) continue;
+          
           const imgUrl = getHighResUrl(images[i].thumbnailLink);
           if (!imgUrl) continue;
           
@@ -325,16 +223,6 @@ export default function Gallery() {
 
           {/* Find Me AI Button */}
           <div className="relative z-10 flex items-center gap-4">
-            {user?.uid === eventPhotographerId && (
-              <button
-                onClick={handleSync}
-                disabled={syncing}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-medium transition-all ${syncing ? 'bg-white/10 text-white/50' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'}`}
-              >
-                <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-                <span className="text-sm hidden sm:inline">Sync Photos</span>
-              </button>
-            )}
             <input 
               type="file" 
               accept="image/*" 
@@ -406,20 +294,29 @@ export default function Gallery() {
             <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
               {displayImages.map((file) => (
                 <div key={file.id} className="break-inside-avoid relative group rounded-2xl overflow-hidden bg-white/5">
-                  <img 
-                    src={getHighResUrl(file.thumbnailLink)} 
-                    alt={file.name} 
-                    className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-end p-4">
+                  {file.type?.startsWith('video/') ? (
+                    <video 
+                      src={file.webContentLink || file.thumbnailLink} 
+                      className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105"
+                      controls
+                      preload="metadata"
+                    />
+                  ) : (
+                    <img 
+                      src={getHighResUrl(file.thumbnailLink)} 
+                      alt={file.name} 
+                      className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-end p-4 pointer-events-none">
                     {file.webContentLink && (
                       <a 
                         href={file.webContentLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-white/20 backdrop-blur-md hover:bg-white/40 text-white p-2 rounded-full transition-colors"
+                        className="bg-white/20 backdrop-blur-md hover:bg-white/40 text-white p-2 rounded-full transition-colors pointer-events-auto"
                       >
                         <Download className="w-5 h-5" />
                       </a>

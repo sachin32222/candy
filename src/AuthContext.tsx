@@ -24,6 +24,7 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  authError: string | null;
   signIn: () => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
@@ -37,10 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [driveToken, setDriveToken] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      setAuthError(null);
       if (currentUser) {
         try {
           const docRef = doc(db, 'users', currentUser.uid);
@@ -51,8 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Create initial profile
             const newProfile: UserProfile = {
               uid: currentUser.uid,
-              name: currentUser.displayName || '',
-              email: currentUser.email || '',
+              name: currentUser.displayName || 'New User',
+              email: currentUser.email || 'no-email@example.com',
               createdAt: new Date().toISOString(),
               paymentStatus: 'pending',
             };
@@ -60,7 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setProfile(newProfile);
           }
         } catch (error) {
-          handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
+          console.error("Auth initialization error:", error);
+          setAuthError("Failed to load user profile. Please try refreshing the page.");
+          // We don't call handleFirestoreError here because it throws, which breaks the auth flow
         }
       } else {
         setProfile(null);
@@ -81,11 +86,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setDriveToken(credential.accessToken);
       }
     } catch (error: any) {
-      if (error?.code === 'auth/popup-closed-by-user') {
-        console.log('Sign-in popup closed by user');
-        return;
-      }
       console.error('Error signing in', error);
+      if (error?.code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in popup was closed before completing. Please try again.');
+      } else if (error?.code === 'auth/popup-blocked') {
+        throw new Error('Sign-in popup was blocked by your browser. Please allow popups for this site.');
+      }
       throw error;
     }
   };
@@ -107,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, logout, updateProfile, driveToken }}>
+    <AuthContext.Provider value={{ user, profile, loading, authError, signIn, logout, updateProfile, driveToken }}>
       {children}
     </AuthContext.Provider>
   );

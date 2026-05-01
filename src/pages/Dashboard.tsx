@@ -9,7 +9,6 @@ interface Event {
   id: string;
   name: string;
   venue: string;
-  driveLink: string;
   createdAt: string;
 }
 
@@ -19,7 +18,7 @@ export default function Dashboard() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newEvent, setNewEvent] = useState({ name: '', venue: '', driveLink: '' });
+  const [newEvent, setNewEvent] = useState({ name: '', venue: '' });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,14 +58,13 @@ export default function Dashboard() {
       const docRef = await addDoc(collection(db, 'events'), {
         name: newEvent.name,
         venue: newEvent.venue,
-        driveLink: newEvent.driveLink,
         photographerId: user.uid,
         createdAt: new Date().toISOString()
       });
       
       setEvents([{ id: docRef.id, ...newEvent, createdAt: new Date().toISOString() }, ...events]);
       setShowCreateModal(false);
-      setNewEvent({ name: '', venue: '', driveLink: '' });
+      setNewEvent({ name: '', venue: '' });
     } catch (error: any) {
       console.error(error);
       setError("Failed to create event. Please try again.");
@@ -191,17 +189,6 @@ export default function Dashboard() {
                     onChange={e => setNewEvent({...newEvent, venue: e.target.value})}
                     className="w-full border-b border-white/20 py-2 bg-transparent focus:outline-none focus:border-amber-400 transition-colors text-white placeholder-white/30"
                     placeholder="e.g. Grand Hotel"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold tracking-widest uppercase text-amber-400/80 mb-2">Google Drive Link</label>
-                  <input
-                    required
-                    type="url"
-                    value={newEvent.driveLink}
-                    onChange={e => setNewEvent({...newEvent, driveLink: e.target.value})}
-                    className="w-full border-b border-white/20 py-2 bg-transparent focus:outline-none focus:border-amber-400 transition-colors text-white placeholder-white/30"
-                    placeholder="https://drive.google.com/drive/folders/..."
                   />
                 </div>
               </div>

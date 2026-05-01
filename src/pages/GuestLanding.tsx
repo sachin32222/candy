@@ -8,7 +8,6 @@ interface Event {
   id: string;
   name: string;
   venue: string;
-  driveLink: string;
   photographerId: string;
 }
 

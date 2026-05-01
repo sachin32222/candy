@@ -15,12 +15,34 @@ import Gallery from './pages/Gallery';
 import Payment from './pages/Payment';
 import AdminPanel from './pages/AdminPanel';
 
+import { ErrorBoundary } from './components/ErrorBoundary';
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, authError, logout } = useAuth();
   const location = useLocation();
   
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-stone-900 text-amber-400/70 tracking-widest uppercase text-sm font-sans">Loading...</div>;
   
+  if (authError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-stone-900 text-white font-sans p-6 text-center">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 max-w-md w-full shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
+          <h2 className="text-2xl font-serif mb-4 text-red-400">Authentication Error</h2>
+          <p className="text-white/70 font-light mb-8">{authError}</p>
+          <button 
+            onClick={async () => {
+              await logout();
+              window.location.href = '/';
+            }}
+            className="w-full bg-white text-stone-900 py-3 rounded-xl font-medium hover:bg-stone-100 transition-all"
+          >
+            Sign Out & Return Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) return <Navigate to="/" />;
 
   const isAdmin = user.email === 'dubeyjiinmirzapur@gmail.com';
@@ -45,8 +67,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
@@ -59,6 +82,7 @@ export default function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

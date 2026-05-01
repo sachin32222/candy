@@ -104,11 +104,11 @@ service cloud.firestore {
     }
 
     function isValidEvent(data) {
-      return hasRequiredFields(['photographerId', 'name', 'venue', 'driveLink', 'createdAt']) &&
+      return hasRequiredFields(['photographerId', 'name', 'venue', 'createdAt']) &&
              data.photographerId is string && data.photographerId.size() > 0 && data.photographerId.size() < 100 &&
              data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
              data.venue is string && data.venue.size() > 0 && data.venue.size() < 200 &&
-             data.driveLink is string && data.driveLink.size() > 0 && data.driveLink.size() < 1000 &&
+             isValidOptionalString('driveLink', 0, 1000) &&
              data.createdAt is string && data.createdAt.size() > 0 && data.createdAt.size() < 50;
     }
 
@@ -127,7 +127,8 @@ service cloud.firestore {
              data.eventId is string && data.eventId.size() > 0 && data.eventId.size() < 100 &&
              data.photographerId is string && data.photographerId.size() > 0 && data.photographerId.size() < 100 &&
              data.name is string && data.name.size() > 0 && data.name.size() < 500 &&
-             data.driveFileId is string && data.driveFileId.size() > 0 && data.driveFileId.size() < 200 &&
+             isValidOptionalString('type', 0, 100) &&
+             data.driveFileId is string && data.driveFileId.size() > 0 && data.driveFileId.size() < 1000 &&
              data.thumbnailLink is string && data.thumbnailLink.size() > 0 && data.thumbnailLink.size() < 1000 &&
              isValidOptionalString('webContentLink', 0, 1000) &&
              data.createdAt is string && data.createdAt.size() > 0 && data.createdAt.size() < 50;
