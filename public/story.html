@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Story - Candei</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font-sans: 'DM Sans', sans-serif;
+  --color-background-primary: #fff;
+  --color-background-secondary: #f4f4f5;
+  --color-border-secondary: #e4e4e7;
+  --color-border-tertiary: #d4d4d8;
+  --color-text-primary: #18181b;
+  --color-text-secondary: #3f3f46;
+  --color-text-tertiary: #71717a;
+  
+  --color-background-info: #e0f2fe;
+  --color-border-info: #bae6fd;
+  --color-text-info: #0284c7;
+
+  --color-background-success: #dcfce7;
+  --color-border-success: #bbf7d0;
+  --color-text-success: #16a34a;
+
+  --color-background-warning: #fef9c3;
+  --color-border-warning: #fef08a;
+  --color-text-warning: #ca8a04;
+
+  --color-background-danger: #fee2e2;
+  --color-border-danger: #fecaca;
+  --color-text-danger: #dc2626;
+
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+}
+
+body {
+    background: #fff;
+    margin: 0;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+.story{font-family:var(--font-sans);overflow:hidden; max-width: 600px; width: 100%; margin: 0 auto;}
+
+/* narrator bar */
+.narrator{
+  background:var(--color-background-secondary);
+  border-left:3px solid var(--color-border-info);
+  padding:10px 16px;
+  margin-bottom:32px;
+  border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;
+}
+.narrator-label{font-size:10px;color:var(--color-text-tertiary);letter-spacing:.08em;margin-bottom:3px;}
+.narrator-text{font-size:13px;color:var(--color-text-secondary);line-height:1.6;font-style:italic;}
+
+/* chapter */
+.chapter{
+  opacity:0;
+  transform:translateY(40px);
+  transition:opacity .7s ease, transform .7s ease;
+  margin-bottom:48px;
+}
+.chapter.in{opacity:1;transform:translateY(0);}
+
+.ch-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.ch-time{
+  font-size:10px;font-weight:500;letter-spacing:.1em;
+  color:var(--color-text-tertiary);
+  background:var(--color-background-secondary);
+  border:0.5px solid var(--color-border-tertiary);
+  padding:3px 10px;border-radius:20px;white-space:nowrap;
+}
+.ch-line{flex:1;height:0.5px;background:var(--color-border-tertiary);}
+.ch-num{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:500;flex-shrink:0;
+}
+
+.ch-title{font-size:17px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;}
+.ch-narration{font-size:13px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:14px;max-width:560px;}
+.ch-narration em{color:var(--color-text-primary);font-style:normal;font-weight:500;}
+
+/* scene cards */
+.scene{
+  border-radius:var(--border-radius-lg);
+  overflow:hidden;
+  border:0.5px solid var(--color-border-tertiary);
+  background:var(--color-background-primary);
+}
+
+/* browser mockup */
+.browser-chrome{
+  background:var(--color-background-secondary);
+  padding:8px 12px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:0.5px solid var(--color-border-tertiary);
+}
+.b-dots{display:flex;gap:5px;}
+.b-dot{width:9px;height:9px;border-radius:50%;}
+.b-url{
+  flex:1;background:var(--color-background-primary);
+  border:0.5px solid var(--color-border-tertiary);
+  border-radius:20px;padding:3px 12px;
+  font-size:11px;color:var(--color-text-tertiary);text-align:center;
+}
+.browser-body{padding:24px;}
+
+/* phone mockup */
+.phone-wrap{
+  display:flex;justify-content:center;padding:8px 0;
+}
+.phone{
+  width:200px;
+  border:2px solid var(--color-border-secondary);
+  border-radius:20px;
+  overflow:hidden;
+  background:var(--color-background-primary);
+}
+.phone-notch{
+  height:20px;background:var(--color-background-secondary);
+  display:flex;align-items:center;justify-content:center;
+}
+.phone-notch-dot{width:40px;height:6px;border-radius:3px;background:var(--color-border-secondary);}
+.phone-screen{padding:14px 12px;min-height:200px;}
+
+/* typing animation */
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.cursor{display:inline-block;width:2px;height:13px;background:var(--color-text-primary);margin-left:2px;vertical-align:middle;animation:blink 1s infinite;}
+
+/* pulse dot */
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5);}70%{box-shadow:0 0 0 8px rgba(34,197,94,0);}100%{box-shadow:0 0 0 0 rgba(34,197,94,0);}}
+.pulse-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:#22c55e;animation:pulse 2s infinite;display:inline-block;
+}
+
+/* scan animation */
+@keyframes scanline{0%{top:10%;}100%{top:85%;}}
+.qr-scan-line{
+  position:absolute;left:4px;right:4px;height:2px;
+  background:rgba(59,130,246,.7);
+  animation:scanline 2s ease-in-out infinite alternate;
+  border-radius:1px;
+}
+
+/* count up */
+@keyframes countUp{from{transform:translateY(12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.count-in{animation:countUp .5s ease both;}
+
+/* float */
+@keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+
+/* dashboard glow flash */
+@keyframes flashIn{0%{opacity:0;transform:scale(.92);}60%{opacity:1;transform:scale(1.03);}100%{transform:scale(1);}}
+.flash-in{animation:flashIn .6s ease both;}
+
+/* stat cards */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.stat-card{
+  padding:12px;border-radius:var(--border-radius-md);
+  background:var(--color-background-secondary);
+  text-align:center;
+  transition:transform .3s;
+}
+.stat-card:hover{transform:translateY(-3px);}
+.stat-val{font-size:22px;font-weight:500;color:var(--color-text-primary);}
+.stat-lbl{font-size:10px;color:var(--color-text-secondary);margin-top:2px;}
+
+/* person pill */
+.person-row{display:flex;gap:-6px;}
+.avatar{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--color-background-primary);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;margin-left:-6px;
+}
+.avatar:first-child{margin-left:0;}
+
+/* step connectors */
+.connector{
+  width:2px;height:32px;
+  background:linear-gradient(to bottom,var(--color-border-secondary),var(--color-border-tertiary));
+  margin:0 auto 0 26px;
+}
+
+/* finale */
+@keyframes smileIn{0%{transform:scale(0) rotate(-20deg);}70%{transform:scale(1.15) rotate(5deg);}100%{transform:scale(1) rotate(0deg);}}
+.smile-anim{animation:smileIn .8s cubic-bezier(.34,1.56,.64,1) both;}
+
+/* tag chip */
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;padding:3px 10px;border-radius:20px;
+  border:0.5px solid var(--color-border-secondary);
+  color:var(--color-text-secondary);
+  background:var(--color-background-secondary);
+}
+.chip-success{background:var(--color-background-success);color:var(--color-text-success);border-color:var(--color-border-success);}
+.chip-info{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info);}
+.chip-warn{background:var(--color-background-warning);color:var(--color-text-warning);border-color:var(--color-border-warning);}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* gate illustration */
+.gate-outer{
+  padding:20px;
+  background:var(--color-background-secondary);
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.gate-posts{display:flex;justify-content:space-between;width:100%;align-items:flex-end;gap:16px;}
+.gate-post{
+  width:14px;background:var(--color-border-secondary);
+  border-radius:4px 4px 0 0;
+  flex-shrink:0;
+}
+.gate-banner-card{
+  flex:1;
+  background:var(--color-background-primary);
+  border:0.5px solid var(--color-border-secondary);
+  border-radius:8px;padding:10px 14px;text-align:center;
+}
+.gate-qr-mini{
+  width:44px;height:44px;margin:8px auto 0;
+  border:0.5px solid var(--color-border-secondary);
+  border-radius:4px;
+  position:relative;overflow:hidden;
+  background:var(--color-background-primary);
+  display:flex;align-items:center;justify-content:center;
+}
+.people-walk{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+.walk-person{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  animation:floatY 3s ease-in-out infinite;
+}
+.walk-person:nth-child(2){animation-delay:0.4s;}
+.walk-person:nth-child(3){animation-delay:0.8s;}
+.walk-person:nth-child(4){animation-delay:1.2s;}
+.walk-person:nth-child(5){animation-delay:1.6s;}
+.walk-icon{font-size:20px;}
+.scan-chip{font-size:9px;color:var(--color-text-success);background:var(--color-background-success);padding:2px 6px;border-radius:8px;}
+
+/* upload bar */
+.up-track{height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;}
+.up-fill{height:100%;border-radius:3px;background:var(--color-text-info);transition:width 2s ease;}
+
+/* plan cards */
+.plan-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.plan-c{border-radius:var(--border-radius-md);padding:14px;border:0.5px solid var(--color-border-tertiary);}
+.plan-c.chosen{border:1.5px solid var(--color-border-info);background:var(--color-background-info);}
+.plan-n{font-size:10px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px;}
+.plan-p{font-size:24px;font-weight:500;color:var(--color-text-primary);}
+.plan-c.chosen .plan-p{color:var(--color-text-info);}
+.plan-c.chosen .plan-n{color:var(--color-text-info);}
+.plan-per{font-size:10px;color:var(--color-text-tertiary);}
+
+a#back-btn {
+  display: inline-block;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--color-text-info);
+  text-decoration: none;
+  font-weight: 500;
+}
+a#back-btn:hover {
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div class="story">
+<a id="back-btn" href="/">← Back to Candei</a>
+<h2 class="sr-only" style="display:none;">Rahul's journey with Candei — a story told in real-time scenes</h2>
+
+<!-- narrator intro -->
+<div class="narrator" id="intro-nar" style="opacity:0;transition:opacity .8s .2s;">
+  <div class="narrator-label">someone explaining to you</div>
+  <div class="narrator-text" id="nar-typed"></div>
+</div>
+
+<!-- ch1 -->
+<div class="chapter" id="ch1">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-info);color:var(--color-text-info);">1</div>
+    <div class="ch-time">Day 1 · 10:00 am</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">He finds the website</div>
+  <div class="ch-narration">So Rahul — he's a wedding photographer, decent following, busy weekends — he just <em>Googles around</em> one morning and lands on getcandei.com. Curiosity, right?</div>
+  <div class="scene">
+    <div class="browser-chrome">
+      <div class="b-dots">
+        <div class="b-dot" style="background:#ff5f57;"></div>
+        <div class="b-dot" style="background:#febc2e;"></div>
+        <div class="b-dot" style="background:#28c840;"></div>
+      </div>
+      <div class="b-url">🔒 getcandei.com</div>
+    </div>
+    <div class="browser-body">
+      <div style="font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;">Photography's <span style="color:var(--color-text-success);">growth engine.</span></div>
+      <div style="font-size:13px;color:var(--color-text-secondary);max-width:360px;line-height:1.6;margin-bottom:16px;">The all-in-one lead gen & marketing platform for photographers — AI-powered, beautifully simple.</div>
+      <div style="display:flex;gap:8px;">
+        <div style="background:var(--color-background-success);color:var(--color-text-success);font-size:12px;font-weight:500;padding:8px 20px;border-radius:6px;">Get Started</div>
+        <div style="border:0.5px solid var(--color-border-secondary);font-size:12px;color:var(--color-text-secondary);padding:8px 20px;border-radius:6px;">See how it works</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch2 -->
+<div class="chapter" id="ch2">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-info);color:var(--color-text-info);">2</div>
+    <div class="ch-time">Day 1 · 10:04 am</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">One tap — he's signed up</div>
+  <div class="ch-narration">Doesn't even have to fill a form. He just hits <em>Continue with Google,</em> boom — account created. He's inside in literally four minutes.</div>
+  <div class="scene">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"><div class="phone-notch-dot"></div></div>
+        <div class="phone-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);">Create your account</div>
+          <div style="font-size:11px;color:var(--color-text-secondary);">Join photographers growing with Candei</div>
+          <div style="display:flex;align-items:center;gap:8px;border:0.5px solid var(--color-border-secondary);border-radius:8px;padding:9px 16px;width:100%;justify-content:center;">
+            <svg width="14" height="14" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            <span style="font-size:12px;color:var(--color-text-primary);">Continue with Google</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;"><div class="pulse-dot"></div><span style="font-size:10px;color:var(--color-text-success);">Signing in...</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch3 -->
+<div class="chapter" id="ch3">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-warning);color:var(--color-text-warning);">3</div>
+    <div class="ch-time">Day 1 · 10:05 am</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">Dashboard — locked</div>
+  <div class="ch-narration">So he's in, right, and the dashboard is <em>right there</em> — he can see everything but can't touch it yet. It's all gated. There's a little "contact sales" prompt staring at him.</div>
+  <div class="scene">
+    <div class="browser-chrome">
+      <div class="b-dots"><div class="b-dot" style="background:#ff5f57;"></div><div class="b-dot" style="background:#febc2e;"></div><div class="b-dot" style="background:#28c840;"></div></div>
+      <div class="b-url">🔒 app.getcandei.com/dashboard</div>
+    </div>
+    <div class="browser-body">
+      <div style="display:grid;grid-template-columns:160px 1fr;gap:16px;">
+        <div style="border-right:0.5px solid var(--color-border-tertiary);padding-right:16px;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:4px;">Navigation</div>
+          <div style="font-size:12px;color:var(--color-text-secondary);opacity:.4;">Dashboard</div>
+          <div style="font-size:12px;color:var(--color-text-secondary);opacity:.4;">My Events</div>
+          <div style="font-size:12px;color:var(--color-text-secondary);opacity:.4;">Leads</div>
+          <div style="font-size:12px;color:var(--color-text-secondary);opacity:.4;">Analytics</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:140px;text-align:center;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:20px;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="var(--color-text-tertiary)" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="var(--color-text-tertiary)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);">Your dashboard is waiting</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);">Activate a plan to unlock everything</div>
+          <div style="background:var(--color-background-info);color:var(--color-text-info);font-size:11px;font-weight:500;padding:6px 16px;border-radius:20px;">Contact Sales →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch4 -->
+<div class="chapter" id="ch4">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-warning);color:var(--color-text-warning);">4</div>
+    <div class="ch-time">Day 1 · 11:30 am</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">He calls the team</div>
+  <div class="ch-narration">So he picks up the phone, calls Candei. The team walks him through everything — what the plans cover, how the AI selfie finder works, how leads are captured. <em>He asks a lot of questions.</em> Good sign, honestly.</div>
+  <div class="scene">
+    <div style="padding:20px;">
+      <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;color:var(--color-text-info);flex-shrink:0;">C</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);">Candei Support Team</div>
+          <div style="font-size:11px;color:var(--color-text-success);display:flex;align-items:center;gap:5px;margin-top:2px;"><div class="pulse-dot" style="width:7px;height:7px;"></div> Call in progress · 12 mins 34s</div>
+        </div>
+        <div style="background:var(--color-background-danger);color:var(--color-text-danger);font-size:11px;padding:5px 14px;border-radius:20px;">End call</div>
+      </div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+          <div style="width:24px;height:24px;border-radius:50%;background:var(--color-background-info);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:var(--color-text-info);">C</div>
+          <div style="background:var(--color-background-secondary);border-radius:0 8px 8px 8px;padding:8px 12px;font-size:12px;color:var(--color-text-secondary);max-width:340px;line-height:1.5;">"...so every guest who scans the QR, their details go straight into your leads dashboard. Automatically."</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start;flex-direction:row-reverse;">
+          <div style="width:24px;height:24px;border-radius:50%;background:var(--color-background-success);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:var(--color-text-success);">R</div>
+          <div style="background:var(--color-background-success);border-radius:8px 0 8px 8px;padding:8px 12px;font-size:12px;color:var(--color-text-success);max-width:280px;line-height:1.5;">"Wait — even if they just scan and don't download?"</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+          <div style="width:24px;height:24px;border-radius:50%;background:var(--color-background-info);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:var(--color-text-info);">C</div>
+          <div style="background:var(--color-background-secondary);border-radius:0 8px 8px 8px;padding:8px 12px;font-size:12px;color:var(--color-text-secondary);max-width:340px;line-height:1.5;">"Exactly. Every interaction is captured." <span class="chip-success chip" style="font-size:10px;">😄 That's the one</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch5 -->
+<div class="chapter" id="ch5">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-success);color:var(--color-text-success);">5</div>
+    <div class="ch-time">Day 1 · 11:50 am</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">He picks a plan — dashboard unlocks</div>
+  <div class="ch-narration">He goes with the <em>10-month plan.</em> Best value, he's not doing one-offs. The second he confirms, the whole dashboard just... opens up. Like a curtain lifting.</div>
+  <div class="scene">
+    <div style="padding:16px;">
+      <div class="plan-pair">
+        <div class="plan-c">
+          <div class="plan-n">Semi-Annual</div>
+          <div class="plan-p">₹999</div>
+          <div class="plan-per">per 6 months</div>
+        </div>
+        <div class="plan-c chosen">
+          <div class="plan-n">10 Months <span class="chip-info chip" style="font-size:9px;">Best value</span></div>
+          <div class="plan-p">₹899</div>
+          <div class="plan-per">per 10 months</div>
+          <div style="margin-top:8px;font-size:11px;font-weight:500;color:var(--color-text-info);">Selected ✓</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:12px;background:var(--color-background-success);border-radius:var(--border-radius-md);display:flex;align-items:center;gap:10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="var(--color-text-success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="var(--color-text-success)" stroke-width="1.5"/></svg>
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-success);">Dashboard unlocked — welcome to Candei, Rahul.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch6 -->
+<div class="chapter" id="ch6">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-success);color:var(--color-text-success);">6</div>
+    <div class="ch-time">Day 3 · 9:00 am · Before the event</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">He creates the event</div>
+  <div class="ch-narration">Two days later he's got a big one — <em>Krishna Weds Rukmani.</em> He logs in, hits new event, types the name, done. Under two minutes. That's it.</div>
+  <div class="scene">
+    <div class="browser-chrome">
+      <div class="b-dots"><div class="b-dot" style="background:#ff5f57;"></div><div class="b-dot" style="background:#febc2e;"></div><div class="b-dot" style="background:#28c840;"></div></div>
+      <div class="b-url">app.getcandei.com/events/new</div>
+    </div>
+    <div class="browser-body">
+      <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:14px;">Create new event</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="font-size:10px;color:var(--color-text-tertiary);margin-bottom:4px;">Event name</div>
+          <div style="border:0.5px solid var(--color-border-info);border-radius:6px;padding:9px 12px;font-size:13px;color:var(--color-text-primary);background:var(--color-background-primary);">Krishna Weds Rukmani<span class="cursor"></span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <div style="font-size:10px;color:var(--color-text-tertiary);margin-bottom:4px;">Date</div>
+            <div style="border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:9px 12px;font-size:12px;color:var(--color-text-secondary);">14 June 2025</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--color-text-tertiary);margin-bottom:4px;">Type</div>
+            <div style="border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:9px 12px;font-size:12px;color:var(--color-text-secondary);">Wedding</div>
+          </div>
+        </div>
+        <div style="margin-top:4px;display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;background:var(--color-background-success);color:var(--color-text-success);font-size:12px;font-weight:500;padding:10px 0;border-radius:6px;text-align:center;">Create Event</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);">QR code auto-generated</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch7 -->
+<div class="chapter" id="ch7">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-success);color:var(--color-text-success);">7</div>
+    <div class="ch-time">Day 3 · 9:02 am</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">QR code — instantly ready</div>
+  <div class="ch-narration">The moment the event is created, Candei spits out a QR code. One link, one code, tied to that exact event. Rahul downloads it, sends it to print.</div>
+  <div class="scene">
+    <div style="padding:20px;display:flex;align-items:flex-start;gap:20px;">
+      <div style="width:100px;height:100px;border:0.5px solid var(--color-border-secondary);border-radius:8px;background:white;padding:6px;position:relative;overflow:hidden;flex-shrink:0;">
+        <svg width="88" height="88" viewBox="0 0 56 56">
+          <rect x="2" y="2" width="22" height="22" rx="2" fill="none" stroke="#111" stroke-width="2"/><rect x="7" y="7" width="12" height="12" rx="1" fill="#111"/>
+          <rect x="32" y="2" width="22" height="22" rx="2" fill="none" stroke="#111" stroke-width="2"/><rect x="37" y="7" width="12" height="12" rx="1" fill="#111"/>
+          <rect x="2" y="32" width="22" height="22" rx="2" fill="none" stroke="#111" stroke-width="2"/><rect x="7" y="37" width="12" height="12" rx="1" fill="#111"/>
+          <rect x="32" y="32" width="6" height="6" rx="1" fill="#111"/><rect x="40" y="32" width="6" height="6" rx="1" fill="#111"/>
+          <rect x="48" y="32" width="6" height="6" rx="1" fill="#111"/><rect x="32" y="40" width="6" height="6" rx="1" fill="#111"/>
+          <rect x="40" y="48" width="6" height="6" rx="1" fill="#111"/><rect x="48" y="40" width="14" height="6" rx="1" fill="#111"/>
+          <rect x="32" y="48" width="6" height="6" rx="1" fill="#111"/>
+        </svg>
+        <div class="qr-scan-line"></div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;">Krishna Weds Rukmani</div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:10px;">getcandei.com/krishna-weds-rukmani</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div class="chip chip-success">Event gallery active</div>
+          <div class="chip chip-info">Lead capture enabled</div>
+          <div class="chip">AI selfie finder on</div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <div style="background:var(--color-background-info);color:var(--color-text-info);font-size:11px;font-weight:500;padding:6px 14px;border-radius:6px;">Download QR</div>
+          <div style="border:0.5px solid var(--color-border-secondary);font-size:11px;color:var(--color-text-secondary);padding:6px 14px;border-radius:6px;">Print banner</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch8 -->
+<div class="chapter" id="ch8">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-success);color:var(--color-text-success);">8</div>
+    <div class="ch-time">Day 3 · 11:00 am · At the venue</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">Banner up. Guests scanning.</div>
+  <div class="ch-narration">He gets a standee printed — big QR, event name, <em>"scan to collect your photos."</em> Places it right at the entry gate. And the guests just... do it. Naturally. Everyone wants their photos.</div>
+  <div class="scene">
+    <div class="gate-outer">
+      <div style="font-size:10px;color:var(--color-text-tertiary);letter-spacing:.06em;">VENUE ENTRY GATE</div>
+      <div class="gate-posts">
+        <div class="gate-post" style="height:90px;"></div>
+        <div class="gate-banner-card">
+          <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);">Krishna Weds Rukmani</div>
+          <div style="font-size:10px;color:var(--color-text-tertiary);margin-top:2px;">Scan to collect your photos</div>
+          <div class="gate-qr-mini">
+            <svg width="32" height="32" viewBox="0 0 56 56">
+              <rect x="2" y="2" width="22" height="22" rx="2" fill="none" stroke="#111" stroke-width="3"/><rect x="7" y="7" width="12" height="12" rx="1" fill="#111"/>
+              <rect x="32" y="2" width="22" height="22" rx="2" fill="none" stroke="#111" stroke-width="3"/><rect x="37" y="7" width="12" height="12" rx="1" fill="#111"/>
+              <rect x="2" y="32" width="22" height="22" rx="2" fill="none" stroke="#111" stroke-width="3"/><rect x="7" y="37" width="12" height="12" rx="1" fill="#111"/>
+              <rect x="36" y="36" width="18" height="18" rx="2" fill="#111"/>
+            </svg>
+          </div>
+          <div style="font-size:9px;color:var(--color-text-tertiary);margin-top:4px;">getcandei.com</div>
+        </div>
+        <div class="gate-post" style="height:90px;"></div>
+      </div>
+      <div style="font-size:10px;color:var(--color-text-tertiary);">guests arriving</div>
+      <div class="people-walk">
+        <div class="walk-person"><div class="walk-icon">👩</div><div class="scan-chip">scanned</div></div>
+        <div class="walk-person"><div class="walk-icon">👨</div><div class="scan-chip">scanned</div></div>
+        <div class="walk-person"><div class="walk-icon">👴</div><div class="scan-chip">scanned</div></div>
+        <div class="walk-person"><div class="walk-icon">👧</div><div class="scan-chip">scanned</div></div>
+        <div class="walk-person"><div class="walk-icon">🧑</div><div class="scan-chip">scanned</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--color-text-success);font-weight:500;">Every scan = a lead captured automatically</div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch9 -->
+<div class="chapter" id="ch9">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-info);color:var(--color-text-info);">9</div>
+    <div class="ch-time">Day 3 · 9:00 pm · Back home</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">He uploads the photos</div>
+  <div class="ch-narration">Event's done. He's back home, tired but excited. He opens Candei, goes to the Krishna Weds Rukmani event card, and just <em>drops 847 photos</em> in. That's it. Candei indexes everything.</div>
+  <div class="scene">
+    <div style="padding:20px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);margin-bottom:12px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v13M5 10l7-7 7 7" stroke="var(--color-text-info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 19h18" stroke="var(--color-text-info)" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;">Uploading to Krishna Weds Rukmani</div>
+          <div class="up-track"><div class="up-fill" id="upfill" style="width:0%;"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;">
+            <div style="font-size:10px;color:var(--color-text-tertiary);" id="up-count">0 of 847 photos</div>
+            <div style="font-size:10px;color:var(--color-text-info);" id="up-pct">0%</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+        <div style="aspect-ratio:1;border-radius:6px;background:linear-gradient(135deg,#2d1b4e,#4a2d7a);"></div>
+        <div style="aspect-ratio:1;border-radius:6px;background:linear-gradient(135deg,#1a2e1a,#2d5a2d);"></div>
+        <div style="aspect-ratio:1;border-radius:6px;background:linear-gradient(135deg,#2e1a1a,#5a2d2d);"></div>
+        <div style="aspect-ratio:1;border-radius:6px;background:linear-gradient(135deg,#1a1a2e,#2d2d5a);"></div>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--color-text-tertiary);">AI indexing faces for selfie finder... <span id="ai-pct">0</span> photos processed</div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch10 — DASHBOARD RESULTS -->
+<div class="chapter" id="ch10">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-success);color:var(--color-text-success);">10</div>
+    <div class="ch-time">Day 4 · 8:00 am · Dashboard</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">The dashboard lights up overnight</div>
+  <div class="ch-narration">He wakes up. Opens the app. And just — <em>look at this.</em> One event. One night. This is what Candei does while he sleeps.</div>
+  <div class="scene">
+    <div class="browser-chrome">
+      <div class="b-dots"><div class="b-dot" style="background:#ff5f57;"></div><div class="b-dot" style="background:#febc2e;"></div><div class="b-dot" style="background:#28c840;"></div></div>
+      <div class="b-url">app.getcandei.com/dashboard</div>
+    </div>
+    <div class="browser-body">
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px;">Good morning, Rahul — here's what happened last night.</div>
+      <div class="stat-grid" id="stat-grid" style="opacity:0;transition:opacity .5s;">
+        <div class="stat-card" style="background:var(--color-background-success);">
+          <div class="stat-val" style="color:var(--color-text-success);" id="s-leads">0</div>
+          <div class="stat-lbl">New leads</div>
+        </div>
+        <div class="stat-card" style="background:var(--color-background-danger);">
+          <div class="stat-val" style="color:var(--color-text-danger);" id="s-priority">0</div>
+          <div class="stat-lbl">Priority leads</div>
+        </div>
+        <div class="stat-card" style="background:var(--color-background-info);">
+          <div class="stat-val" style="color:var(--color-text-info);" id="s-insta">0</div>
+          <div class="stat-lbl">Instagram followers</div>
+        </div>
+        <div class="stat-card" style="background:var(--color-background-warning);">
+          <div class="stat-val" style="color:var(--color-text-warning);" id="s-reviews">0</div>
+          <div class="stat-lbl">Google reviews</div>
+        </div>
+        <div class="stat-card" style="background:var(--color-background-secondary);">
+          <div class="stat-val" id="s-yt">0</div>
+          <div class="stat-lbl">YouTube views</div>
+        </div>
+        <div class="stat-card" style="background:var(--color-background-success);">
+          <div class="stat-val" style="color:var(--color-text-success);" id="s-wa">0</div>
+          <div class="stat-lbl">WhatsApp messages</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- ch11 FINALE -->
+<div class="chapter" id="ch11">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--color-background-success);color:var(--color-text-success);">:)</div>
+    <div class="ch-line"></div>
+  </div>
+  <div class="ch-title">He just smiles.</div>
+  <div class="ch-narration">That's it. That's the whole point. He didn't run any ads. Didn't do outreach. Didn't chase anyone. He just showed up, shot the wedding, and Candei did the rest. <em>He's already thinking about the next one.</em></div>
+  <div class="scene" style="border:1.5px solid var(--color-border-success);">
+    <div style="padding:32px;text-align:center;">
+      <div id="smile-svg" style="margin-bottom:16px;opacity:0;transition:opacity .4s;">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="36" cy="36" r="33" stroke="var(--color-border-success)" stroke-width="1.5"/>
+          <circle cx="25" cy="29" r="3.5" fill="var(--color-text-success)"/>
+          <circle cx="47" cy="29" r="3.5" fill="var(--color-text-success)"/>
+          <path d="M22 43c3 6 9 9 14 9s11-3 14-9" stroke="var(--color-text-success)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <path d="M26 24c1-2 3-3 5-3" stroke="var(--color-text-success)" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+          <path d="M46 24c-1-2-3-3-5-3" stroke="var(--color-text-success)" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+        </svg>
+      </div>
+      <div style="font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;">Ready for the next event.</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:18px;">Confident. Organised. Growing — without the grind.</div>
+      <div style="display:inline-flex;align-items:center;gap:8px;border:0.5px solid var(--color-border-success);border-radius:20px;padding:8px 20px;">
+        <div class="pulse-dot"></div>
+        <span style="font-size:12px;font-weight:500;color:var(--color-text-success);">candei — photography's growth engine</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const el=e.target;
+    el.classList.add('in');
+    const id=el.id;
+    if(id==='ch9') startUpload();
+    if(id==='ch10') startDash();
+    if(id==='ch11') startSmile();
+    obs.unobserve(el);
+  });
+},{threshold:.18});
+
+document.querySelectorAll('.chapter').forEach(c=>obs.observe(c));
+
+const narDiv=document.getElementById('intro-nar');
+const narText=document.getElementById('nar-typed');
+const narObs=new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting){
+    narDiv.style.opacity='1';
+    typeNarrator();
+    narObs.unobserve(narDiv);
+  }
+},{threshold:.5});
+narObs.observe(narDiv);
+
+function typeNarrator(){
+  const txt="So you know Rahul, right? The wedding photographer? Let me show you exactly what happened when he tried Candei. Watch this.";
+  let i=0;
+  const t=setInterval(()=>{
+    if(i>=txt.length){clearInterval(t);return;}
+    narText.textContent+=txt[i];i++;
+  },28);
+}
+
+function animCount(el,target,dur){
+  const start=performance.now();
+  const tick=now=>{
+    const p=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(ease*target).toLocaleString();
+    if(p<1)requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function startUpload(){
+  const fill=document.getElementById('upfill');
+  const cnt=document.getElementById('up-count');
+  const pct=document.getElementById('up-pct');
+  const ai=document.getElementById('ai-pct');
+  let p=0;
+  const iv=setInterval(()=>{
+    p=Math.min(p+1.2,100);
+    fill.style.width=p+'%';
+    const n=Math.round(p/100*847);
+    cnt.textContent=n+' of 847 photos';
+    pct.textContent=Math.round(p)+'%';
+    ai.textContent=Math.round(p/100*847);
+    if(p>=100)clearInterval(iv);
+  },40);
+}
+
+function startDash(){
+  const sg=document.getElementById('stat-grid');
+  setTimeout(()=>{
+    sg.style.opacity='1';
+    animCount(document.getElementById('s-leads'),60,1200);
+    animCount(document.getElementById('s-priority'),5,800);
+    animCount(document.getElementById('s-insta'),70,1400);
+    animCount(document.getElementById('s-reviews'),30,1000);
+    animCount(document.getElementById('s-yt'),2000,1600);
+    animCount(document.getElementById('s-wa'),7,700);
+  },300);
+}
+
+function startSmile(){
+  const svg=document.getElementById('smile-svg');
+  setTimeout(()=>{
+    svg.style.opacity='1';
+    svg.style.transform='scale(1)';
+    svg.classList.add('smile-anim');
+  },400);
+}
+</script>
+</body>
+</html>

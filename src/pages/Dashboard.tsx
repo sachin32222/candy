@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle, ArrowRight } from 'lucide-react';
+import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle, ArrowRight, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface Event {
@@ -70,6 +70,20 @@ export default function Dashboard() {
       handleFirestoreError(error, OperationType.CREATE, 'events');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleDeleteEvent = async (e: React.MouseEvent, eventId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) return;
+    try {
+      await deleteDoc(doc(db, 'events', eventId));
+      setEvents(events.filter(event => event.id !== eventId));
+    } catch (error: any) {
+      console.error(error);
+      alert("Failed to delete event.");
+      handleFirestoreError(error, OperationType.DELETE, `events/${eventId}`);
     }
   };
 
@@ -193,6 +207,13 @@ export default function Dashboard() {
                     <div className="w-12 h-12 rounded-full border border-[#444] group-hover:border-black flex items-center justify-center transition-colors duration-700 group-hover:bg-black">
                       <ArrowRight className="w-5 h-5 text-white transition-colors duration-700" />
                     </div>
+                    <button 
+                      onClick={(e) => handleDeleteEvent(e, event.id)}
+                      className="w-12 h-12 rounded-full border border-red-900/50 bg-red-950/30 group-hover:bg-red-500 group-hover:border-red-600 flex items-center justify-center transition-colors duration-700 ml-2"
+                      title="Delete Event"
+                    >
+                      <Trash2 className="w-5 h-5 text-red-500 group-hover:text-white transition-colors duration-700" />
+                    </button>
                   </div>
                 </Link>
               </motion.div>

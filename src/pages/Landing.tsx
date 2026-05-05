@@ -163,6 +163,27 @@ export default function Landing() {
               <span className="relative z-10 font-bold">Continue with Google</span>
               <ChevronRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
             </motion.button>
+
+            <div className="flex gap-4">
+              <motion.a
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                href="/about.html"
+                target="_blank"
+                className="w-full bg-[#1a1a1a] text-white border border-[#333] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#252525] transition-all flex items-center justify-center gap-2 text-sm"
+              >
+                About Us
+              </motion.a>
+              <motion.a
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                href="/story.html"
+                target="_blank"
+                className="w-full bg-[#1a1a1a] text-white border border-[#333] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#252525] transition-all flex items-center justify-center gap-2 text-sm"
+              >
+                Our Story
+              </motion.a>
+            </div>
             
             {error && (
               <motion.div 
