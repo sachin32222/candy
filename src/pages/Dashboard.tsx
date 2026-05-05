@@ -162,10 +162,10 @@ export default function Dashboard() {
           >
             {events.map(event => (
               <motion.div variants={itemVariants} key={event.id}>
-                <Link to={`/events/${event.id}`} className="bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 hover:bg-[#252525] transition-all group block h-full flex flex-col hover:-translate-y-1 hover:shadow-xl">
+                <Link to={`/events/${event.id}`} className="bg-orange-500 border border-orange-400 rounded-3xl p-8 hover:bg-orange-400 transition-all group block h-full flex flex-col hover:-translate-y-1 hover:shadow-xl">
                   <h3 className="text-2xl font-serif text-white mb-3 group-hover:text-white transition-colors">{event.name}</h3>
-                  <p className="text-neutral-400 font-light mb-8 text-sm flex-grow">{event.venue}</p>
-                  <div className="flex items-center text-[10px] tracking-widest uppercase text-neutral-500 group-hover:text-white transition-colors">
+                  <p className="text-orange-100 font-light mb-8 text-sm flex-grow">{event.venue}</p>
+                  <div className="flex items-center text-[10px] tracking-widest uppercase text-orange-200 group-hover:text-white transition-colors">
                     <LinkIcon className="w-4 h-4 mr-2" />
                     View Details
                   </div>
