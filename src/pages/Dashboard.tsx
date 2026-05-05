@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle } from 'lucide-react';
+import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface Event {
@@ -120,54 +120,79 @@ export default function Dashboard() {
         </div>
       </motion.nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-6"
-        >
-          <div>
-            <h1 className="text-4xl font-serif text-white mb-2">Your Events</h1>
-            <p className="text-neutral-500 font-light text-sm tracking-wide">Manage your galleries and leads.</p>
-          </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-neutral-100 text-neutral-900 hover:bg-white px-6 py-3 rounded-full font-medium flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 w-full sm:w-auto justify-center"
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="max-w-2xl"
           >
-            <Plus className="w-4 h-4" />
-            Create Event
-          </button>
-        </motion.div>
+            <h1 className="text-5xl sm:text-6xl font-serif text-white tracking-tight mb-4">Events.</h1>
+            <p className="text-lg text-neutral-400 font-light">
+              Manage your galleries, view your captures, and engage with your leads in one place.
+            </p>
+          </motion.div>
+          <motion.button
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            onClick={() => setShowCreateModal(true)}
+            className="group flex flex-col justify-center items-center w-full md:w-auto p-6 md:p-8 rounded-3xl border border-[#333] bg-[#1a1a1a] hover:bg-white hover:border-white transition-all duration-500 cursor-pointer"
+          >
+            <div className="w-12 h-12 rounded-full bg-white group-hover:bg-black text-black group-hover:text-white flex items-center justify-center mb-4 transition-colors duration-500">
+              <Plus strokeWidth={1.5} />
+            </div>
+            <span className="text-xs uppercase tracking-widest text-neutral-400 group-hover:text-black font-semibold transition-colors duration-500">Create New</span>
+          </motion.button>
+        </div>
 
         {loading ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-neutral-600 tracking-widest uppercase text-xs">Loading events...</motion.div>
+          <div className="w-full h-40 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          </div>
         ) : events.length === 0 ? (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-center py-24 bg-[#1a1a1a] border border-[#333] rounded-3xl"
+            initial={{ opacity: 0, filter: "blur(10px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            transition={{ duration: 1 }}
+            className="w-full flex flex-col items-center justify-center py-32 border-t border-[#333]"
           >
-            <Calendar className="w-12 h-12 text-[#555] mx-auto mb-6" strokeWidth={1} />
-            <h3 className="text-2xl font-serif text-white mb-2">No events yet</h3>
-            <p className="text-neutral-500 font-light max-w-md mx-auto text-sm">Create your first event to generate a QR code and start collecting leads.</p>
+             <h2 className="text-3xl font-serif text-neutral-600 mb-6">No events created yet.</h2>
+             <button
+               onClick={() => setShowCreateModal(true)}
+               className="text-white border-b-2 border-white pb-1 font-medium tracking-wide hover:text-neutral-400 hover:border-neutral-400 transition-colors"
+             >
+               Start your first event
+             </button>
           </motion.div>
         ) : (
           <motion.div 
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="flex flex-col gap-6"
           >
-            {events.map((event, i) => (
+            {events.map((event) => (
               <motion.div variants={itemVariants} key={event.id}>
-                <Link to={`/events/${event.id}`} className="bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 hover:bg-yellow-400 transition-all group block h-full flex flex-col hover:-translate-y-1 shadow-lg hover:shadow-xl">
-                  <h3 className="text-2xl font-serif text-white mb-3 group-hover:text-black transition-colors">{event.name}</h3>
-                  <p className="text-neutral-400 font-medium mb-8 text-sm flex-grow group-hover:text-black/80">{event.venue}</p>
-                  <div className="flex items-center text-[10px] tracking-widest uppercase text-neutral-500 font-bold group-hover:text-black transition-colors">
-                    <LinkIcon className="w-4 h-4 mr-2" />
-                    View Details
+                <Link 
+                   to={`/events/${event.id}`} 
+                   className="group relative w-full flex flex-col sm:flex-row justify-between sm:items-center p-8 sm:p-10 rounded-[2rem] bg-[#111] border border-[#222] hover:bg-white transition-all duration-700 ease-in-out cursor-pointer overflow-hidden"
+                >
+                  <div className="relative z-10 flex flex-col gap-2">
+                    <h3 className="text-3xl sm:text-4xl font-serif text-white group-hover:text-black transition-colors duration-700">
+                      {event.name}
+                    </h3>
+                    <p className="text-sm uppercase tracking-widest text-[#777] group-hover:text-black/60 font-medium transition-colors duration-700">
+                      {event.venue}
+                    </p>
+                  </div>
+                  
+                  <div className="relative z-10 mt-8 sm:mt-0 flex items-center gap-4">
+                    <span className="text-xs uppercase tracking-widest text-[#666] group-hover:text-black font-semibold transition-colors duration-700">Open Gallery</span>
+                    <div className="w-12 h-12 rounded-full border border-[#444] group-hover:border-black flex items-center justify-center transition-colors duration-700 group-hover:bg-black">
+                      <ArrowRight className="w-5 h-5 text-white transition-colors duration-700" />
+                    </div>
                   </div>
                 </Link>
               </motion.div>
