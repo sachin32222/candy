@@ -149,7 +149,7 @@ export default function Dashboard() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="text-center py-24 bg-[#1a1a1a] border border-[#333] rounded-3xl"
           >
-            <Calendar className="w-12 h-12 text-neutral-400 mx-auto mb-6" strokeWidth={1} />
+            <Calendar className="w-12 h-12 text-[#555] mx-auto mb-6" strokeWidth={1} />
             <h3 className="text-2xl font-serif text-white mb-2">No events yet</h3>
             <p className="text-neutral-500 font-light max-w-md mx-auto text-sm">Create your first event to generate a QR code and start collecting leads.</p>
           </motion.div>
@@ -160,12 +160,12 @@ export default function Dashboard() {
             animate="visible"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {events.map(event => (
+            {events.map((event, i) => (
               <motion.div variants={itemVariants} key={event.id}>
-                <Link to={`/events/${event.id}`} className="bg-orange-500 border border-orange-400 rounded-3xl p-8 hover:bg-orange-400 transition-all group block h-full flex flex-col hover:-translate-y-1 hover:shadow-xl">
-                  <h3 className="text-2xl font-serif text-white mb-3 group-hover:text-white transition-colors">{event.name}</h3>
-                  <p className="text-orange-100 font-light mb-8 text-sm flex-grow">{event.venue}</p>
-                  <div className="flex items-center text-[10px] tracking-widest uppercase text-orange-200 group-hover:text-white transition-colors">
+                <Link to={`/events/${event.id}`} className="bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 hover:bg-yellow-400 transition-all group block h-full flex flex-col hover:-translate-y-1 shadow-lg hover:shadow-xl">
+                  <h3 className="text-2xl font-serif text-white mb-3 group-hover:text-black transition-colors">{event.name}</h3>
+                  <p className="text-neutral-400 font-medium mb-8 text-sm flex-grow group-hover:text-black/80">{event.venue}</p>
+                  <div className="flex items-center text-[10px] tracking-widest uppercase text-neutral-500 font-bold group-hover:text-black transition-colors">
                     <LinkIcon className="w-4 h-4 mr-2" />
                     View Details
                   </div>
