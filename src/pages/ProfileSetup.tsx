@@ -51,8 +51,8 @@ export default function ProfileSetup() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-900 font-sans pb-24 relative overflow-hidden">
-      <nav className="bg-neutral-800 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-40">
+    <div className="min-h-screen bg-[#0f0f0f] font-sans pb-24 relative overflow-hidden">
+      <nav className="bg-[#1a1a1a] backdrop-blur-md border-b border-[#333] sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-20">
             <button onClick={() => navigate('/dashboard')} className="flex items-center text-neutral-500 hover:text-white transition-colors">
@@ -69,10 +69,10 @@ export default function ProfileSetup() {
           <p className="text-neutral-500 font-light text-sm tracking-wide">Configure your brand details and guest offerings.</p>
         </div>
 
-        <div className="bg-neutral-800 border border-neutral-700 rounded-3xl p-8 md:p-12">
+        <div className="bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 md:p-12">
           <form onSubmit={handleSubmit} className="space-y-10">
             <div className="space-y-8">
-              <h2 className="text-[10px] tracking-widest uppercase text-neutral-400 font-semibold border-b border-neutral-700 pb-4">Essential Details</h2>
+              <h2 className="text-[10px] tracking-widest uppercase text-neutral-400 font-semibold border-b border-[#333] pb-4">Essential Details</h2>
               
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
                 <div className="sm:col-span-2">
@@ -82,7 +82,7 @@ export default function ProfileSetup() {
                     type="text"
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full border-b border-neutral-700 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
+                    className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
                     placeholder="Your Studio Name"
                   />
                 </div>
@@ -94,7 +94,7 @@ export default function ProfileSetup() {
                     type="url"
                     value={formData.portfolio}
                     onChange={e => setFormData({...formData, portfolio: e.target.value})}
-                    className="w-full border-b border-neutral-700 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
+                    className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
                     placeholder="https://yourstudio.com"
                   />
                 </div>
@@ -102,7 +102,7 @@ export default function ProfileSetup() {
             </div>
 
             <div className="space-y-8 pt-4">
-              <h2 className="text-[10px] tracking-widest uppercase text-neutral-400 font-semibold border-b border-neutral-700 pb-4">Social & Contact</h2>
+              <h2 className="text-[10px] tracking-widest uppercase text-neutral-400 font-semibold border-b border-[#333] pb-4">Social & Contact</h2>
               
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
                 <div>
@@ -113,7 +113,7 @@ export default function ProfileSetup() {
                       type="text"
                       value={formData.insta}
                       onChange={e => setFormData({...formData, insta: e.target.value})}
-                      className="w-full border-b border-neutral-700 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
+                      className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
                       placeholder="username"
                     />
                   </div>
@@ -125,7 +125,7 @@ export default function ProfileSetup() {
                     type="url"
                     value={formData.youtube}
                     onChange={e => setFormData({...formData, youtube: e.target.value})}
-                    className="w-full border-b border-neutral-700 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
+                    className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
                     placeholder="https://youtube.com/..."
                   />
                 </div>
@@ -136,7 +136,7 @@ export default function ProfileSetup() {
                     type="url"
                     value={formData.gbp}
                     onChange={e => setFormData({...formData, gbp: e.target.value})}
-                    className="w-full border-b border-neutral-700 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
+                    className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
                     placeholder="Link for guests to review you"
                   />
                 </div>
@@ -147,7 +147,7 @@ export default function ProfileSetup() {
                     type="tel"
                     value={formData.phone}
                     onChange={e => setFormData({...formData, phone: e.target.value})}
-                    className="w-full border-b border-neutral-700 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
+                    className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
                     placeholder="+1 234 567 8900"
                   />
                 </div>
@@ -158,7 +158,7 @@ export default function ProfileSetup() {
                     type="tel"
                     value={formData.whatsapp}
                     onChange={e => setFormData({...formData, whatsapp: e.target.value})}
-                    className="w-full border-b border-neutral-700 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
+                    className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
                     placeholder="+1 234 567 8900"
                   />
                 </div>
@@ -166,7 +166,7 @@ export default function ProfileSetup() {
             </div>
 
             <div className="space-y-8 pt-4">
-              <h2 className="text-[10px] tracking-widest uppercase text-neutral-400 font-semibold border-b border-neutral-700 pb-4">Guest Offers</h2>
+              <h2 className="text-[10px] tracking-widest uppercase text-neutral-400 font-semibold border-b border-[#333] pb-4">Guest Offers</h2>
               
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
                 <div>
@@ -175,7 +175,7 @@ export default function ProfileSetup() {
                     type="text"
                     value={formData.familyDiscount}
                     onChange={e => setFormData({...formData, familyDiscount: e.target.value})}
-                    className="w-full border-b border-neutral-700 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
+                    className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
                     placeholder="e.g. 10% Off Family Portraits"
                   />
                 </div>
@@ -186,7 +186,7 @@ export default function ProfileSetup() {
                     type="text"
                     value={formData.corporateDiscount}
                     onChange={e => setFormData({...formData, corporateDiscount: e.target.value})}
-                    className="w-full border-b border-neutral-700 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
+                    className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-400 text-lg"
                     placeholder="e.g. 20% Off Corporate Events"
                   />
                 </div>
@@ -197,7 +197,7 @@ export default function ProfileSetup() {
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-white text-black px-8 py-4 rounded-full font-medium hover:bg-neutral-200 transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="bg-neutral-100 text-neutral-900 px-8 py-4 rounded-full font-medium hover:bg-white transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {saving ? 'Saving...' : (
                   <>

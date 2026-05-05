@@ -94,8 +94,8 @@ export default function EventDetails() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-neutral-900 flex items-center justify-center font-sans tracking-[0.2em] uppercase text-xs text-neutral-600">Loading...</div>;
-  if (!event) return <div className="min-h-screen bg-neutral-900 flex items-center justify-center font-sans tracking-[0.2em] uppercase text-xs text-neutral-600">Event not found</div>;
+  if (loading) return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center font-sans tracking-[0.2em] uppercase text-xs text-neutral-600">Loading...</div>;
+  if (!event) return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center font-sans tracking-[0.2em] uppercase text-xs text-neutral-600">Event not found</div>;
 
   const guestUrl = `${window.location.origin}/#/e/${event.id}`;
 
@@ -122,9 +122,9 @@ export default function EventDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-900 font-sans pb-24 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0f0f0f] font-sans pb-24 relative overflow-hidden">
 
-      <nav className="bg-neutral-800 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-40">
+      <nav className="bg-[#1a1a1a] backdrop-blur-md border-b border-[#333] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-20">
             <Link to="/dashboard" className="flex items-center text-neutral-500 hover:text-white transition-colors">
@@ -151,7 +151,7 @@ export default function EventDetails() {
             </div>
           </div>
           <div className="relative flex items-center gap-4">
-            <label className={`cursor-pointer ${uploading ? 'bg-neutral-800 text-neutral-500' : 'bg-white text-black hover:bg-neutral-200'} px-6 py-3 rounded-full font-medium flex items-center gap-2 transition-all`}>
+            <label className={`cursor-pointer ${uploading ? 'bg-[#1a1a1a] text-neutral-500' : 'bg-neutral-100 text-neutral-900 hover:bg-white'} px-6 py-3 rounded-full font-medium flex items-center gap-2 transition-all`}>
               <UploadCloud className="w-4 h-4" />
               {uploading ? 'Uploading...' : 'Upload Media'}
               <input
@@ -169,7 +169,7 @@ export default function EventDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* QR Code Section */}
           <div className="lg:col-span-1">
-            <div className="bg-neutral-800 border border-neutral-700 rounded-3xl p-8 text-center sticky top-28">
+            <div className="bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 text-center sticky top-28">
               <div className="mb-8">
                 <h2 className="text-2xl font-serif text-white mb-2">Event QR Code</h2>
                 <p className="text-neutral-500 font-light text-sm">Guests scan this to access photos and leave their details.</p>
@@ -197,20 +197,20 @@ export default function EventDetails() {
                   View Guest Page
                 </a>
                 <div className="flex items-center gap-2">
-                  <div className="bg-neutral-900 p-3 rounded-2xl border border-neutral-700 text-xs text-neutral-500 break-all select-all text-left flex-1 font-mono">
+                  <div className="bg-[#0f0f0f] p-3 rounded-2xl border border-[#333] text-xs text-neutral-500 break-all select-all text-left flex-1 font-mono">
                     {guestUrl}
                   </div>
                   <div className="flex flex-col gap-2">
                     <button
                       onClick={handleCopy}
-                      className="p-3 bg-white text-black rounded-full hover:bg-neutral-200 transition-colors flex items-center justify-center shrink-0"
+                      className="p-3 bg-neutral-100 text-neutral-900 rounded-full hover:bg-white transition-colors flex items-center justify-center shrink-0"
                       title="Copy Link"
                     >
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </button>
                     <button
                       onClick={handleShare}
-                      className="p-3 bg-neutral-900 border border-neutral-700 text-white rounded-full hover:bg-neutral-900 transition-colors flex items-center justify-center shrink-0"
+                      className="p-3 bg-[#0f0f0f] border border-[#333] text-white rounded-full hover:bg-[#0f0f0f] transition-colors flex items-center justify-center shrink-0"
                       title="Share Link"
                     >
                       <Share2 className="w-4 h-4" />
@@ -223,13 +223,13 @@ export default function EventDetails() {
 
           {/* Leads Section */}
           <div className="lg:col-span-2">
-            <div className="bg-neutral-800 border border-neutral-700 rounded-3xl overflow-hidden">
-              <div className="p-8 border-b border-neutral-700 flex justify-between items-center bg-neutral-800">
+            <div className="bg-[#1a1a1a] border border-[#333] rounded-3xl overflow-hidden">
+              <div className="p-8 border-b border-[#333] flex justify-between items-center bg-[#1a1a1a]">
                 <div className="flex items-center">
                   <Users className="w-5 h-5 text-white mr-3" />
                   <h2 className="text-2xl font-serif text-white">Guest Leads</h2>
                 </div>
-                <span className="bg-neutral-700 text-neutral-400 border border-neutral-700 rounded-full text-[10px] tracking-widest uppercase px-4 py-1.5 font-semibold">
+                <span className="bg-neutral-700 text-neutral-400 border border-[#333] rounded-full text-[10px] tracking-widest uppercase px-4 py-1.5 font-semibold">
                   {leads.length} Total
                 </span>
               </div>
@@ -242,7 +242,7 @@ export default function EventDetails() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-neutral-700 bg-neutral-900">
+                      <tr className="border-b border-[#333] bg-[#0f0f0f]">
                         <th className="px-8 py-4 text-[10px] font-semibold tracking-widest uppercase text-neutral-500">Name</th>
                         <th className="px-8 py-4 text-[10px] font-semibold tracking-widest uppercase text-neutral-500">Phone</th>
                         <th className="px-8 py-4 text-[10px] font-semibold tracking-widest uppercase text-neutral-500">Email</th>
@@ -251,7 +251,7 @@ export default function EventDetails() {
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
                       {leads.map((lead) => (
-                        <tr key={lead.id} className="hover:bg-neutral-900 transition-colors">
+                        <tr key={lead.id} className="hover:bg-[#0f0f0f] transition-colors">
                           <td className="px-8 py-5 text-neutral-300 text-sm">{lead.name}</td>
                           <td className="px-8 py-5 text-neutral-500 font-light text-sm">{lead.phone}</td>
                           <td className="px-8 py-5 text-neutral-500 font-light text-sm">{lead.email}</td>

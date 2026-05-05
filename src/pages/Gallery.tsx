@@ -194,19 +194,19 @@ export default function Gallery() {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-neutral-900 font-sans text-neutral-600 tracking-[0.2em] uppercase text-xs">Loading Gallery...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f] font-sans text-neutral-600 tracking-[0.2em] uppercase text-xs">Loading Gallery...</div>;
   }
 
   const displayImages = filteredImages || images;
 
   return (
-    <div className="min-h-screen bg-neutral-900 font-sans text-white pb-20 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0f0f0f] font-sans text-white pb-20 relative overflow-hidden">
 
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-neutral-800 border-b border-neutral-800 px-6 py-4">
+      <div className="sticky top-0 z-50 bg-[#1a1a1a] border-b border-[#333] px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="p-2 hover:bg-neutral-800 rounded-full transition-colors relative z-10 text-neutral-500 hover:text-white">
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-[#1a1a1a] rounded-full transition-colors relative z-10 text-neutral-500 hover:text-white">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="relative z-10">
@@ -230,7 +230,7 @@ export default function Gallery() {
             {!filteredImages && !isAnalyzing && images.length > 0 && (
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded-full font-medium hover:bg-neutral-200 transition-colors pointer-events-auto"
+                className="flex items-center gap-2 bg-neutral-100 text-neutral-900 px-6 py-2.5 rounded-full font-medium hover:bg-white transition-colors pointer-events-auto"
               >
                 <Sparkles className="w-4 h-4" />
                 <span className="text-sm">Find Me AI</span>
@@ -239,7 +239,7 @@ export default function Gallery() {
             {filteredImages && (
               <button 
                 onClick={clearFilter}
-                className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-white px-5 py-2.5 rounded-full font-medium transition-all"
+                className="flex items-center gap-2 bg-[#0f0f0f] hover:bg-[#1a1a1a] border border-[#333] text-white px-5 py-2.5 rounded-full font-medium transition-all"
               >
                 <X className="w-4 h-4" />
                 <span className="text-sm">Clear Filter</span>
@@ -254,7 +254,7 @@ export default function Gallery() {
         <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col items-center justify-center relative z-10">
           <div className="relative w-24 h-24 mb-6">
             {selfiePreview && (
-              <img src={selfiePreview} alt="Selfie" className="w-full h-full object-cover rounded-full border-2 border-neutral-700" />
+              <img src={selfiePreview} alt="Selfie" className="w-full h-full object-cover rounded-full border-2 border-[#333]" />
             )}
             <div className="absolute inset-0 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
           </div>
@@ -269,19 +269,19 @@ export default function Gallery() {
       {!isAnalyzing && (
         <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
           {error ? (
-            <div className="text-center py-20 bg-neutral-800 border border-neutral-700 rounded-3xl">
+            <div className="text-center py-20 bg-[#1a1a1a] border border-[#333] rounded-3xl">
               <Camera className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
               <h3 className="font-serif text-2xl mb-2 text-white">Gallery Unavailable</h3>
               <p className="text-neutral-500 font-light max-w-md mx-auto">{error}</p>
             </div>
           ) : filteredImages && filteredImages.length === 0 ? (
-            <div className="text-center py-20 bg-neutral-800 border border-neutral-700 rounded-3xl">
+            <div className="text-center py-20 bg-[#1a1a1a] border border-[#333] rounded-3xl">
               <Camera className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
               <h3 className="font-serif text-2xl mb-2 text-white">No matches found</h3>
               <p className="text-neutral-500 font-light">We couldn't find any photos matching your selfie.</p>
             </div>
           ) : images.length === 0 ? (
-            <div className="text-center py-20 bg-neutral-800 border border-neutral-700 rounded-3xl">
+            <div className="text-center py-20 bg-[#1a1a1a] border border-[#333] rounded-3xl">
               <Camera className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
               <h3 className="font-serif text-2xl mb-2 text-white">No photos yet</h3>
               <p className="text-neutral-500 font-light">This gallery is currently empty.</p>
@@ -303,7 +303,7 @@ export default function Gallery() {
                     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
                   }}
                   whileHover={{ scale: 1.02 }}
-                  className="break-inside-avoid relative group rounded-2xl overflow-hidden bg-neutral-800 border border-neutral-700"
+                  className="break-inside-avoid relative group rounded-2xl overflow-hidden bg-[#1a1a1a] border border-[#333]"
                 >
                   {file.type?.startsWith('video/') ? (
                     <video 
@@ -327,7 +327,7 @@ export default function Gallery() {
                         href={file.webContentLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-white text-black hover:bg-neutral-200 p-3 rounded-full transition-colors pointer-events-auto"
+                        className="bg-neutral-100 text-neutral-900 hover:bg-white p-3 rounded-full transition-colors pointer-events-auto"
                       >
                         <Download className="w-4 h-4" />
                       </a>

@@ -103,18 +103,18 @@ export default function GuestLanding() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-neutral-900 font-sans text-neutral-600 tracking-[0.2em] uppercase text-xs">Loading...</div>;
-  if (!event || !photographer) return <div className="min-h-screen flex items-center justify-center bg-neutral-900 font-sans text-neutral-600 tracking-[0.2em] uppercase text-xs">Event not found</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f] font-sans text-neutral-600 tracking-[0.2em] uppercase text-xs">Loading...</div>;
+  if (!event || !photographer) return <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f] font-sans text-neutral-600 tracking-[0.2em] uppercase text-xs">Event not found</div>;
 
   if (!accessGranted) {
     return (
-      <div className="min-h-screen flex flex-col md:flex-row bg-neutral-900 font-sans relative overflow-hidden">
+      <div className="min-h-screen flex flex-col md:flex-row bg-[#0f0f0f] font-sans relative overflow-hidden">
         {/* Image Side */}
         <motion.div 
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          className="md:w-1/2 h-64 md:h-auto relative z-10 border-r border-neutral-800 overflow-hidden"
+          className="md:w-1/2 h-64 md:h-auto relative z-10 border-r border-[#333] overflow-hidden"
         >
           <motion.img 
             initial={{ scale: 1.1 }}
@@ -173,7 +173,7 @@ export default function GuestLanding() {
                   type="text"
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
-                  className="w-full border-b border-neutral-600 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-500 text-lg"
+                  className="w-full border-b border-[#444] py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-500 text-lg"
                   placeholder="Jane Doe"
                 />
               </div>
@@ -184,7 +184,7 @@ export default function GuestLanding() {
                   type="tel"
                   value={formData.phone}
                   onChange={e => setFormData({...formData, phone: e.target.value})}
-                  className="w-full border-b border-neutral-600 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-500 text-lg"
+                  className="w-full border-b border-[#444] py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-500 text-lg"
                   placeholder="+1 234 567 8900"
                 />
               </div>
@@ -195,7 +195,7 @@ export default function GuestLanding() {
                   type="email"
                   value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
-                  className="w-full border-b border-neutral-600 py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-500 text-lg"
+                  className="w-full border-b border-[#444] py-3 bg-transparent focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-500 text-lg"
                   placeholder="jane@example.com"
                 />
               </div>
@@ -204,7 +204,7 @@ export default function GuestLanding() {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-white text-black py-4 rounded-full font-medium hover:bg-neutral-200 transition-colors mt-8 disabled:opacity-50 relative overflow-hidden"
+                className="w-full bg-neutral-100 text-neutral-900 py-4 rounded-full font-medium hover:bg-white transition-colors mt-8 disabled:opacity-50 relative overflow-hidden"
               >
                 {submitting ? 'Processing...' : 'Access Gallery'}
               </motion.button>
@@ -216,7 +216,7 @@ export default function GuestLanding() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-900 py-16 px-4 sm:px-6 lg:px-8 font-sans relative overflow-hidden flex items-center">
+    <div className="min-h-screen bg-[#0f0f0f] py-16 px-4 sm:px-6 lg:px-8 font-sans relative overflow-hidden flex items-center">
       {/* Background Particles Area */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {FLOATING_ELEMENTS.map((el) => (
@@ -259,7 +259,7 @@ export default function GuestLanding() {
         </motion.div>
 
         {/* Main Action (Drive) */}
-        <motion.div variants={itemVariants} className="bg-neutral-800 p-10 md:p-16 border border-neutral-700 rounded-3xl text-center mb-12 relative overflow-hidden group">
+        <motion.div variants={itemVariants} className="bg-[#1a1a1a] p-10 md:p-16 border border-[#333] rounded-3xl text-center mb-12 relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1 bg-white opacity-50 group-hover:opacity-100 transition-opacity"></div>
           {/* Subtle flare effect */}
           <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none group-hover:animate-[slideRight_1.5s_ease-in-out]"></div>
@@ -272,7 +272,7 @@ export default function GuestLanding() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate(`/gallery/${event.id}`)}
-            className="inline-flex items-center justify-center px-8 py-4 bg-white text-black rounded-full font-medium hover:bg-neutral-200 transition-all shadow-xl hover:shadow-2xl"
+            className="inline-flex items-center justify-center px-8 py-4 bg-neutral-100 text-neutral-900 rounded-full font-medium hover:bg-white transition-all shadow-xl hover:shadow-2xl"
           >
             <Images className="w-5 h-5 mr-3" />
             Open Gallery
@@ -283,7 +283,7 @@ export default function GuestLanding() {
         <div className="grid md:grid-cols-2 gap-6 mb-12">
           {/* Review */}
           {photographer.gbp && (
-            <motion.div variants={itemVariants} className="bg-neutral-800 p-8 border border-neutral-700 rounded-3xl flex flex-col items-center text-center hover:bg-neutral-900 transition-colors">
+            <motion.div variants={itemVariants} className="bg-[#1a1a1a] p-8 border border-[#333] rounded-3xl flex flex-col items-center text-center hover:bg-[#0f0f0f] transition-colors">
               <Star className="w-8 h-8 text-neutral-400 mb-4" />
               <h3 className="font-serif text-2xl text-white mb-2">Enjoyed the photos?</h3>
               <p className="text-neutral-500 font-light mb-8 text-sm">Your review means the world to us.</p>
@@ -291,7 +291,7 @@ export default function GuestLanding() {
                 href={photographer.gbp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-neutral-700 text-white px-6 py-3 rounded-full font-medium hover:bg-neutral-800 transition-all hover:scale-105 active:scale-95 w-full sm:w-auto"
+                className="border border-[#333] text-white px-6 py-3 rounded-full font-medium hover:bg-[#1a1a1a] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto"
               >
                 Rate us on Google
               </a>
@@ -300,18 +300,18 @@ export default function GuestLanding() {
 
           {/* Discounts */}
           {(photographer.familyDiscount || photographer.corporateDiscount) && (
-            <motion.div variants={itemVariants} className="bg-neutral-800 p-8 border border-neutral-700 rounded-3xl flex flex-col justify-center hover:bg-neutral-900 transition-colors">
+            <motion.div variants={itemVariants} className="bg-[#1a1a1a] p-8 border border-[#333] rounded-3xl flex flex-col justify-center hover:bg-[#0f0f0f] transition-colors">
               <h3 className="font-serif text-2xl text-white mb-6 text-center md:text-left">Exclusive Offers</h3>
               <div className="space-y-6">
                 {photographer.familyDiscount && (
-                  <div className="border-l-2 border-neutral-700 pl-4 transition-all hover:border-white">
+                  <div className="border-l-2 border-[#333] pl-4 transition-all hover:border-white">
                     <p className="text-xs tracking-widest uppercase text-neutral-500 mb-1">Family Package</p>
                     <p className="text-lg text-white mb-3">{photographer.familyDiscount}</p>
                     <a href={`tel:${photographer.phone}`} className="text-white hover:text-neutral-300 text-sm font-medium transition-colors inline-block underline underline-offset-4">Claim the discount &rarr;</a>
                   </div>
                 )}
                 {photographer.corporateDiscount && (
-                  <div className="border-l-2 border-neutral-700 pl-4 transition-all hover:border-white">
+                  <div className="border-l-2 border-[#333] pl-4 transition-all hover:border-white">
                     <p className="text-xs tracking-widest uppercase text-neutral-500 mb-1">Corporate Events</p>
                     <p className="text-lg text-white mb-3">{photographer.corporateDiscount}</p>
                     <a href={`tel:${photographer.phone}`} className="text-white hover:text-neutral-300 text-sm font-medium transition-colors inline-block underline underline-offset-4">Claim the discount &rarr;</a>
@@ -323,34 +323,34 @@ export default function GuestLanding() {
         </div>
 
         {/* Links & Contact */}
-        <motion.div variants={itemVariants} className="border-t border-neutral-800 pt-12 max-w-md mx-auto">
+        <motion.div variants={itemVariants} className="border-t border-[#333] pt-12 max-w-md mx-auto">
           <div className="flex flex-col gap-4">
             {photographer.portfolio && (
-              <motion.a whileHover={{ x: 5 }} href={photographer.portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-neutral-800 border border-neutral-700 rounded-2xl hover:bg-neutral-900 transition-colors group">
+              <motion.a whileHover={{ x: 5 }} href={photographer.portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-[#1a1a1a] border border-[#333] rounded-2xl hover:bg-[#0f0f0f] transition-colors group">
                 <Globe className="w-5 h-5 text-neutral-400 mr-4" />
                 <span className="text-sm font-medium text-white group-hover:text-neutral-300 transition-colors">Our Portfolio</span>
               </motion.a>
             )}
             {photographer.insta && (
-              <motion.a whileHover={{ x: 5 }} href={`https://instagram.com/${photographer.insta.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-neutral-800 border border-neutral-700 rounded-2xl hover:bg-neutral-900 transition-colors group">
+              <motion.a whileHover={{ x: 5 }} href={`https://instagram.com/${photographer.insta.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-[#1a1a1a] border border-[#333] rounded-2xl hover:bg-[#0f0f0f] transition-colors group">
                 <Instagram className="w-5 h-5 text-neutral-400 mr-4" />
                 <span className="text-sm font-medium text-white group-hover:text-neutral-300 transition-colors">Follow us on Instagram</span>
               </motion.a>
             )}
             {photographer.youtube && (
-              <motion.a whileHover={{ x: 5 }} href={photographer.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-neutral-800 border border-neutral-700 rounded-2xl hover:bg-neutral-900 transition-colors group">
+              <motion.a whileHover={{ x: 5 }} href={photographer.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-[#1a1a1a] border border-[#333] rounded-2xl hover:bg-[#0f0f0f] transition-colors group">
                 <Youtube className="w-5 h-5 text-neutral-400 mr-4" />
                 <span className="text-sm font-medium text-white group-hover:text-neutral-300 transition-colors">Watch behind the scenes</span>
               </motion.a>
             )}
             {photographer.whatsapp && (
-              <motion.a whileHover={{ x: 5 }} href={`https://wa.me/${photographer.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-neutral-800 border border-neutral-700 rounded-2xl hover:bg-neutral-900 transition-colors group">
+              <motion.a whileHover={{ x: 5 }} href={`https://wa.me/${photographer.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-[#1a1a1a] border border-[#333] rounded-2xl hover:bg-[#0f0f0f] transition-colors group">
                 <MessageCircle className="w-5 h-5 text-neutral-400 mr-4" />
                 <span className="text-sm font-medium text-white group-hover:text-neutral-300 transition-colors">Chat with us on WhatsApp</span>
               </motion.a>
             )}
             {photographer.phone && (
-              <motion.a whileHover={{ x: 5 }} href={`tel:${photographer.phone}`} className="flex items-center p-4 bg-neutral-800 border border-neutral-700 rounded-2xl hover:bg-neutral-900 transition-colors group">
+              <motion.a whileHover={{ x: 5 }} href={`tel:${photographer.phone}`} className="flex items-center p-4 bg-[#1a1a1a] border border-[#333] rounded-2xl hover:bg-[#0f0f0f] transition-colors group">
                 <Phone className="w-5 h-5 text-neutral-400 mr-4" />
                 <span className="text-sm font-medium text-white group-hover:text-neutral-300 transition-colors">Give us a call</span>
               </motion.a>

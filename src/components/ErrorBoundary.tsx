@@ -39,14 +39,14 @@ export class ErrorBoundary extends React.Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen bg-neutral-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
-          <div className="bg-neutral-800 border border-neutral-700 rounded-3xl p-8 md:p-12 max-w-lg w-full">
+        <div className="min-h-screen bg-[#0f0f0f] flex flex-col items-center justify-center p-6 text-center font-sans text-white">
+          <div className="bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 md:p-12 max-w-lg w-full">
             <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-6" />
             <h1 className="text-2xl font-serif mb-4">Something went wrong</h1>
             <p className="text-neutral-400 font-light mb-8 text-sm">{errorMessage}</p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-white text-black hover:bg-neutral-200 px-8 py-3 rounded-full font-medium transition-colors"
+              className="bg-neutral-100 text-neutral-900 hover:bg-white px-8 py-3 rounded-full font-medium transition-colors"
             >
               Reload Page
             </button>

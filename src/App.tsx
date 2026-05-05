@@ -21,12 +21,12 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, authError, logout } = useAuth();
   const location = useLocation();
   
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-neutral-900 text-white/50 tracking-[0.2em] uppercase text-xs font-sans">Loading...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f] text-white/50 tracking-[0.2em] uppercase text-xs font-sans">Loading...</div>;
   
   if (authError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-900 text-white font-sans p-6 text-center">
-        <div className="bg-neutral-800 border border-neutral-700 rounded-3xl p-8 max-w-md w-full">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0f0f0f] text-white font-sans p-6 text-center">
+        <div className="bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 max-w-md w-full">
           <h2 className="text-xl font-serif mb-4 text-red-500">Authentication Error</h2>
           <p className="text-neutral-400 font-light mb-8 text-sm">{authError}</p>
           <button 
@@ -34,7 +34,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
               await logout();
               window.location.href = '/';
             }}
-            className="w-full bg-white text-black py-4 rounded-full font-medium tracking-wide hover:bg-neutral-200 transition-colors"
+            className="w-full bg-neutral-100 text-neutral-900 py-4 rounded-full font-medium tracking-wide hover:bg-white transition-colors"
           >
             Sign Out & Return Home
           </button>

@@ -57,7 +57,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-900 font-sans flex flex-col md:flex-row overflow-hidden relative">
+    <div className="min-h-screen bg-[#0f0f0f] font-sans flex flex-col md:flex-row overflow-hidden relative">
       
       {/* Background Particles Area */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -118,7 +118,7 @@ export default function Landing() {
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)]"
           >
-            <Camera className="w-5 h-5 text-black" />
+            <Camera className="w-5 h-5 text-neutral-900" />
           </motion.div>
           <span className="bg-gradient-to-r from-neutral-200 via-neutral-600 to-neutral-200 bg-clip-text text-transparent text-[11px] font-bold tracking-[0.3em] uppercase animate-text-gradient">
             Candei OS
@@ -151,7 +151,7 @@ export default function Landing() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleSignIn}
-              className="w-full bg-white text-black py-4 px-8 rounded-full font-medium tracking-wide hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-all flex items-center justify-center gap-3 group overflow-hidden relative"
+              className="w-full bg-neutral-100 text-neutral-900 py-4 px-8 rounded-full font-medium tracking-wide hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-all flex items-center justify-center gap-3 group overflow-hidden relative"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-white via-neutral-200 to-white opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <svg className="w-5 h-5 relative z-10" viewBox="0 0 24 24">
@@ -189,11 +189,11 @@ export default function Landing() {
           </motion.div>
 
           {/* Feature Grid Mini */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 gap-8 mt-20 border-t border-neutral-800 pt-12 max-w-lg">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 gap-8 mt-20 border-t border-[#333] pt-12 max-w-lg">
             <motion.div whileHover={{ y: -5 }} className="group">
               <div className="flex items-center gap-2 mb-3 text-white">
-                <div className="p-2 rounded-full bg-neutral-900 group-hover:bg-white group-hover:text-black transition-colors">
-                  <Users className="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
+                <div className="p-2 rounded-full bg-[#0f0f0f] group-hover:bg-white group-hover:text-neutral-900 transition-colors">
+                  <Users className="w-4 h-4 text-neutral-400 group-hover:text-neutral-900 transition-colors" />
                 </div>
                 <span className="text-[10px] uppercase tracking-[0.1em] font-bold">Lead Gen</span>
               </div>
@@ -201,8 +201,8 @@ export default function Landing() {
             </motion.div>
             <motion.div whileHover={{ y: -5 }} className="group">
               <div className="flex items-center gap-2 mb-3 text-white">
-                <div className="p-2 rounded-full bg-neutral-900 group-hover:bg-white group-hover:text-black transition-colors">
-                  <TrendingUp className="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
+                <div className="p-2 rounded-full bg-[#0f0f0f] group-hover:bg-white group-hover:text-neutral-900 transition-colors">
+                  <TrendingUp className="w-4 h-4 text-neutral-400 group-hover:text-neutral-900 transition-colors" />
                 </div>
                 <span className="text-[10px] uppercase tracking-[0.1em] font-bold">Brand Equity</span>
               </div>
@@ -217,7 +217,7 @@ export default function Landing() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5 }}
-        className="hidden md:block md:w-[45%] relative bg-neutral-900 border-l border-neutral-800 overflow-hidden"
+        className="hidden md:block md:w-[45%] relative bg-[#0f0f0f] border-l border-[#333] overflow-hidden"
       >
         <motion.img 
           initial={{ scale: 1.1 }}

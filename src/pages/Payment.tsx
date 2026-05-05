@@ -38,12 +38,12 @@ export default function Payment() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-900 flex flex-col items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-md bg-neutral-800 border border-neutral-700 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+    <div className="min-h-screen bg-[#0f0f0f] flex flex-col items-center justify-center p-6 font-sans">
+      <div className="w-full max-w-md bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-white"></div>
         
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-neutral-900 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-neutral-700">
+          <div className="w-16 h-16 bg-[#0f0f0f] rounded-2xl flex items-center justify-center mx-auto mb-6 border border-[#333]">
             <Zap className="w-8 h-8 text-neutral-400" />
           </div>
           <h1 className="text-3xl font-serif text-white mb-2">Early Bird Access</h1>
@@ -51,7 +51,7 @@ export default function Payment() {
         </div>
 
         {profile?.paymentStatus === 'initiated' ? (
-          <div className="bg-neutral-900 rounded-2xl p-8 mb-8 border border-neutral-700 text-center">
+          <div className="bg-[#0f0f0f] rounded-2xl p-8 mb-8 border border-[#333] text-center">
             <Clock className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
             <h3 className="text-xl font-medium text-white mb-2">Pending Approval</h3>
             <p className="text-neutral-500 font-light text-sm leading-relaxed">
@@ -66,7 +66,7 @@ export default function Payment() {
           </div>
         ) : (
           <>
-            <div className="bg-neutral-900 rounded-2xl p-6 mb-8 border border-neutral-700">
+            <div className="bg-[#0f0f0f] rounded-2xl p-6 mb-8 border border-[#333]">
               <div className="flex justify-between items-end mb-4">
                 <span className="text-neutral-300 font-medium tracking-wide">Yearly Subscription</span>
                 <div className="text-right">
@@ -75,7 +75,7 @@ export default function Payment() {
                 </div>
               </div>
               
-              <ul className="space-y-3 mt-6 border-t border-neutral-700 pt-6">
+              <ul className="space-y-3 mt-6 border-t border-[#333] pt-6">
                 <li className="flex items-center gap-3 text-neutral-400 font-light text-sm">
                   <CheckCircle2 className="w-4 h-4 text-white" /> Unlimited Events
                 </li>
@@ -94,7 +94,7 @@ export default function Payment() {
             <button
               onClick={handlePay}
               disabled={loading}
-              className="w-full bg-white text-black py-4 rounded-full font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-neutral-100 text-neutral-900 py-4 rounded-full font-medium hover:bg-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? 'Processing...' : 'Pay ₹499 via WhatsApp'}
             </button>
