@@ -15,7 +15,7 @@ export default function Payment() {
       
       // Redirect to WhatsApp
       const phoneNumber = '+919318465272';
-      const message = `Hi, I want to pay ₹499 for the Candy early bird yearly subscription. My email is ${profile?.email} and my WhatsApp number is ${profile?.whatsapp || ''}.`;
+      const message = `Hi, I want to pay ₹499 for the Candei early bird yearly subscription. My email is ${profile?.email} and my WhatsApp number is ${profile?.whatsapp || ''}.`;
       const whatsappUrl = `https://wa.me/${phoneNumber.replace('+', '')}?text=${encodeURIComponent(message)}`;
       
       window.open(whatsappUrl, '_blank');
@@ -38,55 +38,55 @@ export default function Payment() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-900 flex flex-col items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-md bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
+    <div className="min-h-screen bg-neutral-900 flex flex-col items-center justify-center p-6 font-sans">
+      <div className="w-full max-w-md bg-neutral-800 border border-neutral-700 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-white"></div>
         
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-amber-500/30">
-            <Zap className="w-8 h-8 text-amber-400" />
+          <div className="w-16 h-16 bg-neutral-900 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-neutral-700">
+            <Zap className="w-8 h-8 text-neutral-400" />
           </div>
           <h1 className="text-3xl font-serif text-white mb-2">Early Bird Access</h1>
-          <p className="text-white/60 font-light">Join the first 100 photographers to unlock Candy's premium features.</p>
+          <p className="text-neutral-500 font-light">Join the first 100 photographers to unlock Candei's premium features.</p>
         </div>
 
         {profile?.paymentStatus === 'initiated' ? (
-          <div className="bg-black/40 rounded-xl p-8 mb-8 border border-amber-500/30 text-center">
-            <Clock className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+          <div className="bg-neutral-900 rounded-2xl p-8 mb-8 border border-neutral-700 text-center">
+            <Clock className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
             <h3 className="text-xl font-medium text-white mb-2">Pending Approval</h3>
-            <p className="text-white/70 font-light text-sm">
+            <p className="text-neutral-500 font-light text-sm leading-relaxed">
               We've received your request. Once your payment is verified via WhatsApp, your account will be approved.
             </p>
             <button
               onClick={handlePay}
-              className="mt-6 text-amber-400 hover:text-amber-300 text-sm transition-colors underline"
+              className="mt-6 text-white hover:text-neutral-300 text-sm transition-colors underline underline-offset-4"
             >
               Message us again on WhatsApp
             </button>
           </div>
         ) : (
           <>
-            <div className="bg-black/40 rounded-xl p-6 mb-8 border border-white/5">
+            <div className="bg-neutral-900 rounded-2xl p-6 mb-8 border border-neutral-700">
               <div className="flex justify-between items-end mb-4">
-                <span className="text-white/80 font-medium">Yearly Subscription</span>
+                <span className="text-neutral-300 font-medium tracking-wide">Yearly Subscription</span>
                 <div className="text-right">
-                  <span className="text-sm text-white/40 line-through block">₹4,999</span>
-                  <span className="text-3xl font-serif text-amber-400">₹499</span>
+                  <span className="text-sm text-neutral-600 line-through block mb-1">₹4,999</span>
+                  <span className="text-3xl font-serif text-white">₹499</span>
                 </div>
               </div>
               
-              <ul className="space-y-3 mt-6 border-t border-white/10 pt-6">
-                <li className="flex items-center gap-3 text-white/70 font-light text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400" /> Unlimited Events
+              <ul className="space-y-3 mt-6 border-t border-neutral-700 pt-6">
+                <li className="flex items-center gap-3 text-neutral-400 font-light text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-white" /> Unlimited Events
                 </li>
-                <li className="flex items-center gap-3 text-white/70 font-light text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400" /> Unlimited Lead Generation
+                <li className="flex items-center gap-3 text-neutral-400 font-light text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-white" /> Unlimited Lead Generation
                 </li>
-                <li className="flex items-center gap-3 text-white/70 font-light text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400" /> Direct Google Drive Integration
+                <li className="flex items-center gap-3 text-neutral-400 font-light text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-white" /> Direct Google Drive Integration
                 </li>
-                <li className="flex items-center gap-3 text-white/70 font-light text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400" /> Custom Branding
+                <li className="flex items-center gap-3 text-neutral-400 font-light text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-white" /> Custom Branding
                 </li>
               </ul>
             </div>
@@ -94,19 +94,19 @@ export default function Payment() {
             <button
               onClick={handlePay}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-4 rounded-xl font-medium hover:from-amber-400 hover:to-orange-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-white text-black py-4 rounded-full font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? 'Processing...' : 'Pay ₹499 via WhatsApp'}
             </button>
           </>
         )}
 
-        <div className="mt-6 text-center flex items-center justify-center gap-2 text-white/40 text-xs font-light">
+        <div className="mt-8 text-center flex items-center justify-center gap-2 text-neutral-600 text-xs font-medium tracking-wider uppercase">
           <ShieldCheck className="w-4 h-4" /> Secure payment process
         </div>
         
-        <div className="mt-6 text-center">
-          <button onClick={logout} className="text-white/40 hover:text-white/60 text-sm transition-colors">
+        <div className="mt-8 text-center">
+          <button onClick={logout} className="text-neutral-500 hover:text-white text-xs font-semibold tracking-widest uppercase transition-colors">
             Sign out
           </button>
         </div>

@@ -70,38 +70,38 @@ export default function AdminPanel() {
   );
 
   if (loading) {
-    return <div className="min-h-screen bg-stone-900 flex items-center justify-center text-amber-400">Loading Admin Panel...</div>;
+    return <div className="min-h-screen bg-neutral-900 flex items-center justify-center text-neutral-500 font-sans tracking-[0.2em] uppercase text-xs">Loading Admin Panel...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-stone-900 p-6 md:p-12 font-sans">
+    <div className="min-h-screen bg-neutral-900 p-6 md:p-12 font-sans">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center border border-amber-500/30">
-              <Shield className="w-6 h-6 text-amber-400" />
+            <div className="w-12 h-12 bg-neutral-800 rounded-2xl flex items-center justify-center border border-neutral-700">
+              <Shield className="w-6 h-6 text-neutral-400" />
             </div>
             <div>
               <h1 className="text-3xl font-serif text-white">Admin Panel</h1>
-              <p className="text-white/60 font-light">Manage user access and payments</p>
+              <p className="text-neutral-500 font-light tracking-wide">Manage user access and payments</p>
             </div>
           </div>
-          <button onClick={() => navigate('/dashboard')} className="text-white/60 hover:text-amber-400 transition-colors text-sm font-medium">
+          <button onClick={() => navigate('/dashboard')} className="text-neutral-500 hover:text-white transition-colors text-xs font-semibold tracking-widest uppercase">
             Go to Dashboard
           </button>
         </div>
 
-        <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl overflow-hidden">
-          <div className="p-6 border-b border-white/10 flex justify-between items-center">
+        <div className="bg-neutral-800 border border-neutral-700 rounded-3xl overflow-hidden shadow-2xl">
+          <div className="p-6 border-b border-neutral-700 flex justify-between items-center bg-neutral-900/50">
             <h2 className="text-xl font-medium text-white">Users</h2>
             <div className="relative">
-              <Search className="w-5 h-5 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-5 h-5 text-neutral-600 absolute left-4 top-1/2 -translate-y-1/2" />
               <input 
                 type="text" 
                 placeholder="Search users..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-black/40 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white placeholder:text-white/40 focus:outline-none focus:border-amber-500/50 w-64"
+                className="bg-neutral-900 border border-neutral-700 rounded-full pl-12 pr-6 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-white transition-colors w-72"
               />
             </div>
           </div>
@@ -109,27 +109,27 @@ export default function AdminPanel() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-black/40 border-b border-white/10">
-                  <th className="p-4 text-white/60 font-medium text-sm">Name</th>
-                  <th className="p-4 text-white/60 font-medium text-sm">Email</th>
-                  <th className="p-4 text-white/60 font-medium text-sm">WhatsApp</th>
-                  <th className="p-4 text-white/60 font-medium text-sm">Status</th>
-                  <th className="p-4 text-white/60 font-medium text-sm text-right">Actions</th>
+                <tr className="bg-neutral-900 border-b border-neutral-700">
+                  <th className="p-5 text-neutral-500 font-semibold text-[10px] tracking-widest uppercase">Name</th>
+                  <th className="p-5 text-neutral-500 font-semibold text-[10px] tracking-widest uppercase">Email</th>
+                  <th className="p-5 text-neutral-500 font-semibold text-[10px] tracking-widest uppercase">WhatsApp</th>
+                  <th className="p-5 text-neutral-500 font-semibold text-[10px] tracking-widest uppercase">Status</th>
+                  <th className="p-5 text-neutral-500 font-semibold text-[10px] tracking-widest uppercase text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-neutral-800/50">
                 {filteredUsers.map((u) => (
-                  <tr key={u.uid} className="hover:bg-white/5 transition-colors">
-                    <td className="p-4 text-white font-medium">{u.name || 'N/A'}</td>
-                    <td className="p-4 text-white/70 text-sm">{u.email}</td>
-                    <td className="p-4 text-white/70 text-sm">{u.whatsapp || 'N/A'}</td>
-                    <td className="p-4">
-                      {u.paymentStatus === 'approved' && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-medium border border-green-500/30"><Check className="w-3 h-3" /> Approved</span>}
-                      {u.paymentStatus === 'declined' && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-medium border border-red-500/30"><X className="w-3 h-3" /> Declined</span>}
-                      {u.paymentStatus === 'initiated' && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-medium border border-amber-500/30"><Clock className="w-3 h-3" /> Initiated</span>}
-                      {(!u.paymentStatus || u.paymentStatus === 'pending') && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 text-white/60 text-xs font-medium border border-white/10">Pending</span>}
+                  <tr key={u.uid} className="hover:bg-neutral-800/20 transition-colors">
+                    <td className="p-5 text-white font-medium">{u.name || 'N/A'}</td>
+                    <td className="p-5 text-neutral-400 text-sm">{u.email}</td>
+                    <td className="p-5 text-neutral-400 text-sm">{u.whatsapp || 'N/A'}</td>
+                    <td className="p-5">
+                      {u.paymentStatus === 'approved' && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 text-green-400 text-xs font-medium border border-green-500/20"><Check className="w-3.5 h-3.5" /> Approved</span>}
+                      {u.paymentStatus === 'declined' && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 text-red-500 text-xs font-medium border border-red-500/20"><X className="w-3.5 h-3.5" /> Declined</span>}
+                      {u.paymentStatus === 'initiated' && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 text-white text-xs font-medium border border-white/20"><Clock className="w-3.5 h-3.5" /> Initiated</span>}
+                      {(!u.paymentStatus || u.paymentStatus === 'pending') && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-800/50 text-neutral-400 text-xs font-medium border border-neutral-700">Pending</span>}
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="p-5 text-right">
                       <div className="flex justify-end gap-2">
                         <button 
                           onClick={() => handleStatusUpdate(u.uid, 'approved')}

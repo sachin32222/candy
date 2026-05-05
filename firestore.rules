@@ -87,29 +87,17 @@ service cloud.firestore {
     // Domain Validators
     function isValidUser(data) {
       return hasRequiredFields(['uid', 'name', 'email']) &&
-             data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
-             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
-             isValidEmail(data.email) &&
-             isValidOptionalString('portfolio', 0, 500) &&
-             isValidOptionalString('insta', 0, 100) &&
-             isValidOptionalString('gbp', 0, 500) &&
-             isValidOptionalString('youtube', 0, 500) &&
-             isValidOptionalString('whatsapp', 0, 50) &&
-             isValidOptionalString('phone', 0, 50) &&
-             isValidOptionalString('familyDiscount', 0, 100) &&
-             isValidOptionalString('corporateDiscount', 0, 100) &&
-             isValidOptionalString('paymentStatus', 0, 50) &&
-             (!( 'driveConnected' in data ) || data.driveConnected is bool) &&
-             isValidOptionalString('createdAt', 0, 50);
+             data.uid is string &&
+             data.name is string &&
+             data.email is string;
     }
 
     function isValidEvent(data) {
       return hasRequiredFields(['photographerId', 'name', 'venue', 'createdAt']) &&
-             data.photographerId is string && data.photographerId.size() > 0 && data.photographerId.size() < 100 &&
-             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
-             data.venue is string && data.venue.size() > 0 && data.venue.size() < 200 &&
-             isValidOptionalString('driveLink', 0, 1000) &&
-             data.createdAt is string && data.createdAt.size() > 0 && data.createdAt.size() < 50;
+             data.photographerId is string &&
+             data.name is string &&
+             data.venue is string &&
+             data.createdAt is string;
     }
 
     function isValidLead(data) {

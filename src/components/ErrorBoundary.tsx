@@ -39,14 +39,14 @@ export class ErrorBoundary extends React.Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen bg-stone-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 md:p-12 max-w-lg w-full shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
-            <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-6" />
-            <h1 className="text-3xl font-serif mb-4">Something went wrong</h1>
-            <p className="text-white/60 font-light mb-8">{errorMessage}</p>
+        <div className="min-h-screen bg-neutral-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
+          <div className="bg-neutral-800 border border-neutral-700 rounded-3xl p-8 md:p-12 max-w-lg w-full">
+            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-6" />
+            <h1 className="text-2xl font-serif mb-4">Something went wrong</h1>
+            <p className="text-neutral-400 font-light mb-8 text-sm">{errorMessage}</p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-white text-stone-900 hover:bg-stone-100 px-8 py-3 rounded-xl font-medium transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+              className="bg-white text-black hover:bg-neutral-200 px-8 py-3 rounded-full font-medium transition-colors"
             >
               Reload Page
             </button>

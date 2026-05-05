@@ -5,3 +5,31 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", ui-serif, Georgia, serif;
 }
+
+@keyframes pan-bg {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-text-gradient {
+  background-size: 200% auto;
+  animation: pan-bg 3s linear infinite;
+}
+
+@keyframes pan-bg-y {
+  0% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 50% 200%;
+  }
+}
+
+.animate-text-gradient-y {
+  background-size: auto 200%;
+  animation: pan-bg-y 3s linear infinite;
+}

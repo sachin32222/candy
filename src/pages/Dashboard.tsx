@@ -4,6 +4,7 @@ import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface Event {
   id: string;
@@ -24,7 +25,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!profile?.name || !profile?.portfolio) {
-      // Force profile setup if missing key info
       navigate('/profile');
     }
   }, [profile, navigate]);
@@ -54,7 +54,6 @@ export default function Dashboard() {
     setError(null);
 
     try {
-      // Save to Firestore
       const docRef = await addDoc(collection(db, 'events'), {
         name: newEvent.name,
         venue: newEvent.venue,
@@ -74,143 +73,173 @@ export default function Dashboard() {
     }
   };
 
-  const handleReauth = async () => {
-    try {
-      await signIn();
-      setError(null);
-    } catch (err) {
-      console.error("Reauth failed", err);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1, 
+      transition: { staggerChildren: 0.1 } 
     }
   };
 
-  return (
-    <div className="min-h-screen bg-stone-900 font-sans relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-amber-600/20 rounded-full mix-blend-screen filter blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-600/20 rounded-full mix-blend-screen filter blur-[120px]"></div>
-      </div>
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
+  };
 
-      <nav className="bg-black/40 backdrop-blur-md border-b border-white/10 sticky top-0 z-40">
+  return (
+    <div className="min-h-screen bg-[#0f0f0f] font-sans relative overflow-hidden">
+      <motion.nav 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="bg-[#0f0f0f]/80 backdrop-blur-xl border-b border-[#333] sticky top-0 z-40"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20">
             <div className="flex items-center">
-              <Camera className="w-6 h-6 text-amber-400 mr-3" strokeWidth={1.5} />
-              <span className="text-2xl font-serif text-white tracking-tight">Candy.</span>
+              <Camera className="w-5 h-5 text-white mr-3" strokeWidth={1.5} />
+              <span className="text-xl font-serif text-white tracking-tight">Candei.</span>
             </div>
             <div className="flex items-center gap-6">
               {user?.email === 'dubeyjiinmirzapur@gmail.com' && (
-                <Link to="/admin" className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
-                  <span className="text-xs tracking-widest uppercase hidden sm:block">Admin Panel</span>
+                <Link to="/admin" className="text-neutral-400 hover:text-white transition-colors flex items-center gap-2 group">
+                  <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+                  <span className="text-[10px] tracking-widest uppercase hidden sm:block">Admin</span>
                 </Link>
               )}
-              <Link to="/profile" className="text-white/60 hover:text-amber-400 transition-colors flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                <span className="text-xs tracking-widest uppercase hidden sm:block">Settings</span>
+              <Link to="/profile" className="text-neutral-500 hover:text-white transition-colors flex items-center gap-2 group">
+                <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+                <span className="text-[10px] tracking-widest uppercase hidden sm:block">Settings</span>
               </Link>
-              <button onClick={logout} className="text-white/60 hover:text-amber-400 transition-colors flex items-center gap-2">
-                <LogOut className="w-4 h-4" />
-                <span className="text-xs tracking-widest uppercase hidden sm:block">Sign Out</span>
+              <button onClick={logout} className="text-neutral-500 hover:text-white transition-colors flex items-center gap-2 group">
+                <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
+                <span className="text-[10px] tracking-widest uppercase hidden sm:block">Sign Out</span>
               </button>
             </div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-6"
+        >
           <div>
             <h1 className="text-4xl font-serif text-white mb-2">Your Events</h1>
-            <p className="text-white/60 font-light">Manage your galleries and leads.</p>
+            <p className="text-neutral-500 font-light text-sm tracking-wide">Manage your galleries and leads.</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-white text-stone-900 hover:bg-stone-100 px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] w-full sm:w-auto justify-center"
+            className="bg-neutral-100 text-neutral-900 hover:bg-white px-6 py-3 rounded-full font-medium flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 w-full sm:w-auto justify-center"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             Create Event
           </button>
-        </div>
+        </motion.div>
 
         {loading ? (
-          <div className="text-amber-400/70 tracking-widest uppercase text-xs">Loading events...</div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-neutral-600 tracking-widest uppercase text-xs">Loading events...</motion.div>
         ) : events.length === 0 ? (
-          <div className="text-center py-24 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem]">
-            <Calendar className="w-12 h-12 text-white/20 mx-auto mb-6" strokeWidth={1} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="text-center py-24 bg-[#1a1a1a] border border-[#333] rounded-3xl"
+          >
+            <Calendar className="w-12 h-12 text-neutral-400 mx-auto mb-6" strokeWidth={1} />
             <h3 className="text-2xl font-serif text-white mb-2">No events yet</h3>
-            <p className="text-white/60 font-light max-w-md mx-auto">Create your first event to generate a QR code and start collecting leads.</p>
-          </div>
+            <p className="text-neutral-500 font-light max-w-md mx-auto text-sm">Create your first event to generate a QR code and start collecting leads.</p>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {events.map(event => (
-              <Link key={event.id} to={`/events/${event.id}`} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-all group block shadow-[0_8px_32px_0_rgba(0,0,0,0.36)]">
-                <h3 className="text-2xl font-serif text-white mb-3 group-hover:text-amber-200 transition-colors">{event.name}</h3>
-                <p className="text-white/60 font-light mb-8">{event.venue}</p>
-                <div className="flex items-center text-xs tracking-widest uppercase text-amber-400">
-                  <LinkIcon className="w-4 h-4 mr-2" />
-                  View Details
-                </div>
-              </Link>
+              <motion.div variants={itemVariants} key={event.id}>
+                <Link to={`/events/${event.id}`} className="bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 hover:bg-[#252525] transition-all group block h-full flex flex-col hover:-translate-y-1 hover:shadow-xl">
+                  <h3 className="text-2xl font-serif text-white mb-3 group-hover:text-white transition-colors">{event.name}</h3>
+                  <p className="text-neutral-400 font-light mb-8 text-sm flex-grow">{event.venue}</p>
+                  <div className="flex items-center text-[10px] tracking-widest uppercase text-neutral-500 group-hover:text-white transition-colors">
+                    <LinkIcon className="w-4 h-4 mr-2" />
+                    View Details
+                  </div>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </main>
 
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <div className="bg-stone-900 border border-white/10 rounded-[2rem] max-w-md w-full p-8 md:p-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
-            <h2 className="text-3xl font-serif text-white mb-8">New Event</h2>
-            {error && (
-              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-400">
-                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                <p className="text-sm">{error}</p>
-              </div>
-            )}
-            <form onSubmit={handleCreateEvent}>
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-xs font-semibold tracking-widest uppercase text-amber-400/80 mb-2">Event Name</label>
-                  <input
-                    required
-                    type="text"
-                    value={newEvent.name}
-                    onChange={e => setNewEvent({...newEvent, name: e.target.value})}
-                    className="w-full border-b border-white/20 py-2 bg-transparent focus:outline-none focus:border-amber-400 transition-colors text-white placeholder-white/30"
-                    placeholder="e.g. Smith Wedding"
-                  />
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-[#0f0f0f]/90 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+        >
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="bg-[#1a1a1a] border border-[#333] rounded-3xl max-w-md w-full p-8 md:p-12 shadow-2xl"
+          >
+              <h2 className="text-3xl font-serif text-white mb-8">New Event</h2>
+              {error && (
+                <div className="mb-6 p-4 bg-red-950/50 border border-red-500/50 rounded-2xl flex items-start gap-3 text-red-400">
+                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <p className="text-sm">{error}</p>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold tracking-widest uppercase text-amber-400/80 mb-2">Venue</label>
-                  <input
-                    required
-                    type="text"
-                    value={newEvent.venue}
-                    onChange={e => setNewEvent({...newEvent, venue: e.target.value})}
-                    className="w-full border-b border-white/20 py-2 bg-transparent focus:outline-none focus:border-amber-400 transition-colors text-white placeholder-white/30"
-                    placeholder="e.g. Grand Hotel"
-                  />
+              )}
+              <form onSubmit={handleCreateEvent}>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[10px] font-semibold tracking-widest uppercase text-neutral-300 mb-2">Event Name</label>
+                    <input
+                      required
+                      type="text"
+                      value={newEvent.name}
+                      onChange={e => setNewEvent({...newEvent, name: e.target.value})}
+                      className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-500 text-lg"
+                      placeholder="e.g. Smith Wedding"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold tracking-widest uppercase text-neutral-300 mb-2">Venue</label>
+                    <input
+                      required
+                      type="text"
+                      value={newEvent.venue}
+                      onChange={e => setNewEvent({...newEvent, venue: e.target.value})}
+                      className="w-full border border-[#444] py-3 px-4 bg-[#252525] rounded-xl focus:outline-none focus:border-white transition-colors text-white placeholder-neutral-500 text-lg"
+                      placeholder="e.g. Grand Hotel"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="mt-10 flex gap-4 justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-6 py-3 text-white/60 hover:text-white font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-white text-stone-900 hover:bg-stone-100 rounded-xl font-medium transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
-                >
-                  Create
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                <div className="mt-10 flex gap-4 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="px-6 py-3 bg-[#333] border border-[#555] text-white hover:bg-[#444] rounded-full font-medium transition-colors text-sm uppercase tracking-wider"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={creating}
+                    className="px-8 py-3 bg-neutral-200 text-neutral-900 hover:bg-white rounded-full font-medium transition-transform active:scale-95 disabled:opacity-50"
+                  >
+                    {creating ? 'Creating...' : 'Create'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
     </div>
   );
 }

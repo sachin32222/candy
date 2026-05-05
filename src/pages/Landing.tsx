@@ -1,12 +1,22 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { Camera, Users, Image as ImageIcon, Zap, QrCode, Smartphone, Share, TrendingUp, Star, Heart, Instagram, Youtube, MessageSquare, Palette, BarChart3, Lock, Globe, HelpCircle, ExternalLink } from 'lucide-react';
+import { Camera, Users, TrendingUp, ExternalLink, ChevronRight } from 'lucide-react';
+import { motion } from 'motion/react';
+
+const FLOATING_ELEMENTS = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  size: Math.random() * 4 + 1,
+  duration: Math.random() * 20 + 10,
+  delay: Math.random() * 5,
+}));
 
 export default function Landing() {
   const { user, signIn, authError } = useAuth();
   const navigate = useNavigate();
-  const [error, setError] = React.useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (authError) {
@@ -33,430 +43,224 @@ export default function Landing() {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+  };
+
   return (
-    <div className="min-h-screen relative font-sans bg-stone-900">
-      {/* Fixed Background Image & Effects */}
-      <div className="fixed inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop" 
-          className="w-full h-full object-cover opacity-60" 
-          alt="Professional Photography" 
+    <div className="min-h-screen bg-neutral-900 font-sans flex flex-col md:flex-row overflow-hidden relative">
+      
+      {/* Background Particles Area */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        {FLOATING_ELEMENTS.map((el) => (
+          <motion.div
+            key={el.id}
+            className="absolute rounded-full bg-white/20"
+            style={{
+              width: el.size,
+              height: el.size,
+              left: `${el.x}%`,
+              top: `${el.y}%`,
+              filter: `blur(${el.size / 2}px)`,
+            }}
+            animate={{
+              y: [0, -100, 0],
+              x: [0, Math.random() * 50 - 25, 0],
+              opacity: [0.2, 0.6, 0.2],
+            }}
+            transition={{
+              duration: el.duration,
+              repeat: Infinity,
+              ease: "linear",
+              delay: el.delay,
+            }}
+          />
+        ))}
+        {/* Glow Orbs */}
+        <motion.div 
+          animate={{ x: [0, 150, 0], y: [0, 100, 0], scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-white/10 rounded-full mix-blend-overlay filter blur-[100px]"
+        />
+        <motion.div 
+          animate={{ x: [0, -150, 0], y: [0, -100, 0], scale: [1, 1.5, 1], opacity: [0.05, 0.15, 0.05] }}
+          transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute bottom-[-10%] right-[30%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full mix-blend-overlay filter blur-[120px]"
+        />
+        <motion.div 
+          animate={{ x: [0, 100, -50, 0], y: [0, -50, 100, 0], scale: [1, 1.3, 1], opacity: [0.05, 0.2, 0.05] }}
+          transition={{ duration: 35, repeat: Infinity, ease: "easeInOut", delay: 5 }}
+          className="absolute top-[40%] right-[10%] w-[400px] h-[400px] bg-emerald-500/10 rounded-full mix-blend-overlay filter blur-[100px]"
+        />
+      </div>
+
+      {/* Left Column: Content */}
+      <div className="w-full md:w-[55%] flex flex-col justify-center px-8 sm:px-16 lg:px-24 py-16 relative z-10 min-h-screen">
+        
+        {/* Brand/Logo Area */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+          className="absolute top-8 left-8 sm:top-12 flex items-center gap-3"
+        >
+          <motion.div 
+            whileHover={{ rotate: 180 }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+          >
+            <Camera className="w-5 h-5 text-black" />
+          </motion.div>
+          <span className="bg-gradient-to-r from-neutral-200 via-neutral-600 to-neutral-200 bg-clip-text text-transparent text-[11px] font-bold tracking-[0.3em] uppercase animate-text-gradient">
+            Candei OS
+          </span>
+        </motion.div>
+
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="max-w-xl mt-32 sm:mt-40 md:mt-20"
+        >
+
+
+          <motion.h1 variants={itemVariants} className="font-serif text-[3.5rem] sm:text-[4.5rem] lg:text-[5.5rem] leading-[0.92] tracking-tight mb-8">
+            <span className="bg-gradient-to-r from-[#4A6DE1] via-[#A5BDFC] to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient block">Capture.</span>
+            <span className="italic relative inline-block bg-gradient-to-r from-[#4A6DE1] via-white to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient">
+              Convert.
+            </span><br />
+            <span className="bg-gradient-to-r from-[#4A6DE1] via-[#A5BDFC] to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient block">Dominate.</span>
+          </motion.h1>
+          
+          <motion.p variants={itemVariants} className="text-lg font-light leading-relaxed mb-12 max-w-sm bg-gradient-to-r from-neutral-400 via-neutral-100 to-neutral-400 bg-clip-text text-transparent animate-text-gradient">
+            The definitive operating system for elite photographers. Instantly capture leads, automate marketing, and build a billion-dollar brand from every event.
+          </motion.p>
+          
+          {/* Action Area */}
+          <motion.div variants={itemVariants} className="space-y-6 max-w-sm">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSignIn}
+              className="w-full bg-white text-black py-4 px-8 rounded-full font-medium tracking-wide hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-all flex items-center justify-center gap-3 group overflow-hidden relative"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-white via-neutral-200 to-white opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <svg className="w-5 h-5 relative z-10" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              <span className="relative z-10 font-bold">Continue with Google</span>
+              <ChevronRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+            
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0, y: -10 }}
+                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                className="p-4 bg-red-950/30 border border-red-900/50 rounded-2xl text-red-500 text-sm flex flex-col items-center gap-3 overflow-hidden"
+              >
+                <p className="text-center">{error}</p>
+                {window !== window.top && (
+                  <button 
+                    onClick={() => window.open(window.location.href, '_blank')}
+                    className="px-4 py-2 bg-red-950 hover:bg-red-900 rounded-full text-white transition-colors flex items-center gap-2 text-xs uppercase tracking-widest mt-2"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Open in New Tab
+                  </button>
+                )}
+              </motion.div>
+            )}
+            
+            <motion.p variants={itemVariants} className="text-[#301728] text-[10px] text-center font-medium uppercase tracking-[0.2em]">
+              Join 10,000+ elite photographers
+            </motion.p>
+          </motion.div>
+
+          {/* Feature Grid Mini */}
+          <motion.div variants={itemVariants} className="grid grid-cols-2 gap-8 mt-20 border-t border-neutral-800 pt-12 max-w-lg">
+            <motion.div whileHover={{ y: -5 }} className="group">
+              <div className="flex items-center gap-2 mb-3 text-white">
+                <div className="p-2 rounded-full bg-neutral-900 group-hover:bg-white group-hover:text-black transition-colors">
+                  <Users className="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.1em] font-bold">Lead Gen</span>
+              </div>
+              <p className="text-neutral-500 text-xs leading-relaxed font-light transition-colors group-hover:text-neutral-300">Turn attendees into a high-converting pipeline with instant QR captures.</p>
+            </motion.div>
+            <motion.div whileHover={{ y: -5 }} className="group">
+              <div className="flex items-center gap-2 mb-3 text-white">
+                <div className="p-2 rounded-full bg-neutral-900 group-hover:bg-white group-hover:text-black transition-colors">
+                  <TrendingUp className="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.1em] font-bold">Brand Equity</span>
+              </div>
+              <p className="text-neutral-500 text-xs leading-relaxed font-light transition-colors group-hover:text-neutral-300">Automate Google reviews, Instagram follows, and long-term client retention.</p>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* Right Column: Imagery */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5 }}
+        className="hidden md:block md:w-[45%] relative bg-neutral-900 border-l border-neutral-800 overflow-hidden"
+      >
+        <motion.img 
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+          src="https://images.unsplash.com/photo-1621510427847-cc17a3aafa16?q=80&w=2670&auto=format&fit=crop" 
+          alt="Professional Equipment / Camera"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-70 grayscale-[20%]"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/50 to-black/90"></div>
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-amber-600/20 rounded-full mix-blend-screen filter blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-600/20 rounded-full mix-blend-screen filter blur-[120px]"></div>
-      </div>
-
-      {/* Scrollable Content Container */}
-      <div className="relative z-10">
+        {/* Subtle vignette/gradient over the image to make it look premium */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/50 to-transparent opacity-100"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent opacity-80"></div>
+        <div className="absolute inset-0 bg-black/20 mix-blend-multiply"></div>
         
-        {/* Hero Section */}
-        <div className="min-h-screen flex items-center justify-center p-6 sm:p-8 lg:p-12">
-          <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            
-            {/* Left Side: Hero Text */}
-            <div className="text-white space-y-8">
-              <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md shadow-lg">
-                <Camera className="w-5 h-5 text-white" />
-                <span className="text-sm font-medium tracking-widest uppercase">Candy Photography</span>
-              </div>
-              
-              <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl leading-[1.1]">
-                Capture. <br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Share. Dominate.</span>
-              </h1>
-              
-              <p className="text-lg sm:text-xl font-light text-white/80 max-w-xl leading-relaxed">
-                The all-in-one event management and lead generation platform designed exclusively for professional photographers. Turn every event into a networking powerhouse.
-              </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-6">
-                <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 transition-all hover:bg-white/10">
-                  <Users className="w-8 h-8 text-amber-400 mb-4" />
-                  <h3 className="text-white font-medium text-lg mb-2">Lead Generation</h3>
-                  <p className="text-white/60 text-sm font-light leading-relaxed">Capture guest details effortlessly via custom QR codes at your events.</p>
-                </div>
-                <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 transition-all hover:bg-white/10">
-                  <TrendingUp className="w-8 h-8 text-amber-400 mb-4" />
-                  <h3 className="text-white font-medium text-lg mb-2">Social Growth</h3>
-                  <p className="text-white/60 text-sm font-light leading-relaxed">Drive Google reviews, Instagram followers, and YouTube subscribers.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Side: Glassmorphism Login Card */}
-            <div className="w-full max-w-md mx-auto lg:ml-auto mt-8 lg:mt-0">
-              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] p-8 sm:p-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] relative overflow-hidden">
-                {/* Card inner glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
-                
-                <div className="relative z-10">
-                  <div className="text-center mb-10">
-                    <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/20 backdrop-blur-md">
-                      <Zap className="w-8 h-8 text-white" />
-                    </div>
-                    <h2 className="text-3xl font-serif text-white mb-3">Get Started</h2>
-                    <p className="text-white/70 font-light">Join 10,000+ elite photographers growing their business.</p>
-                  </div>
-
-                  <button
-                    onClick={handleSignIn}
-                    className="w-full bg-white text-stone-900 py-4 px-6 rounded-xl font-medium hover:bg-stone-100 transition-all flex items-center justify-center gap-3 group shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
-                  >
-                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      />
-                    </svg>
-                    Continue with Google
-                  </button>
-                  {error && (
-                    <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center flex flex-col items-center gap-3">
-                      <p>{error}</p>
-                      <button 
-                        onClick={() => window.open(window.location.href, '_blank')}
-                        className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors flex items-center gap-2"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        Open in New Tab
-                      </button>
-                    </div>
-                  )}
-                  
-                  <div className="mt-8 text-center border-t border-white/10 pt-6">
-                    <p className="text-white/50 text-xs font-light">
-                      By continuing, you agree to our Terms of Service and Privacy Policy.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+        {/* Little UI ornamentation */}
+        <motion.div 
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1, duration: 0.8, ease: "easeOut" }}
+          className="absolute bottom-12 right-12 text-white border border-white/10 backdrop-blur-3xl px-6 py-4 rounded-full bg-black/40 shadow-2xl"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse"></div>
+            <p className="text-[10px] font-mono tracking-widest uppercase opacity-80">System Operational</p>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Premium Stats Section */}
-        <div className="border-t border-b border-white/10 bg-black/40 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-12">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/10">
-              <div>
-                <div className="text-3xl md:text-4xl font-serif text-white mb-2">10,000+</div>
-                <div className="text-xs tracking-widest uppercase text-amber-400/80 font-medium">Active Users</div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-serif text-white mb-2">5M+</div>
-                <div className="text-xs tracking-widest uppercase text-amber-400/80 font-medium">Photos Delivered</div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-serif text-white mb-2">2.5M+</div>
-                <div className="text-xs tracking-widest uppercase text-amber-400/80 font-medium">Leads Generated</div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-serif text-white mb-2">98%</div>
-                <div className="text-xs tracking-widest uppercase text-amber-400/80 font-medium">Client Satisfaction</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Beyond Leads Section (New) */}
-        <div className="py-24 px-6 sm:px-8 lg:px-12 bg-black/50 backdrop-blur-lg border-t border-white/10">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="font-serif text-4xl md:text-5xl text-white mb-4">More Than Just Emails</h2>
-              <p className="text-white/70 font-light text-lg max-w-2xl mx-auto">Candy doesn't just collect leads. It turns every event guest into a potential follower, subscriber, and brand advocate.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 hover:bg-white/10 transition-all">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-6 border border-amber-500/30">
-                  <MessageSquare className="w-6 h-6 text-amber-400" />
-                </div>
-                <h3 className="text-xl font-medium text-white mb-3">Google Reviews</h3>
-                <p className="text-white/60 font-light leading-relaxed">Automate 5-star reviews by redirecting happy guests directly to your Google Business page after they access their photos.</p>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 hover:bg-white/10 transition-all">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-6 border border-amber-500/30">
-                  <Instagram className="w-6 h-6 text-amber-400" />
-                </div>
-                <h3 className="text-xl font-medium text-white mb-3">Instagram Growth</h3>
-                <p className="text-white/60 font-light leading-relaxed">Turn event guests into loyal followers. Prompt them to follow your Instagram page before accessing their high-res galleries.</p>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 hover:bg-white/10 transition-all">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-6 border border-amber-500/30">
-                  <Youtube className="w-6 h-6 text-amber-400" />
-                </div>
-                <h3 className="text-xl font-medium text-white mb-3">YouTube Subscribers</h3>
-                <p className="text-white/60 font-light leading-relaxed">Growing a channel? Direct traffic to your latest vlog, behind-the-scenes video, or portfolio reel effortlessly.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Premium Features Section */}
-        <div className="py-24 px-6 sm:px-8 lg:px-12 bg-black/40 backdrop-blur-md border-t border-white/10">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="font-serif text-4xl md:text-5xl text-white mb-4">Pro Features Included</h2>
-              <p className="text-white/70 font-light text-lg max-w-2xl mx-auto">Everything you need to deliver a premium experience to your clients and their guests.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 hover:bg-white/10 transition-all">
-                <Palette className="w-8 h-8 text-amber-400 mb-6" />
-                <h3 className="text-xl font-medium text-white mb-3">Custom Branding</h3>
-                <p className="text-white/60 font-light leading-relaxed text-sm">Add your logo and match your brand colors. Make every touchpoint look professionally yours.</p>
-              </div>
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 hover:bg-white/10 transition-all">
-                <Globe className="w-8 h-8 text-amber-400 mb-6" />
-                <h3 className="text-xl font-medium text-white mb-3">No App Required</h3>
-                <p className="text-white/60 font-light leading-relaxed text-sm">Completely web-based. Guests simply scan and view instantly in their native mobile browser.</p>
-              </div>
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 hover:bg-white/10 transition-all">
-                <Lock className="w-8 h-8 text-amber-400 mb-6" />
-                <h3 className="text-xl font-medium text-white mb-3">Secure Delivery</h3>
-                <p className="text-white/60 font-light leading-relaxed text-sm">Your photos stay secure in your Google Drive. You control exactly who gets access to what.</p>
-              </div>
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 hover:bg-white/10 transition-all">
-                <BarChart3 className="w-8 h-8 text-amber-400 mb-6" />
-                <h3 className="text-xl font-medium text-white mb-3">Live Analytics</h3>
-                <p className="text-white/60 font-light leading-relaxed text-sm">Track QR scans, lead conversions, and social clicks in real-time from your dashboard.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* How It Works Section */}
-        <div className="py-24 px-6 sm:px-8 lg:px-12 bg-black/40 backdrop-blur-md border-t border-white/10">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="font-serif text-4xl md:text-5xl text-white mb-4">How It Works</h2>
-              <p className="text-white/70 font-light text-lg max-w-2xl mx-auto">A seamless workflow designed to maximize your networking potential while you focus on capturing the perfect shot.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-              {/* Connecting lines for desktop */}
-              <div className="hidden md:block absolute top-1/2 left-[16%] right-[16%] h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-y-1/2 z-0"></div>
-
-              <div className="relative z-10 bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 text-center hover:bg-white/10 transition-all hover:-translate-y-2">
-                <div className="w-16 h-16 mx-auto bg-amber-500/20 rounded-2xl flex items-center justify-center mb-6 border border-amber-500/30">
-                  <QrCode className="w-8 h-8 text-amber-400" />
-                </div>
-                <h3 className="text-xl font-medium text-white mb-3">1. Create an Event</h3>
-                <p className="text-white/60 font-light leading-relaxed">Set up your event in seconds. We automatically generate a unique, scannable QR code for you to display.</p>
-              </div>
-
-              <div className="relative z-10 bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 text-center hover:bg-white/10 transition-all hover:-translate-y-2">
-                <div className="w-16 h-16 mx-auto bg-amber-500/20 rounded-2xl flex items-center justify-center mb-6 border border-amber-500/30">
-                  <Smartphone className="w-8 h-8 text-amber-400" />
-                </div>
-                <h3 className="text-xl font-medium text-white mb-3">2. Guests Scan</h3>
-                <p className="text-white/60 font-light leading-relaxed">Guests scan the code to access the gallery. They enter their contact details to view or download photos.</p>
-              </div>
-
-              <div className="relative z-10 bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 text-center hover:bg-white/10 transition-all hover:-translate-y-2">
-                <div className="w-16 h-16 mx-auto bg-amber-500/20 rounded-2xl flex items-center justify-center mb-6 border border-amber-500/30">
-                  <Share className="w-8 h-8 text-amber-400" />
-                </div>
-                <h3 className="text-xl font-medium text-white mb-3">3. Grow Your Brand</h3>
-                <p className="text-white/60 font-light leading-relaxed">Instantly collect verified emails, boost your social following, and drive reviews while you work.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Case Studies / Testimonials Section */}
-        <div className="py-24 px-6 sm:px-8 lg:px-12 bg-black/60 backdrop-blur-xl border-t border-white/10">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="font-serif text-4xl md:text-5xl text-white mb-4">Real Results</h2>
-              <p className="text-white/70 font-light text-lg max-w-2xl mx-auto">See how professional photographers are transforming their businesses with Candy.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-md rounded-[2rem] p-8 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-40 transition-opacity">
-                  <TrendingUp className="w-24 h-24 text-amber-400" />
-                </div>
-                <div className="relative z-10">
-                  <div className="flex items-center gap-1 mb-6">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />)}
-                  </div>
-                  <p className="text-white/90 text-lg font-light leading-relaxed mb-8 italic">
-                    "I received over 100 new leads from a single big fat Indian wedding. My booking rate for the next wedding season skyrocketed because I could easily follow up with guests who loved my work."
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-stone-700 overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" alt="Priya S." className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-medium">Priya Sharma</h4>
-                      <p className="text-white/50 text-sm">Wedding Photographer</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-md rounded-[2rem] p-8 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-40 transition-opacity">
-                  <Youtube className="w-24 h-24 text-amber-400" />
-                </div>
-                <div className="relative z-10">
-                  <div className="flex items-center gap-1 mb-6">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />)}
-                  </div>
-                  <p className="text-white/90 text-lg font-light leading-relaxed mb-8 italic">
-                    "We saw 90x growth in our email list in just 3 months. Plus, I linked my YouTube channel on the guest page, and my subscriber count jumped by 40% after just two corporate events!"
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-stone-700 overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Rahul D." className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-medium">Rahul Desai</h4>
-                      <p className="text-white/50 text-sm">Corporate Event Shooter</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-md rounded-[2rem] p-8 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-40 transition-opacity">
-                  <Instagram className="w-24 h-24 text-amber-400" />
-                </div>
-                <div className="relative z-10">
-                  <div className="flex items-center gap-1 mb-6">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />)}
-                  </div>
-                  <p className="text-white/90 text-lg font-light leading-relaxed mb-8 italic">
-                    "Not only am I getting more leads, but my Google Reviews went from 12 to over 150 in a month. My Instagram followers are growing organically after every single event."
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-stone-700 overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80" alt="Ananya P." className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-medium">Ananya Patel</h4>
-                      <p className="text-white/50 text-sm">Portrait & Event Photographer</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* FAQ Section */}
-        <div className="py-24 px-6 sm:px-8 lg:px-12 bg-black/50 backdrop-blur-lg border-t border-white/10">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="font-serif text-4xl md:text-5xl text-white mb-4">Frequently Asked Questions</h2>
-              <p className="text-white/70 font-light text-lg">Everything you need to know about getting started.</p>
-            </div>
-
-            <div className="space-y-6">
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[1.5rem] p-6 sm:p-8">
-                <div className="flex items-start gap-4">
-                  <HelpCircle className="w-6 h-6 text-amber-400 shrink-0 mt-1" />
-                  <div>
-                    <h3 className="text-xl font-medium text-white mb-2">Do my guests need to download an app?</h3>
-                    <p className="text-white/60 font-light leading-relaxed">Not at all! Candy is 100% web-based. Guests simply scan your QR code using their standard smartphone camera, and the gallery opens instantly in their browser.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[1.5rem] p-6 sm:p-8">
-                <div className="flex items-start gap-4">
-                  <HelpCircle className="w-6 h-6 text-amber-400 shrink-0 mt-1" />
-                  <div>
-                    <h3 className="text-xl font-medium text-white mb-2">Can I use my existing Google Drive?</h3>
-                    <p className="text-white/60 font-light leading-relaxed">Yes! Candy integrates seamlessly with your existing Google Workspace or personal Google Drive. We don't hold your photos hostage—they stay right where you put them.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[1.5rem] p-6 sm:p-8">
-                <div className="flex items-start gap-4">
-                  <HelpCircle className="w-6 h-6 text-amber-400 shrink-0 mt-1" />
-                  <div>
-                    <h3 className="text-xl font-medium text-white mb-2">What if the venue has bad internet?</h3>
-                    <p className="text-white/60 font-light leading-relaxed">You can generate and print your event QR codes ahead of time. Guests can snap a photo of the QR code and scan it later when they have a better connection to access their photos.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer CTA */}
-        <div className="py-20 px-6 text-center bg-black/80 backdrop-blur-xl border-t border-white/10">
-          <h2 className="font-serif text-3xl md:text-4xl text-white mb-6">Ready to elevate your business?</h2>
-          <button
-            onClick={signIn}
-            className="inline-flex items-center gap-3 bg-white text-stone-900 py-4 px-8 rounded-xl font-medium hover:bg-stone-100 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
-          >
-            Start Growing Today
-          </button>
-        </div>
-
-        {/* Footer */}
-        <footer className="bg-black py-12 px-6 sm:px-8 lg:px-12 border-t border-white/10">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div className="md:col-span-2">
-              <div className="inline-flex items-center gap-3 mb-4">
-                <Camera className="w-6 h-6 text-white" />
-                <span className="text-xl font-serif text-white tracking-tight">Candy.</span>
-              </div>
-              <p className="text-white/50 font-light text-sm max-w-sm">
-                The all-in-one event management and lead generation platform designed exclusively for professional photographers.
-              </p>
-            </div>
-            <div>
-              <h4 className="text-white font-medium mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-white/50 font-light">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Case Studies</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-medium mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-white/50 font-light">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Cookie Policy</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="max-w-7xl mx-auto pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-white/40 text-xs font-light">
-              &copy; {new Date().getFullYear()} Candy Photography. All rights reserved.
+        {/* Rail Text (Creative touch) */}
+        <motion.div 
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.8 }}
+          className="absolute top-12 right-12 flex items-center justify-center"
+        >
+            <p className="[writing-mode:vertical-rl] rotate-180 text-[10px] uppercase tracking-[0.3em] font-bold text-[#6B8F71]">
+              <span className="bg-gradient-to-t from-[#6B8F71] via-white to-[#6B8F71] bg-clip-text text-transparent animate-text-gradient-y">
+                Candei OS
+              </span> — v1.2.0
             </p>
-            <div className="flex items-center gap-4 text-white/40">
-              <a href="#" className="hover:text-white transition-colors"><Instagram className="w-4 h-4" /></a>
-              <a href="#" className="hover:text-white transition-colors"><Youtube className="w-4 h-4" /></a>
-            </div>
-          </div>
-        </footer>
-
-      </div>
+        </motion.div>
+      </motion.div>
+      
     </div>
   );
 }

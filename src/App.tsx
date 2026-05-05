@@ -21,20 +21,20 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, authError, logout } = useAuth();
   const location = useLocation();
   
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-stone-900 text-amber-400/70 tracking-widest uppercase text-sm font-sans">Loading...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-neutral-900 text-white/50 tracking-[0.2em] uppercase text-xs font-sans">Loading...</div>;
   
   if (authError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-stone-900 text-white font-sans p-6 text-center">
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 max-w-md w-full shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
-          <h2 className="text-2xl font-serif mb-4 text-red-400">Authentication Error</h2>
-          <p className="text-white/70 font-light mb-8">{authError}</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-900 text-white font-sans p-6 text-center">
+        <div className="bg-neutral-800 border border-neutral-700 rounded-3xl p-8 max-w-md w-full">
+          <h2 className="text-xl font-serif mb-4 text-red-500">Authentication Error</h2>
+          <p className="text-neutral-400 font-light mb-8 text-sm">{authError}</p>
           <button 
             onClick={async () => {
               await logout();
               window.location.href = '/';
             }}
-            className="w-full bg-white text-stone-900 py-3 rounded-xl font-medium hover:bg-stone-100 transition-all"
+            className="w-full bg-white text-black py-4 rounded-full font-medium tracking-wide hover:bg-neutral-200 transition-colors"
           >
             Sign Out & Return Home
           </button>
