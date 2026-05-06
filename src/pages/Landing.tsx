@@ -259,11 +259,18 @@ export default function Landing() {
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 1, duration: 0.8, ease: "easeOut" }}
-          className="absolute bottom-12 right-12 text-white border border-white/10 backdrop-blur-3xl px-6 py-4 rounded-full bg-black/40 shadow-2xl"
+          className="absolute bottom-12 right-12 text-white border border-white/10 backdrop-blur-3xl px-6 py-4 rounded-3xl bg-black/40 shadow-2xl"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse"></div>
-            <p className="text-[10px] font-mono tracking-widest uppercase opacity-80">System Operational</p>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse"></div>
+              <p className="text-[10px] font-mono tracking-widest uppercase opacity-80">System Operational</p>
+            </div>
+            <div className="flex items-center gap-2 opacity-50 ml-[20px] text-[9px] uppercase font-mono tracking-wider">
+              <a href="/terms.html" className="hover:opacity-100 transition-opacity" target="_blank" rel="noopener noreferrer">Terms</a>
+              <span>/</span>
+              <a href="/privacy.html" className="hover:opacity-100 transition-opacity" target="_blank" rel="noopener noreferrer">Privacy</a>
+            </div>
           </div>
         </motion.div>
 
