@@ -15,6 +15,8 @@ import Gallery from './pages/Gallery';
 import Payment from './pages/Payment';
 import AdminPanel from './pages/AdminPanel';
 
+import About from './pages/About';
+
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -72,6 +74,7 @@ export default function App() {
         <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/about" element={<About />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><ProfileSetup /></PrivateRoute>} />
           <Route path="/payment" element={<PrivateRoute><Payment /></PrivateRoute>} />

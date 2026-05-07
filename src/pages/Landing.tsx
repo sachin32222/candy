@@ -165,15 +165,14 @@ export default function Landing() {
             </motion.button>
 
             <div className="flex gap-4">
-              <motion.a
+              <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                href="/about.html"
-                target="_blank"
+                onClick={() => window.open('/#/about', '_blank')}
                 className="w-full bg-[#1a1a1a] text-white border border-[#333] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#252525] transition-all flex items-center justify-center gap-2 text-sm"
               >
                 About Us
-              </motion.a>
+              </motion.button>
               <motion.a
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
