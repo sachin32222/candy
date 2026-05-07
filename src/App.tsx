@@ -18,6 +18,7 @@ import AdminPanel from './pages/AdminPanel';
 import About from './pages/About';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { GlobalSoundListener } from './components/GlobalSoundListener';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, authError, logout } = useAuth();
@@ -71,6 +72,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
+        <GlobalSoundListener />
         <Router>
         <Routes>
           <Route path="/" element={<Landing />} />

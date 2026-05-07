@@ -203,7 +203,7 @@ export default function Landing() {
               </motion.div>
             )}
             
-            <motion.p variants={itemVariants} className="text-[#301728] text-[10px] text-center font-medium uppercase tracking-[0.2em]">
+            <motion.p variants={itemVariants} className="text-[#301934] text-[10px] text-center font-medium uppercase tracking-[0.2em]">
               Join 10,000+ elite photographers
             </motion.p>
           </motion.div>
