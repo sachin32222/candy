@@ -25,7 +25,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   authError: string | null;
-  signIn: () => Promise<void>;
+  signIn: () => Promise<string | void>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   driveToken: string | null;
@@ -77,13 +77,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const signIn = async () => {
+  const signIn = async (): Promise<string | void> => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       // @ts-ignore
       const credential = GoogleAuthProvider.credentialFromResult(result);
       if (credential?.accessToken) {
         setDriveToken(credential.accessToken);
+        return credential.accessToken;
       }
     } catch (error: any) {
       console.error('Error signing in', error);

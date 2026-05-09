@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, getDocs, addDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { Camera, Sparkles, ArrowLeft, Loader2, Download, X, RefreshCw } from 'lucide-react';
+import { Camera, Sparkles, ArrowLeft, Loader2, Download, X, RefreshCw, Share2 } from 'lucide-react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useAuth } from '../AuthContext';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -144,7 +144,7 @@ export default function Gallery() {
         };
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.1-flash-preview',
+          model: 'gemini-2.5-flash',
           contents: {
             parts: [
               { text: "Here is a selfie of a person:" },
@@ -217,8 +217,19 @@ export default function Gallery() {
             </div>
           </div>
 
-          {/* Find Me AI Button */}
-          <div className="relative z-10 flex items-center gap-4">
+          <div className="relative z-10 flex items-center gap-3">
+            <button
+               onClick={() => {
+                 navigator.clipboard.writeText(window.location.href);
+                 alert('Gallery link copied to clipboard!');
+               }}
+               className="flex items-center gap-2 bg-[#0f0f0f] border border-[#333] hover:border-[#555] text-neutral-300 px-4 py-2.5 rounded-full font-medium hover:text-white transition-all backdrop-blur-md"
+            >
+              <Share2 className="w-4 h-4" />
+              <span className="text-sm">Share</span>
+            </button>
+
+            {/* Find Me AI Button */}
             <input 
               type="file" 
               accept="image/*" 

@@ -4,8 +4,9 @@ import { doc, getDoc, collection, query, where, getDocs, addDoc } from 'firebase
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
+import { uploadFileToDrive } from '../utils/drive';
 import { QRCodeSVG } from 'qrcode.react';
-import { ArrowLeft, Download, Users, UploadCloud, ExternalLink, Copy, Share2, Check, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, Users, UploadCloud, ExternalLink, Copy, Share2, Check, RefreshCw, MessageCircle } from 'lucide-react';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 interface Event {
@@ -13,6 +14,7 @@ interface Event {
   name: string;
   venue: string;
   photographerId: string;
+  driveLink?: string;
 }
 
 interface Lead {
@@ -25,7 +27,7 @@ interface Lead {
 
 export default function EventDetails() {
   const { eventId } = useParams<{ eventId: string }>();
-  const { user } = useAuth();
+  const { user, driveToken, signIn } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,16 +61,100 @@ export default function EventDetails() {
     fetchEventAndLeads();
   }, [eventId, user]);
 
+  const compressImage = async (file: File): Promise<Blob | File> => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) {
+        resolve(file);
+        return;
+      }
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1920;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                resolve(file);
+              }
+            },
+            'image/jpeg',
+            0.7
+          );
+        };
+        img.onerror = () => resolve(file);
+      };
+      reader.onerror = () => resolve(file);
+    });
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0 || !event) return;
     
-    setUploading(true);
+    let activeDriveToken = driveToken;
+
+    if (!activeDriveToken && event.driveLink) {
+      if (window.confirm("Google Drive access is required to upload files to the event folder. Would you like to grant permission now?")) {
+        try {
+          const newToken = await signIn();
+          if (typeof newToken === 'string') {
+            activeDriveToken = newToken;
+          } else {
+            alert("Failed to get Google Drive token. Please try again.");
+            return;
+          }
+        } catch (error) {
+          console.error("Error signing in", error);
+          alert("Failed to sign in. Please try again.");
+          return;
+        }
+      }
+    }
+
     const files: File[] = Array.from(e.target.files);
+    setUploading(true);
 
     try {
-      for (const file of files) {
+      await Promise.all(files.map(async (file) => {
+        const compressedBlob = await compressImage(file);
+        
+        let driveFile = null;
+        if (activeDriveToken && event.driveLink) {
+          try {
+            // Upload original to drive
+            driveFile = await uploadFileToDrive(file, event.driveLink, activeDriveToken);
+          } catch (e) {
+            console.error("Failed to upload to drive", e);
+          }
+        }
+        
+        // Upload compressed image to Firebase Storage for the web gallery
         const storageRef = ref(storage, `events/${eventId}/${Date.now()}-${file.name}`);
-        await uploadBytes(storageRef, file);
+        await uploadBytes(storageRef, compressedBlob);
         const downloadUrl = await getDownloadURL(storageRef);
         
         // Save photo metadata to Firestore
@@ -77,19 +163,18 @@ export default function EventDetails() {
           photographerId: event.photographerId,
           name: file.name,
           type: file.type,
-          driveFileId: storageRef.fullPath, // Use storage path as ID
-          thumbnailLink: downloadUrl,
-          webContentLink: downloadUrl,
+          driveFileId: driveFile ? driveFile.id : storageRef.fullPath,
+          thumbnailLink: downloadUrl, // Storage URL
+          webContentLink: downloadUrl, // Storage URL
           createdAt: new Date().toISOString()
         });
-      }
+      }));
       alert('Photos uploaded successfully!');
     } catch (error) {
       console.error('Error uploading', error);
       alert('Failed to upload photos.');
     } finally {
       setUploading(false);
-      // Reset input
       e.target.value = '';
     }
   };
@@ -229,9 +314,26 @@ export default function EventDetails() {
                   <Users className="w-5 h-5 text-white mr-3" />
                   <h2 className="text-2xl font-serif text-white">Guest Leads</h2>
                 </div>
-                <span className="bg-neutral-700 text-neutral-400 border border-[#333] rounded-full text-[10px] tracking-widest uppercase px-4 py-1.5 font-semibold">
-                  {leads.length} Total
-                </span>
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => {
+                      const phones = leads.map(l => l.phone).filter(Boolean).join(', ');
+                      if (phones) {
+                        navigator.clipboard.writeText(phones);
+                        alert('Phone numbers copied to clipboard for WhatsApp Broadcast!');
+                      } else {
+                        alert('No phone numbers available.');
+                      }
+                    }}
+                    className="bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 px-4 py-1.5 rounded-full text-[10px] tracking-widest uppercase font-semibold flex items-center gap-2 hover:bg-[#25D366]/20 transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    WhatsApp Broadcast
+                  </button>
+                  <span className="bg-neutral-700 text-neutral-400 border border-[#333] rounded-full text-[10px] tracking-widest uppercase px-4 py-1.5 font-semibold">
+                    {leads.length} Total
+                  </span>
+                </div>
               </div>
               
               {leads.length === 0 ? (

@@ -5,12 +5,14 @@ import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle, ArrowRight, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { createDriveFolder } from '../utils/drive';
 
 interface Event {
   id: string;
   name: string;
   venue: string;
   createdAt: string;
+  driveLink?: string;
 }
 
 export default function Dashboard() {
@@ -50,14 +52,39 @@ export default function Dashboard() {
     e.preventDefault();
     if (!user) return;
 
+    let activeDriveToken = driveToken;
+
+    if (!activeDriveToken) {
+      if (window.confirm("Google Drive access is required to create an event folder. Would you like to grant permission now?")) {
+        try {
+          const newToken = await signIn();
+          if (typeof newToken === 'string') {
+            activeDriveToken = newToken;
+          } else {
+            alert("Failed to get Google Drive token. Please try again.");
+            return;
+          }
+        } catch (error) {
+          console.error("Error signing in", error);
+          alert("Failed to sign in. Please try again.");
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+
     setCreating(true);
     setError(null);
 
     try {
+      const folderId = await createDriveFolder(`Candei - ${newEvent.name}`, activeDriveToken);
+
       const docRef = await addDoc(collection(db, 'events'), {
         name: newEvent.name,
         venue: newEvent.venue,
         photographerId: user.uid,
+        driveLink: folderId,
         createdAt: new Date().toISOString()
       });
       
@@ -76,7 +103,6 @@ export default function Dashboard() {
   const handleDeleteEvent = async (e: React.MouseEvent, eventId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) return;
     try {
       await deleteDoc(doc(db, 'events', eventId));
       setEvents(events.filter(event => event.id !== eventId));
