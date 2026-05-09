@@ -164,23 +164,34 @@ export default function Landing() {
               <ChevronRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
             </motion.button>
 
-            <div className="flex gap-4">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => window.open('/#/about', '_blank')}
-                className="w-full bg-[#1a1a1a] text-white border border-[#333] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#252525] transition-all flex items-center justify-center gap-2 text-sm"
-              >
-                About Us
-              </motion.button>
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => window.open('/#/about', '_blank')}
+                  className="w-full bg-[#1a1a1a] text-white border border-[#333] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#252525] transition-all flex items-center justify-center gap-2 text-sm"
+                >
+                  About Us
+                </motion.button>
+                <motion.a
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  href="/story.html"
+                  target="_blank"
+                  className="w-full bg-[#1a1a1a] text-white border border-[#333] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#252525] transition-all flex items-center justify-center gap-2 text-sm"
+                >
+                  Our Story
+                </motion.a>
+              </div>
               <motion.a
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                href="/story.html"
+                href="/why-candei.html"
                 target="_blank"
-                className="w-full bg-[#1a1a1a] text-white border border-[#333] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#252525] transition-all flex items-center justify-center gap-2 text-sm"
+                className="w-full bg-[#301934] text-[#b500ff] border border-[#b500ff]/30 py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#3d2042] transition-all flex items-center justify-center gap-2 text-sm"
               >
-                Our Story
+                Why Candei
               </motion.a>
             </div>
             
@@ -203,8 +214,8 @@ export default function Landing() {
               </motion.div>
             )}
             
-            <motion.p variants={itemVariants} className="text-[#301934] text-[10px] text-center font-medium uppercase tracking-[0.2em]">
-              Join 10,000+ elite photographers
+            <motion.p variants={itemVariants} className="text-[#301934] text-[10px] text-center font-medium uppercase tracking-[0.2em] hover:text-[#b500ff] hover:drop-shadow-[0_0_8px_rgba(181,0,255,1)] transition-all duration-300 cursor-default">
+              Join 24,000+ elite photographers
             </motion.p>
           </motion.div>
 

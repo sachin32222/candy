@@ -15,7 +15,7 @@ export default function Payment() {
       
       // Redirect to WhatsApp
       const phoneNumber = '+919318465272';
-      const message = `Hi, I want to pay ₹499 for the Candei early bird yearly subscription. My email is ${profile?.email} and my WhatsApp number is ${profile?.whatsapp || ''}.`;
+      const message = `Hi, I am interested in Candei and would like to contact sales. My email is ${profile?.email} and my WhatsApp number is ${profile?.whatsapp || ''}.`;
       const whatsappUrl = `https://wa.me/${phoneNumber.replace('+', '')}?text=${encodeURIComponent(message)}`;
       
       window.open(whatsappUrl, '_blank');
@@ -55,7 +55,7 @@ export default function Payment() {
             <Clock className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
             <h3 className="text-xl font-medium text-white mb-2">Pending Approval</h3>
             <p className="text-neutral-500 font-light text-sm leading-relaxed">
-              We've received your request. Once your payment is verified via WhatsApp, your account will be approved.
+              We've received your request. Our sales team will assist you via WhatsApp to activate your account.
             </p>
             <button
               onClick={handlePay}
@@ -70,8 +70,7 @@ export default function Payment() {
               <div className="flex justify-between items-end mb-4">
                 <span className="text-neutral-300 font-medium tracking-wide">Yearly Subscription</span>
                 <div className="text-right">
-                  <span className="text-sm text-neutral-600 line-through block mb-1">₹4,999</span>
-                  <span className="text-3xl font-serif text-white">₹499</span>
+                  <span className="text-xl font-serif text-white">Contact Sales</span>
                 </div>
               </div>
               
@@ -96,7 +95,7 @@ export default function Payment() {
               disabled={loading}
               className="w-full bg-neutral-100 text-neutral-900 py-4 rounded-full font-medium hover:bg-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {loading ? 'Processing...' : 'Pay ₹499 via WhatsApp'}
+              {loading ? 'Processing...' : 'Contact Sales via WhatsApp'}
             </button>
           </>
         )}

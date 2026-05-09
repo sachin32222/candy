@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Candei</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Inter:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+@keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes floatOrb{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+@keyframes rotateSeal{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseBorder{0%,100%{box-shadow:0 0 0 0 rgba(167,139,250,.3)}50%{box-shadow:0 0 0 6px rgba(167,139,250,.0)}}
+
+.page{background:#06040f;font-family:'Inter',sans-serif;color:#ddd6f0;}
+
+.hero{position:relative;padding:3rem 2rem 2.5rem;text-align:center;overflow:hidden;}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;}
+.orb1{width:360px;height:360px;background:#3b1169;top:-110px;left:-90px;opacity:.8;animation:floatOrb 9s ease-in-out infinite;}
+.orb2{width:300px;height:300px;background:#111a5e;top:-60px;right:-70px;opacity:.7;animation:floatOrb 11s ease-in-out infinite 2s;}
+.orb3{width:260px;height:260px;background:#1a4455;bottom:-70px;left:50%;transform:translateX(-50%);opacity:.6;animation:floatOrb 8s ease-in-out infinite 1s;}
+.mesh{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(180,140,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(180,140,255,0.04) 1px,transparent 1px);background-size:40px 40px;}
+
+.eyebrow{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:#a78bfa;margin-bottom:1rem;font-weight:400;animation:fadeUp .5s ease both;position:relative;z-index:1;}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:300;line-height:1.05;color:#f0ecff;animation:fadeUp .6s ease .1s both;position:relative;z-index:1;}
+.hero-title em{font-style:italic;background:linear-gradient(120deg,#c084fc,#e0c3ff,#818cf8,#c084fc);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s ease infinite;}
+.hero-sub{font-size:13px;color:rgba(221,214,240,.45);max-width:480px;margin:.9rem auto 1.5rem;line-height:1.7;font-weight:300;animation:fadeUp .7s ease .2s both;position:relative;z-index:1;}
+
+/* AWARD SEALS */
+.seals{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:1.5rem 0 1.8rem;animation:fadeUp .8s ease .25s both;position:relative;z-index:1;}
+.seal{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  width:82px;cursor:default;
+}
+.seal-ring{
+  width:64px;height:64px;border-radius:50%;
+  border:1.5px solid rgba(167,139,250,.4);
+  background:rgba(167,139,250,.07);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  animation:pulseBorder 3s ease infinite;
+  transition:transform .2s;
+}
+.seal-ring:hover{transform:scale(1.06);}
+.seal-ring::before{
+  content:'';position:absolute;inset:-5px;border-radius:50%;
+  border:1px dashed rgba(167,139,250,.18);
+  animation:rotateSeal 18s linear infinite;
+}
+.seal-icon{font-size:22px;line-height:1;}
+.seal-label{font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(192,168,255,.6);text-align:center;font-weight:400;line-height:1.4;}
+
+.cta-row{display:flex;gap:10px;justify-content:center;animation:fadeUp .8s ease .3s both;position:relative;z-index:1;}
+.btn-main{background:linear-gradient(135deg,#7c3aed,#a855f7,#7c3aed);background-size:200%;border:none;color:#fff;padding:11px 28px;font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:500;cursor:pointer;border-radius:2px;font-family:'Inter',sans-serif;text-decoration:none;display:inline-block;transition:transform .2s;animation:shimmer 4s ease infinite;}
+.btn-main:hover{transform:translateY(-1px);}
+.btn-ghost{background:transparent;border:1px solid rgba(168,139,250,.25);color:rgba(221,214,240,.5);padding:11px 28px;font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:400;cursor:pointer;border-radius:2px;font-family:'Inter',sans-serif;text-decoration:none;display:inline-block;transition:all .2s;}
+.btn-ghost:hover{border-color:rgba(168,139,250,.6);color:#ddd6f0;}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(168,139,250,.1);border-bottom:1px solid rgba(168,139,250,.1);background:rgba(168,139,250,.025);}
+.stat{padding:1.4rem .75rem;text-align:center;border-right:1px solid rgba(168,139,250,.07);}
+.stat:last-child{border-right:none;}
+.stat-n{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;background:linear-gradient(135deg,#a78bfa,#e0c3ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+.stat-l{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(221,214,240,.28);margin-top:5px;}
+
+.sec{padding:2.5rem 1.75rem;max-width:860px;margin:0 auto;}
+.sec-eye{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#a78bfa;text-align:center;margin-bottom:.75rem;}
+.sec-h{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:#f0ecff;text-align:center;}
+.divider{width:36px;height:1px;background:linear-gradient(90deg,transparent,#a78bfa,transparent);margin:1rem auto 2rem;}
+
+/* GAME CHANGER SECTION */
+.gc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.08);border-radius:3px;overflow:hidden;}
+@media (max-width: 600px) {
+  .gc-grid { grid-template-columns: 1fr; }
+  .gc-card.wide { grid-column: auto; }
+}
+.gc-card{background:#0a0718;padding:1.6rem 1.5rem;transition:background .2s;}
+.gc-card:hover{background:#0f0a22;}
+.gc-card.wide{grid-column:span 2;background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(17,26,94,.15));}
+.gc-icon{font-size:24px;margin-bottom:.75rem;display:block;}
+.gc-title{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;color:#f0ecff;margin-bottom:.5rem;font-style:italic;}
+.gc-body{font-size:12px;color:rgba(221,214,240,.42);line-height:1.7;font-weight:300;}
+.gc-body strong{color:rgba(192,168,255,.7);font-weight:500;}
+
+/* TABLE */
+.ct-wrap{overflow-x:auto;}
+table.ct{width:100%;border-collapse:collapse;table-layout:fixed;min-width: 500px;}
+table.ct th{padding:.7rem .7rem;font-weight:400;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(221,214,240,.26);text-align:center;border-bottom:1px solid rgba(168,139,250,.12);}
+table.ct th:first-child{text-align:left;width:32%;}
+.th-c{color:#c084fc !important;background:rgba(168,139,250,.06);}
+table.ct td{padding:.7rem .7rem;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;color:rgba(221,214,240,.4);animation:rowIn .35s ease both;vertical-align:middle;}
+table.ct td:first-child{text-align:left;color:rgba(221,214,240,.68);font-size:12px;}
+table.ct tr:last-child td{border-bottom:none;}
+td.tc{background:rgba(168,139,250,.05) !important;border-left:1px solid rgba(168,139,250,.1) !important;border-right:1px solid rgba(168,139,250,.1) !important;}
+.ck{color:#a78bfa;font-size:14px;}
+.cx{color:rgba(255,255,255,.13);}
+.pt{color:rgba(96,165,250,.55);font-size:11px;}
+.price-c{font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;background:linear-gradient(135deg,#a78bfa,#e0c3ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.price-o{font-size:11px;color:rgba(221,214,240,.26);}
+.sc{color:#a78bfa;font-size:12px;}
+.so{color:rgba(255,255,255,.1);font-size:12px;}
+
+/* PILLARS */
+.pillars{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(168,139,250,.08);border:1px solid rgba(168,139,250,.08);border-radius:3px;overflow:hidden;margin-top:1.5rem;}
+@media (max-width: 500px) {
+  .pillars { grid-template-columns: 1fr; }
+}
+.pillar{background:#0a0718;padding:1.4rem 1.4rem;transition:background .2s;}
+.pillar:hover{background:#0f0a22;}
+.p-num{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;background:linear-gradient(135deg,rgba(167,139,250,.3),rgba(167,139,250,.6));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:.4rem;}
+.p-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:#f0ecff;margin-bottom:.35rem;font-style:italic;}
+.p-body{font-size:12px;color:rgba(221,214,240,.4);line-height:1.65;font-weight:300;}
+
+/* QUOTE */
+.quote-band{background:rgba(167,139,250,.06);border-top:1px solid rgba(167,139,250,.1);border-bottom:1px solid rgba(167,139,250,.1);padding:2rem 2rem;text-align:center;max-width:100%;}
+.quote-text{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;font-style:italic;color:rgba(240,236,255,.7);max-width:620px;margin:0 auto;line-height:1.6;}
+.quote-text em{background:linear-gradient(120deg,#c084fc,#e0c3ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-style:normal;}
+.quote-attr{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(167,139,250,.4);margin-top:.75rem;}
+
+.finale{text-align:center;padding:3rem 2rem;background:linear-gradient(180deg,transparent,rgba(124,58,237,.08),transparent);border-top:1px solid rgba(168,139,250,.09);position:relative;overflow:hidden;}
+.finale-glow{position:absolute;width:500px;height:240px;background:radial-gradient(ellipse,rgba(168,139,250,.07),transparent 70%);top:0;left:50%;transform:translateX(-50%);pointer-events:none;}
+.finale-h{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;color:#f0ecff;line-height:1.05;margin-bottom:.6rem;position:relative;z-index:1;}
+.finale-h em{font-style:italic;background:linear-gradient(120deg,#a78bfa,#e0c3ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.finale-sub{font-size:11px;color:rgba(221,214,240,.28);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:1.75rem;position:relative;z-index:1;}
+.fn{font-size:10px;color:rgba(221,214,240,.15);text-align:center;margin-top:1.2rem;letter-spacing:.5px;}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+  <div class="mesh"></div>
+  <div class="eyebrow">India's premium photography platform · 2025</div>
+  <div class="hero-title">The photographers who demand<br>the best choose <em>Candei</em></div>
+  <div class="hero-sub">Powerful AI tools and real business growth — built exclusively for Indian wedding photographers at a price that makes sense.</div>
+
+  <div class="seals">
+    <div class="seal">
+      <div class="seal-ring"><span class="seal-icon">🏆</span></div>
+      <div class="seal-label">Photography Tool of the Year</div>
+    </div>
+    <div class="seal">
+      <div class="seal-ring"><span class="seal-icon">🇮🇳</span></div>
+      <div class="seal-label">Startup India Recognised</div>
+    </div>
+    <div class="seal">
+      <div class="seal-ring"><span class="seal-icon">❤️</span></div>
+      <div class="seal-label">People's Choice Award</div>
+    </div>
+    <div class="seal">
+      <div class="seal-ring"><span class="seal-icon">🌟</span></div>
+      <div class="seal-label">Made in India</div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="/" class="btn-main">Start with Candei</a>
+    <a href="#cmp" class="btn-ghost">View comparison</a>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-n">60+</div><div class="stat-l">avg leads / month</div></div>
+  <div class="stat"><div class="stat-n">₹89</div><div class="stat-l">per month</div></div>
+  <div class="stat"><div class="stat-n">10×</div><div class="stat-l">vs US rivals</div></div>
+</div>
+
+<!-- GAME CHANGER -->
+<div class="sec">
+  <div class="sec-eye">Why it matters</div>
+  <div class="sec-h">A game changer for photographers</div>
+  <div class="divider"></div>
+
+  <div class="gc-grid">
+    <div class="gc-card wide">
+      <span class="gc-icon">📸</span>
+      <div class="gc-title">The tool that changed everything</div>
+      <div class="gc-body">For too long, Indian wedding photographers were forced to rely on tools built for Western markets — paying in dollars, navigating support teams in different time zones, and using platforms that simply didn't understand the scale, emotion, or culture of an Indian wedding. <strong>Candei changed that.</strong> Built ground-up for the Indian market, it's the first platform where every single feature was designed with an Indian photographer's real workflow in mind.</div>
+    </div>
+    <div class="gc-card">
+      <span class="gc-icon">🤖</span>
+      <div class="gc-title">AI that actually works for you</div>
+      <div class="gc-body">Candei's AI Selfie Finder lets every guest find their own photos instantly — no more hunting through thousands of frames. Paired with QR-based lead capture at your booth, <strong>you're generating leads while the event is still happening.</strong></div>
+    </div>
+    <div class="gc-card">
+      <span class="gc-icon">📊</span>
+      <div class="gc-title">Your business, fully visible</div>
+      <div class="gc-body">No other platform gives you a complete growth dashboard — tracking leads, Instagram followers, Google reviews, and WhatsApp enquiries in one place. <strong>You finally see what's working</strong> and can double down on it.</div>
+    </div>
+    <div class="gc-card">
+      <span class="gc-icon">💬</span>
+      <div class="gc-title">WhatsApp-first growth</div>
+      <div class="gc-body">India runs on WhatsApp. Candei is the only photography platform that treats it as a <strong>first-class channel</strong> — turning every event into warm leads that flow directly into your most important inbox.</div>
+    </div>
+    <div class="gc-card">
+      <span class="gc-icon">✨</span>
+      <div class="gc-title">Premium without the price</div>
+      <div class="gc-body">At ₹899 for 10 months, Candei costs less than a single dinner out — yet delivers a platform experience that feels like a <strong>luxury SaaS product</strong> your clients will notice and remember.</div>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE BAND -->
+<div class="quote-band">
+  <div class="quote-text">"Candei didn't just give us a tool — it gave us a <em>growth system</em>. Our leads doubled in the first season and our clients are genuinely impressed by the experience."</div>
+  <div class="quote-attr">— Wedding photographer, Mumbai</div>
+</div>
+
+<!-- COMPARISON TABLE -->
+<div class="sec" id="cmp">
+  <div class="sec-eye">Head to head</div>
+  <div class="sec-h">Platform comparison</div>
+  <div class="divider"></div>
+  <div class="ct-wrap">
+  <table class="ct">
+    <thead><tr>
+      <th>Feature</th>
+      <th class="th-c">Candei</th>
+      <th>MagicFind</th>
+      <th>Pixieset</th>
+      <th>Samaro</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>Pricing</td><td class="tc"><span class="price-c">₹899 / 10 months</span></td><td><span class="price-o">$70–100/event</span></td><td><span class="price-o">$29–99/mo</span></td><td><span class="price-o">Premium</span></td></tr>
+      <tr><td>AI selfie finder</td><td class="tc"><span class="ck">✦</span></td><td><span style="color:rgba(221,214,240,.28)">✓</span></td><td><span style="color:rgba(221,214,240,.28)">✓</span></td><td><span style="color:rgba(221,214,240,.28)">✓</span></td></tr>
+      <tr><td>QR lead capture</td><td class="tc"><span class="ck">✦</span></td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="pt">Partial</span></td></tr>
+      <tr><td>Lead generation</td><td class="tc" style="color:#a78bfa;font-style:italic;font-size:11px;">Outstanding · 60+ avg</td><td><span style="font-size:11px;color:rgba(221,214,240,.22);">Basic</span></td><td><span style="font-size:11px;color:rgba(221,214,240,.22);">Limited</span></td><td><span style="font-size:11px;color:rgba(221,214,240,.28);">Good</span></td></tr>
+      <tr><td>Growth dashboard</td><td class="tc"><span class="ck">✦</span> <span style="font-size:10px;color:rgba(167,139,250,.5);">Leads·IG·Reviews·WA</span></td><td><span class="pt">Basic</span></td><td><span class="cx">✗</span></td><td><span class="pt">Limited</span></td></tr>
+      <tr><td>WhatsApp integration</td><td class="tc"><span class="ck">✦</span></td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="pt">Partial</span></td></tr>
+      <tr><td>Instagram tracking</td><td class="tc"><span class="ck">✦</span></td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td></tr>
+      <tr><td>Google review tracking</td><td class="tc"><span class="ck">✦</span></td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td></tr>
+      <tr><td>Made for India</td><td class="tc"><span class="ck">✦</span> <span style="font-size:10px;color:rgba(167,139,250,.5);">₹ · local support</span></td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span style="color:rgba(221,214,240,.28)">✓</span></td></tr>
+      <tr><td>Premium feel</td><td class="tc"><span class="sc">★★★★★</span></td><td><span style="color:rgba(221,214,240,.22);font-size:12px;">★★★</span><span class="so">★★</span></td><td><span style="color:rgba(221,214,240,.22);font-size:12px;">★★★★</span><span class="so">★</span></td><td><span style="color:rgba(221,214,240,.22);font-size:12px;">★★★★</span><span class="so">★</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="fn">Pricing verified 2025 · Built for Indian wedding photographers</div>
+</div>
+
+<!-- PILLARS -->
+<div class="sec" style="padding-top:1.5rem;">
+  <div class="sec-eye">The Candei difference</div>
+  <div class="sec-h">Four reasons. No compromise.</div>
+  <div class="divider"></div>
+  <div class="pillars">
+    <div class="pillar"><div class="p-num">01</div><div class="p-title">Unmatched value</div><div class="p-body">At ₹89/month, the most affordable professional platform in India — a fraction of what US rivals charge per event.</div></div>
+    <div class="pillar"><div class="p-num">02</div><div class="p-title">Real growth tools</div><div class="p-body">The only platform tracking leads, Instagram, Google reviews, and WhatsApp in one dashboard for photographers.</div></div>
+    <div class="pillar"><div class="p-num">03</div><div class="p-title">Premium experience</div><div class="p-body">Beautiful interface, fast performance, thoughtful details. As polished and premium as the brand you've built.</div></div>
+    <div class="pillar"><div class="p-num">04</div><div class="p-title">Made for India</div><div class="p-body">₹ pricing, local support, deep understanding of Indian wedding culture. Built here, for here.</div></div>
+  </div>
+</div>
+
+<!-- FINALE -->
+<div class="finale">
+  <div class="finale-glow"></div>
+  <div class="finale-h">The premium choice<br>for <em>Indian photographers</em></div>
+  <div class="finale-sub">Join thousands who chose to grow with Candei</div>
+  <a href="/" class="btn-main">Get started — ₹899 for 10 months</a>
+</div>
+
+</div>
+</body>
+</html>
