@@ -125,6 +125,58 @@ td.tc{background:rgba(168,139,250,.05) !important;border-left:1px solid rgba(168
 .finale-sub{font-size:11px;color:rgba(221,214,240,.28);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:1.75rem;position:relative;z-index:1;}
 .fn{font-size:10px;color:rgba(221,214,240,.15);text-align:center;margin-top:1.2rem;letter-spacing:.5px;}
 </style>
+<script>
+let globalAudioCtx = null;
+const playCameraClick = () => {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    if (!globalAudioCtx) globalAudioCtx = new AudioContextClass();
+    if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume().catch(() => {});
+    const ctx = globalAudioCtx;
+    const playClick = (timeOffset, pitchOffset, duration, isTail) => {
+      const bufferSize = ctx.sampleRate * duration;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = isTail ? 'bandpass' : 'highpass';
+      noiseFilter.frequency.value = isTail ? 1200 : 2500;
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0, ctx.currentTime + timeOffset);
+      noiseGain.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + timeOffset + 0.005);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + timeOffset + duration);
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      const oscGain = ctx.createGain();
+      osc.frequency.setValueAtTime(140 + pitchOffset, ctx.currentTime + timeOffset);
+      osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + timeOffset + duration * 0.8);
+      oscGain.gain.setValueAtTime(0, ctx.currentTime + timeOffset);
+      oscGain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + timeOffset + 0.005);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + timeOffset + duration);
+      osc.connect(oscGain);
+      oscGain.connect(ctx.destination);
+      noise.start(ctx.currentTime + timeOffset);
+      osc.start(ctx.currentTime + timeOffset);
+      noise.stop(ctx.currentTime + timeOffset + duration);
+      osc.stop(ctx.currentTime + timeOffset + duration);
+    };
+    playClick(0, 30, 0.035, false);
+    playClick(0.06, 10, 0.05, true);
+  } catch (e) {}
+};
+document.addEventListener('click', (e) => {
+  const target = e.target;
+  if (target.closest('button') || target.closest('a')) {
+    playCameraClick();
+  }
+});
+</script>
 </head>
 <body>
 

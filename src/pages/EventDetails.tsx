@@ -5,7 +5,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { uploadFileToDrive } from '../utils/drive';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { ArrowLeft, Download, Users, UploadCloud, ExternalLink, Copy, Share2, Check, RefreshCw, MessageCircle } from 'lucide-react';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -118,20 +118,19 @@ export default function EventDetails() {
     let activeDriveToken = driveToken;
 
     if (!activeDriveToken && event.driveLink) {
-      if (window.confirm("Google Drive access is required to upload files to the event folder. Would you like to grant permission now?")) {
-        try {
-          const newToken = await signIn();
-          if (typeof newToken === 'string') {
-            activeDriveToken = newToken;
-          } else {
-            alert("Failed to get Google Drive token. Please try again.");
-            return;
-          }
-        } catch (error) {
-          console.error("Error signing in", error);
-          alert("Failed to sign in. Please try again.");
+      try {
+        const newToken = await signIn();
+        if (typeof newToken === 'string') {
+          activeDriveToken = newToken;
+        } else {
+          console.error("Failed to get Google Drive token.");
+          alert("Failed to get Google Drive token. Please try again.");
           return;
         }
+      } catch (error) {
+        console.error("Error signing in", error);
+        alert("Failed to sign in. Please try again.");
+        return;
       }
     }
 
@@ -139,7 +138,7 @@ export default function EventDetails() {
     setUploading(true);
 
     try {
-      await Promise.all(files.map(async (file) => {
+      for (const file of files) {
         const compressedBlob = await compressImage(file);
         
         let driveFile = null;
@@ -168,7 +167,7 @@ export default function EventDetails() {
           webContentLink: downloadUrl, // Storage URL
           createdAt: new Date().toISOString()
         });
-      }));
+      }
       alert('Photos uploaded successfully!');
     } catch (error) {
       console.error('Error uploading', error);
@@ -180,7 +179,14 @@ export default function EventDetails() {
   };
 
   if (loading) return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center font-sans tracking-[0.2em] uppercase text-xs text-neutral-600">Loading...</div>;
-  if (!event) return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center font-sans tracking-[0.2em] uppercase text-xs text-neutral-600">Event not found</div>;
+  if (!event) return (
+    <div className="min-h-screen bg-[#0f0f0f] flex flex-col items-center justify-center font-sans">
+      <div className="tracking-[0.2em] uppercase text-xs text-neutral-600 mb-6">Event not found</div>
+      <Link to="/dashboard" className="px-6 py-2 bg-white text-black text-xs uppercase tracking-widest font-semibold rounded-full hover:bg-neutral-200 transition-colors">
+        Back to Dashboard
+      </Link>
+    </div>
+  );
 
   const guestUrl = `${window.location.origin}/#/e/${event.id}`;
 
@@ -188,6 +194,18 @@ export default function EventDetails() {
     navigator.clipboard.writeText(guestUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadQRCode = () => {
+    const canvas = document.getElementById("qr-code") as HTMLCanvasElement;
+    if (!canvas) return;
+    const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+    const downloadLink = document.createElement("a");
+    downloadLink.href = pngUrl;
+    downloadLink.download = `QR-${event.name.replace(/\s+/g, '-')}.png`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
   };
 
   const handleShare = async () => {
@@ -261,7 +279,7 @@ export default function EventDetails() {
               </div>
               
               <div className="bg-white p-6 rounded-2xl inline-block mb-8 shadow-inner">
-                <QRCodeSVG
+                <QRCodeCanvas
                   id="qr-code"
                   value={guestUrl}
                   size={200}
@@ -302,6 +320,13 @@ export default function EventDetails() {
                     </button>
                   </div>
                 </div>
+                <button
+                  onClick={handleDownloadQRCode}
+                  className="w-full mt-4 flex items-center justify-center gap-2 bg-[#222] hover:bg-[#333] border border-[#444] rounded-xl py-3 px-4 text-white transition-colors text-sm font-medium"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download QR Code</span>
+                </button>
               </div>
             </div>
           </div>

@@ -55,21 +55,17 @@ export default function Dashboard() {
     let activeDriveToken = driveToken;
 
     if (!activeDriveToken) {
-      if (window.confirm("Google Drive access is required to create an event folder. Would you like to grant permission now?")) {
-        try {
-          const newToken = await signIn();
-          if (typeof newToken === 'string') {
-            activeDriveToken = newToken;
-          } else {
-            alert("Failed to get Google Drive token. Please try again.");
-            return;
-          }
-        } catch (error) {
-          console.error("Error signing in", error);
-          alert("Failed to sign in. Please try again.");
+      try {
+        const newToken = await signIn();
+        if (typeof newToken === 'string') {
+          activeDriveToken = newToken;
+        } else {
+          setError("Failed to get Google Drive token. Please try again.");
           return;
         }
-      } else {
+      } catch (error) {
+        console.error("Error signing in", error);
+        setError("Failed to grant Google Drive permission. Please try again.");
         return;
       }
     }
@@ -93,8 +89,10 @@ export default function Dashboard() {
       setNewEvent({ name: '', venue: '' });
     } catch (error: any) {
       console.error(error);
-      setError("Failed to create event. Please try again.");
-      handleFirestoreError(error, OperationType.CREATE, 'events');
+      setError(error?.message || "Failed to create event. Please try again.");
+      if (error && error.code) {
+        handleFirestoreError(error, OperationType.CREATE, 'events');
+      }
     } finally {
       setCreating(false);
     }
@@ -108,7 +106,7 @@ export default function Dashboard() {
       setEvents(events.filter(event => event.id !== eventId));
     } catch (error: any) {
       console.error(error);
-      alert("Failed to delete event.");
+      setError("Failed to delete event.");
       handleFirestoreError(error, OperationType.DELETE, `events/${eventId}`);
     }
   };

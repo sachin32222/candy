@@ -145,15 +145,18 @@ export default function Gallery() {
 
         const response = await ai.models.generateContent({
           model: 'gemini-2.5-flash',
-          contents: {
-            parts: [
-              { text: "Here is a selfie of a person:" },
-              selfiePart,
-              { text: "Here are some gallery images, provided in order starting from index 0:" },
-              ...imageParts,
-              { text: "Identify which of the gallery images contain the person shown in the selfie. Return a JSON array of the 0-based indices of the matching gallery images. If the person is not found in any gallery image, return []. Only return the JSON array." }
-            ]
-          },
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { text: "Here is a selfie of a person:" },
+                selfiePart,
+                { text: "Here are some gallery images, provided in order starting from index 0:" },
+                ...imageParts,
+                { text: "Identify which of the gallery images contain the person shown in the selfie. Return a JSON array of the 0-based indices of the matching gallery images. If the person is not found in any gallery image, return []. Only return the JSON array." }
+              ]
+            }
+          ],
           config: {
             responseMimeType: "application/json",
             responseSchema: {
@@ -283,7 +286,10 @@ export default function Gallery() {
             <div className="text-center py-20 bg-[#1a1a1a] border border-[#333] rounded-3xl">
               <Camera className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
               <h3 className="font-serif text-2xl mb-2 text-white">Gallery Unavailable</h3>
-              <p className="text-neutral-500 font-light max-w-md mx-auto">{error}</p>
+              <p className="text-neutral-500 font-light max-w-md mx-auto mb-6">{error}</p>
+              <button onClick={() => window.history.back()} className="px-6 py-2 bg-white text-black text-[10px] uppercase tracking-widest font-semibold rounded-full hover:bg-neutral-200 transition-colors">
+                Go Back
+              </button>
             </div>
           ) : filteredImages && filteredImages.length === 0 ? (
             <div className="text-center py-20 bg-[#1a1a1a] border border-[#333] rounded-3xl">

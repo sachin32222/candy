@@ -104,7 +104,14 @@ export default function GuestLanding() {
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f] font-sans text-neutral-600 tracking-[0.2em] uppercase text-xs">Loading...</div>;
-  if (!event || !photographer) return <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f] font-sans text-neutral-600 tracking-[0.2em] uppercase text-xs">Event not found</div>;
+  if (!event || !photographer) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0f0f0f] font-sans">
+      <div className="text-neutral-600 tracking-[0.2em] uppercase text-xs mb-6">Event not found</div>
+      <button onClick={() => window.history.back()} className="px-6 py-2 bg-white text-black text-xs uppercase tracking-widest font-semibold rounded-full hover:bg-neutral-200 transition-colors">
+        Go Back
+      </button>
+    </div>
+  );
 
   if (!accessGranted) {
     return (

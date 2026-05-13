@@ -22,13 +22,25 @@ export const createDriveFolder = async (folderName: string, accessToken: string)
   });
 
   if (!response.ok) {
-    throw new Error('Failed to create Drive folder');
+    const errText = await response.text();
+    console.error('Drive API Error (create folder):', errText);
+    
+    // Check if it's an API not enabled error
+    if (errText.includes('API has not been used') || errText.includes('is disabled')) {
+      throw new Error(`Google Drive API is not enabled. Please enable it in your Google Cloud Console for this Firebase project.`);
+    }
+    
+    let parsedErr;
+    try { parsedErr = JSON.parse(errText); } catch(e) {}
+    const errMsg = parsedErr?.error?.message || response.statusText;
+    
+    throw new Error(`Drive Error: ${errMsg}`);
   }
 
   const data = await response.json();
   
   // Make folder publicly accessible
-  await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`, {
+  const permResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -39,6 +51,17 @@ export const createDriveFolder = async (folderName: string, accessToken: string)
       type: 'anyone',
     }),
   });
+
+  if (!permResponse.ok) {
+    const errText = await permResponse.text();
+    console.error('Drive API Error (permissions):', errText);
+    
+    let parsedErr;
+    try { parsedErr = JSON.parse(errText); } catch(e) {}
+    const errMsg = parsedErr?.error?.message || permResponse.statusText;
+    
+    throw new Error(`Drive Perms Error: ${errMsg}`);
+  }
 
   return data.id;
 };
@@ -66,7 +89,14 @@ export const uploadFileToDrive = async (
   });
 
   if (!response.ok) {
-    throw new Error('Failed to upload file to Drive');
+    const errText = await response.text();
+    console.error('Drive API Error (upload file):', errText);
+    
+    let parsedErr;
+    try { parsedErr = JSON.parse(errText); } catch(e) {}
+    const errMsg = parsedErr?.error?.message || response.statusText;
+    
+    throw new Error(`Drive Upload Error: ${errMsg}`);
   }
 
   return response.json();
