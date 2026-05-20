@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, getDocs, addDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { Camera, Sparkles, ArrowLeft, Loader2, Download, X, RefreshCw, Share2 } from 'lucide-react';
+import { Camera, Sparkles, ArrowLeft, Loader2, Download, X, RefreshCw, Share2, Instagram, Star, Upload } from 'lucide-react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useAuth } from '../AuthContext';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -23,6 +23,7 @@ export default function Gallery() {
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState('');
   const [eventPhotographerId, setEventPhotographerId] = useState('');
+  const [photographer, setPhotographer] = useState<any>(null);
   const [error, setError] = useState<React.ReactNode | null>(null);
   
   const [images, setImages] = useState<DriveFile[]>([]);
@@ -31,6 +32,7 @@ export default function Gallery() {
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileUploadRef = useRef<HTMLInputElement>(null);
 
   const fetchPhotosFromFirestore = async () => {
     if (!eventId) return;
@@ -63,6 +65,11 @@ export default function Gallery() {
           const data = eventDoc.data();
           setEventName(data.name);
           setEventPhotographerId(data.photographerId);
+          
+          const photographerDoc = await getDoc(doc(db, 'users', data.photographerId));
+          if (photographerDoc.exists()) {
+            setPhotographer(photographerDoc.data());
+          }
           
           await fetchPhotosFromFirestore();
         } else {
@@ -99,89 +106,42 @@ export default function Gallery() {
 
   const analyzeImages = async (selfieBase64: string) => {
     setIsAnalyzing(true);
+    setError(null);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      // Prepare images data
+      const imageData = images
+        .map((img, index) => ({
+          url: getHighResUrl(img.thumbnailLink),
+          index,
+          type: img.type || "image/jpeg"
+        }))
+        .filter(img => img.url && !img.type.startsWith('video/'));
       
-      const imageParts = [];
-      const validIndices = [];
+      const response = await fetch('/api/analyze-images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          selfieBase64,
+          images: imageData
+        })
+      });
       
-      // We process up to 50 images to avoid payload limits and memory issues
-      const maxImagesToAnalyze = Math.min(images.length, 50);
-      
-      for (let i = 0; i < maxImagesToAnalyze; i++) {
-        try {
-          if (images[i].type?.startsWith('video/')) continue;
-          
-          const imgUrl = getHighResUrl(images[i].thumbnailLink);
-          if (!imgUrl) continue;
-          
-          const response = await fetch(imgUrl);
-          const blob = await response.blob();
-          const base64 = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          });
-          
-          imageParts.push({
-            inlineData: {
-              data: base64.split(',')[1],
-              mimeType: blob.type
-            }
-          });
-          validIndices.push(i);
-        } catch (e) {
-          console.warn("Could not fetch image for AI analysis", e);
-        }
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Server error');
       }
 
-      if (imageParts.length > 0) {
-        const selfiePart = {
-          inlineData: {
-            data: selfieBase64.split(',')[1],
-            mimeType: selfieBase64.split(';')[0].split(':')[1]
-          }
-        };
-
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: [
-            {
-              role: 'user',
-              parts: [
-                { text: "Here is a selfie of a person:" },
-                selfiePart,
-                { text: "Here are some gallery images, provided in order starting from index 0:" },
-                ...imageParts,
-                { text: "Identify which of the gallery images contain the person shown in the selfie. Return a JSON array of the 0-based indices of the matching gallery images. If the person is not found in any gallery image, return []. Only return the JSON array." }
-              ]
-            }
-          ],
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: Type.ARRAY,
-              items: { type: Type.INTEGER }
-            }
-          }
-        });
-
-        const matchedIndices = JSON.parse(response.text || "[]");
-        const finalMatches = matchedIndices.map((idx: number) => validIndices[idx]).filter((idx: number) => idx !== undefined);
-        
-        if (finalMatches.length > 0) {
-          setFilteredImages(finalMatches.map((idx: number) => images[idx]));
-        } else {
-          setFilteredImages([]);
-        }
+      const data = await response.json();
+      const matchedIndices = data.matches || [];
+      
+      if (matchedIndices.length > 0) {
+        setFilteredImages(matchedIndices.map((idx: number) => images[idx]));
       } else {
-        setError("Could not analyze images due to access restrictions.");
         setFilteredImages([]);
       }
-
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing images:", error);
-      setError("AI analysis failed. Please try again.");
+      setError(error.message || "AI analysis failed. Please try again.");
       setFilteredImages([]);
     } finally {
       setIsAnalyzing(false);
@@ -221,6 +181,30 @@ export default function Gallery() {
           </div>
 
           <div className="relative z-10 flex items-center gap-3">
+            {photographer?.insta && (
+              <a
+                href={photographer.insta.startsWith('http') ? photographer.insta : `https://instagram.com/${photographer.insta}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-[#0f0f0f] border border-[#333] hover:border-[#555] text-neutral-300 px-4 py-2.5 rounded-full font-medium hover:text-white transition-all backdrop-blur-md"
+              >
+                <Instagram className="w-4 h-4" />
+                <span className="text-sm hidden sm:inline">Follow us</span>
+              </a>
+            )}
+            
+            {photographer?.gbp && (
+              <a
+                href={photographer.gbp.startsWith('http') ? photographer.gbp : `https://${photographer.gbp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-[#0f0f0f] border border-[#333] hover:border-[#555] text-neutral-300 px-4 py-2.5 rounded-full font-medium hover:text-white transition-all backdrop-blur-md"
+              >
+                <Star className="w-4 h-4" />
+                <span className="text-sm hidden sm:inline">Rate us</span>
+              </a>
+            )}
+
             <button
                onClick={() => {
                  navigator.clipboard.writeText(window.location.href);
@@ -232,24 +216,6 @@ export default function Gallery() {
               <span className="text-sm">Share</span>
             </button>
 
-            {/* Find Me AI Button */}
-            <input 
-              type="file" 
-              accept="image/*" 
-              capture="user"
-              className="hidden" 
-              ref={fileInputRef}
-              onChange={handleSelfieUpload}
-            />
-            {!filteredImages && !isAnalyzing && images.length > 0 && (
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 bg-neutral-100 text-neutral-900 px-6 py-2.5 rounded-full font-medium hover:bg-white transition-colors pointer-events-auto"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span className="text-sm">Find Me AI</span>
-              </button>
-            )}
             {filteredImages && (
               <button 
                 onClick={clearFilter}
@@ -262,6 +228,49 @@ export default function Gallery() {
           </div>
         </div>
       </div>
+      
+      {/* Floating Find Me AI Button */}
+      <input 
+        type="file" 
+        accept="image/*" 
+        capture="user"
+        className="hidden" 
+        ref={fileInputRef}
+        onChange={handleSelfieUpload}
+      />
+      <input 
+        type="file" 
+        accept="image/*" 
+        className="hidden" 
+        ref={(el) => {
+          // Keep a ref to a second input without capture
+          if (el) fileUploadRef.current = el;
+        }}
+        onChange={handleSelfieUpload}
+      />
+      {!filteredImages && !isAnalyzing && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/60 backdrop-blur-xl p-2 rounded-full border border-[#444] shadow-2xl">
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-white px-6 py-3 rounded-full font-bold transition-transform hover:scale-105 active:scale-95"
+          >
+            <Camera className="w-5 h-5 text-white" />
+            <span className="whitespace-nowrap hidden sm:inline">Take Selfie</span>
+            <span className="whitespace-nowrap sm:hidden">Selfie</span>
+          </button>
+          
+          <div className="w-px h-8 bg-[#444] mx-1"></div>
+          
+          <button 
+            onClick={() => fileUploadRef.current?.click()}
+            className="flex items-center gap-2 bg-[#222] hover:bg-[#333] border border-[#555] text-white px-6 py-3 rounded-full font-bold transition-transform hover:scale-105 active:scale-95"
+          >
+            <Upload className="w-5 h-5 text-white" />
+            <span className="whitespace-nowrap hidden sm:inline">Upload Photo</span>
+            <span className="whitespace-nowrap sm:hidden">Upload</span>
+          </button>
+        </div>
+      )}
 
       {/* AI Analysis State */}
       {isAnalyzing && (

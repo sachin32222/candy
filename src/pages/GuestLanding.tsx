@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, addDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, addDoc, collection, updateDoc, increment } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { Instagram, Youtube, Globe, MessageCircle, Phone, Star, ExternalLink, Images, Camera } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -56,6 +56,14 @@ export default function GuestLanding() {
         if (eventDoc.exists()) {
           const eventData = { id: eventDoc.id, ...eventDoc.data() } as Event;
           setEvent(eventData);
+          
+          try {
+            await updateDoc(doc(db, 'events', eventId), {
+              views: increment(1)
+            });
+          } catch (e) {
+            console.error("Could not update views:", e);
+          }
           
           const photographerDoc = await getDoc(doc(db, 'users', eventData.photographerId));
           if (photographerDoc.exists()) {

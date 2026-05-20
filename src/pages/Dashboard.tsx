@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle, ArrowRight, Trash2 } from 'lucide-react';
+import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle, ArrowRight, Trash2, Eye, Users, Instagram, MessageCircle, Sparkles, Globe, Mail } from 'lucide-react';
 import { motion } from 'motion/react';
 import { createDriveFolder } from '../utils/drive';
 
@@ -13,17 +13,21 @@ interface Event {
   venue: string;
   createdAt: string;
   driveLink?: string;
+  views?: number;
 }
 
 export default function Dashboard() {
   const { user, profile, logout, driveToken, signIn } = useAuth();
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
+  const [leadsCountByEvent, setLeadsCountByEvent] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newEvent, setNewEvent] = useState({ name: '', venue: '' });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [showPlaygroundWarning, setShowPlaygroundWarning] = useState(false);
 
   useEffect(() => {
     if (!profile?.name || !profile?.portfolio) {
@@ -39,6 +43,15 @@ export default function Dashboard() {
         const querySnapshot = await getDocs(q);
         const eventsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
         setEvents(eventsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+
+        const leadsQ = query(collection(db, 'leads'), where('photographerId', '==', user.uid));
+        const leadsSnapshot = await getDocs(leadsQ);
+        const counts: Record<string, number> = {};
+        leadsSnapshot.docs.forEach((doc) => {
+          const eId = doc.data().eventId;
+          counts[eId] = (counts[eId] || 0) + 1;
+        });
+        setLeadsCountByEvent(counts);
       } catch (error) {
         handleFirestoreError(error, OperationType.LIST, 'events');
       } finally {
@@ -145,6 +158,10 @@ export default function Dashboard() {
                   <span className="text-[10px] tracking-widest uppercase hidden sm:block">Admin</span>
                 </Link>
               )}
+              <button onClick={() => setShowConnectModal(true)} className="text-neutral-400 hover:text-white transition-colors flex items-center gap-2 group">
+                <LinkIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <span className="text-[10px] tracking-widest uppercase hidden sm:block">Connect</span>
+              </button>
               <Link to="/profile" className="text-neutral-500 hover:text-white transition-colors flex items-center gap-2 group">
                 <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
                 <span className="text-[10px] tracking-widest uppercase hidden sm:block">Settings</span>
@@ -224,6 +241,23 @@ export default function Dashboard() {
                     <p className="text-sm uppercase tracking-widest text-[#777] group-hover:text-black/60 font-medium transition-colors duration-700">
                       {event.venue}
                     </p>
+                    
+                    <div className="flex items-center gap-6 mt-4">
+                      <div className="flex items-center gap-2">
+                        <Eye className="w-4 h-4 text-[#555] group-hover:text-black/60 transition-colors" />
+                        <div className="flex flex-col">
+                          <span className="text-lg font-medium text-white group-hover:text-black transition-colors leading-none">{event.views || 0}</span>
+                          <span className="text-[9px] uppercase tracking-[0.2em] text-[#555] group-hover:text-black/60 font-semibold transition-colors mt-1">Scans</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-[#555] group-hover:text-black/60 transition-colors" />
+                        <div className="flex flex-col">
+                          <span className="text-lg font-medium text-white group-hover:text-black transition-colors leading-none">{leadsCountByEvent[event.id] || 0}</span>
+                          <span className="text-[9px] uppercase tracking-[0.2em] text-[#555] group-hover:text-black/60 font-semibold transition-colors mt-1">Leads</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="relative z-10 mt-8 sm:mt-0 flex items-center gap-4">
@@ -245,6 +279,156 @@ export default function Dashboard() {
           </motion.div>
         )}
       </main>
+
+      {/* Connect Modal */}
+      {showConnectModal && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50"
+        >
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="bg-[#111] border border-[#333] rounded-[2rem] max-w-2xl w-full p-8 md:p-12 shadow-2xl relative"
+          >
+            <button 
+              onClick={() => setShowConnectModal(false)}
+              className="absolute top-6 right-6 text-[#666] hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            
+            <h2 className="text-3xl font-serif text-white mb-2">Connect & Automate</h2>
+            <p className="text-neutral-400 mb-8 border-b border-[#333] pb-6">Integrate your favorite tools to automate your photography business.</p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button 
+                onClick={() => {
+                  setShowConnectModal(false);
+                  setShowPlaygroundWarning(true);
+                }}
+                className="group p-6 rounded-2xl bg-[#0a0a0a] border border-[#222] hover:border-[#444] hover:bg-[#151515] transition-all flex flex-col items-center text-center gap-4"
+              >
+                <div className="w-12 h-12 rounded-full bg-pink-500/10 text-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Instagram className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium mb-1">Instagram</h3>
+                  <p className="text-xs text-neutral-500">Automate DM replies & gallery delivery</p>
+                </div>
+              </button>
+              
+              <button 
+                onClick={() => {
+                  setShowConnectModal(false);
+                  setShowPlaygroundWarning(true);
+                }}
+                className="group p-6 rounded-2xl bg-[#0a0a0a] border border-[#222] hover:border-[#444] hover:bg-[#151515] transition-all flex flex-col items-center text-center gap-4"
+              >
+                <div className="w-12 h-12 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <MessageCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium mb-1">WhatsApp</h3>
+                  <p className="text-xs text-neutral-500">Automate lead capture & messaging</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={() => {
+                  setShowConnectModal(false);
+                  setShowPlaygroundWarning(true);
+                }}
+                className="group p-6 rounded-2xl bg-[#0a0a0a] border border-[#222] hover:border-[#444] hover:bg-[#151515] transition-all flex flex-col items-center text-center gap-4"
+              >
+                <div className="w-12 h-12 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Globe className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium mb-1">Custom Domain</h3>
+                  <p className="text-xs text-neutral-500">Host galleries on your own website</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={() => {
+                  setShowConnectModal(false);
+                  setShowPlaygroundWarning(true);
+                }}
+                className="group p-6 rounded-2xl bg-[#0a0a0a] border border-[#222] hover:border-[#444] hover:bg-[#151515] transition-all flex flex-col items-center text-center gap-4"
+              >
+                <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium mb-1">Email Integration</h3>
+                  <p className="text-xs text-neutral-500">Automated email campaigns & receipts</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={() => {
+                  setShowConnectModal(false);
+                  setShowPlaygroundWarning(true);
+                }}
+                className="group sm:col-span-2 p-6 rounded-2xl bg-gradient-to-r from-indigo-900/20 to-purple-900/20 border border-indigo-500/30 hover:border-indigo-500/60 transition-all flex flex-col sm:flex-row items-center text-center sm:text-left gap-6"
+              >
+                <div className="w-14 h-14 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-12 transition-transform">
+                  <Sparkles className="w-7 h-7" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium text-lg mb-1">AI Image Generation</h3>
+                  <p className="text-sm text-indigo-200/60">Generate realistic photos with Gemini AI based on your photography style</p>
+                </div>
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Playground Warning Modal */}
+      {showPlaygroundWarning && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50"
+        >
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="bg-[#111] border border-[#333] rounded-[2rem] max-w-md w-full p-8 md:p-12 shadow-2xl relative text-center"
+          >
+            <button 
+              onClick={() => setShowPlaygroundWarning(false)}
+              className="absolute top-6 right-6 text-[#666] hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            
+            <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            
+            <h2 className="text-3xl font-serif text-white mb-4">Playground Access</h2>
+            <p className="text-neutral-400 mb-8 leading-relaxed">
+              You are about to enter the playground environment. For a seamless integration and smooth workflow, kindly connect with our development team.
+            </p>
+            
+            <a 
+              href="https://wa.me/919318465272"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white py-4 px-6 rounded-xl font-bold transition-colors"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span>Connect with Dev Team</span>
+            </a>
+          </motion.div>
+        </motion.div>
+      )}
 
       {showCreateModal && (
         <motion.div 
