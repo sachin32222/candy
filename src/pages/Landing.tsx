@@ -133,12 +133,12 @@ export default function Landing() {
         >
 
 
-          <motion.h1 variants={itemVariants} className="font-serif text-[3.5rem] sm:text-[4.5rem] lg:text-[5.5rem] leading-[0.92] tracking-tight mb-8">
-            <span className="bg-gradient-to-r from-[#4A6DE1] via-[#A5BDFC] to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient block">Capture.</span>
-            <span className="italic relative inline-block bg-gradient-to-r from-[#4A6DE1] via-white to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient">
+          <motion.h1 variants={itemVariants} className="font-display font-normal text-[4.5rem] sm:text-[5.5rem] lg:text-[7rem] leading-[0.9] tracking-normal mb-8 uppercase">
+            <span className="bg-gradient-to-r from-[#4A6DE1] via-[#A5BDFC] to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient block pb-2">Capture.</span>
+            <span className="relative inline-block bg-gradient-to-r from-[#4A6DE1] via-white to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient pb-2">
               Convert.
             </span><br />
-            <span className="bg-gradient-to-r from-[#4A6DE1] via-[#A5BDFC] to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient block">Dominate.</span>
+            <span className="bg-gradient-to-r from-[#4A6DE1] via-[#A5BDFC] to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient block pb-2">Dominate.</span>
           </motion.h1>
           
           <motion.p variants={itemVariants} className="text-lg font-light leading-relaxed mb-12 max-w-sm bg-gradient-to-r from-neutral-400 via-neutral-100 to-neutral-400 bg-clip-text text-transparent animate-text-gradient">
