@@ -71,7 +71,7 @@ export default function GuestLanding() {
           }
         }
       } catch (error) {
-        handleFirestoreError(error, OperationType.GET, `events/${eventId}`);
+        console.error("Error fetching guest landing details:", error);
       } finally {
         setLoading(false);
       }
@@ -92,7 +92,8 @@ export default function GuestLanding() {
       });
       setAccessGranted(true);
     } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, 'leads');
+      console.error("Error creating lead:", error);
+      alert("Failed to submit form. Please try again.");
     } finally {
       setSubmitting(false);
     }

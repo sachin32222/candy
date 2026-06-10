@@ -1,107 +1,218 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { CheckCircle2, ShieldCheck, Zap, Clock } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, Zap, Star } from 'lucide-react';
+
+import { auth } from '../firebase';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export default function Payment() {
-  const { profile, updateProfile, logout } = useAuth();
+  const { user, profile, updateProfile, signIn, logout } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
 
-  const handlePay = async () => {
-    setLoading(true);
+  useEffect(() => {
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handlePay = async (plan: string, amountPaise: number) => {
+    setLoading(plan);
     try {
-      await updateProfile({ paymentStatus: 'initiated' });
-      
-      // Redirect to WhatsApp
-      const phoneNumber = '+919318465272';
-      const message = `Hi, I am interested in Candei and would like to contact sales. My email is ${profile?.email} and my WhatsApp number is ${profile?.whatsapp || ''}.`;
-      const whatsappUrl = `https://wa.me/${phoneNumber.replace('+', '')}?text=${encodeURIComponent(message)}`;
-      
-      window.open(whatsappUrl, '_blank');
-      navigate('/dashboard'); // This will show a pending approval screen since status is initiated
+      if (!user) {
+        await signIn();
+      }
+
+      if (!auth.currentUser) {
+        setLoading(null);
+        return; // User cancelled sign in
+      }
+
+      const response = await fetch('/api/create-razorpay-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amountPaise, plan }),
+      });
+      const data = await response.json();
+
+      if (!data.orderId) throw new Error("Failed to create order");
+
+      const options = {
+        key: data.key_id,
+        amount: data.amount,
+        currency: data.currency,
+        name: "Candei",
+        description: `Candei Subscription - ${plan}`,
+        order_id: data.orderId,
+        prefill: {
+          name: auth.currentUser?.displayName || profile?.name || "",
+          email: auth.currentUser?.email || profile?.email || "",
+          contact: profile?.whatsapp || "",
+        },
+        theme: {
+          color: "#4A6DE1",
+        },
+        handler: async function (response: any) {
+          try {
+            const verifyRes = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            
+            if (verifyData.success) {
+              await updateProfile({ paymentStatus: 'approved', subscriptionPlan: plan });
+              navigate('/dashboard');
+            } else {
+              alert("Payment verification failed. Please contact support.");
+            }
+          } catch (e) {
+            console.error(e);
+            alert("Error verifying payment.");
+          }
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        alert(response.error.description);
+      });
+      rzp.open();
+
     } catch (error) {
       console.error('Error initiating payment:', error);
+      alert("Something went wrong loading checkout.");
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
-  useEffect(() => {
-    if (profile?.paymentStatus === 'approved') {
-      navigate('/dashboard');
-    }
-  }, [profile, navigate]);
-
-  if (profile?.paymentStatus === 'approved') {
-    return null;
-  }
+  const commonFeatures = [
+    "AI Selfie Finder",
+    "Instant Gallery",
+    "Custom Domain",
+    "Business Branding",
+    "Bulk Upload",
+    "Lead Capture",
+    "AI Automation",
+    "WhatsApp Bot",
+    "Instagram Bot",
+    "Social Growth",
+    "AI Creatives",
+    "Retention Broadcast",
+    "One Click Share and Save",
+    "Growth Analytics",
+    "Branded Portfolio",
+    "Smart Scheduler",
+    "Engagement Analytics",
+    "Customize Theme 70+"
+  ];
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] flex flex-col items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-md bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-white"></div>
-        
-        <div className="text-center mb-8">
+    <div className="min-h-screen bg-[#0f0f0f] flex flex-col items-center justify-center p-6 font-sans py-20">
+      <div className="w-full max-w-5xl">
+        <div className="text-center mb-12">
           <div className="w-16 h-16 bg-[#0f0f0f] rounded-2xl flex items-center justify-center mx-auto mb-6 border border-[#333]">
             <Zap className="w-8 h-8 text-neutral-400" />
           </div>
-          <h1 className="text-3xl font-serif text-white mb-2">Early Bird Access</h1>
-          <p className="text-neutral-500 font-light">Join the first 100 photographers to unlock Candei's premium features.</p>
+          <h1 className="text-4xl md:text-5xl font-serif text-white mb-4">Choose Your Plan</h1>
+          <p className="text-neutral-500 font-light text-lg">Unlock all premium photography automation features.</p>
         </div>
 
-        {profile?.paymentStatus === 'initiated' ? (
-          <div className="bg-[#0f0f0f] rounded-2xl p-8 mb-8 border border-[#333] text-center">
-            <Clock className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-white mb-2">Pending Approval</h3>
-            <p className="text-neutral-500 font-light text-sm leading-relaxed">
-              We've received your request. Our sales team will assist you via WhatsApp to activate your account.
-            </p>
-            <button
-              onClick={handlePay}
-              className="mt-6 text-white hover:text-neutral-300 text-sm transition-colors underline underline-offset-4"
-            >
-              Message us again on WhatsApp
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="bg-[#0f0f0f] rounded-2xl p-6 mb-8 border border-[#333]">
-              <div className="flex justify-between items-end mb-4">
-                <span className="text-neutral-300 font-medium tracking-wide">Yearly Subscription</span>
-                <div className="text-right">
-                  <span className="text-xl font-serif text-white">Contact Sales</span>
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* 6 Months Plan */}
+          <div className="bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 shadow-2xl relative flex flex-col justify-between hover:border-[#555] transition-colors">
+            <div>
+              <div className="mb-8">
+                <span className="text-emerald-400 font-semibold tracking-wide uppercase text-sm">Standard</span>
+                <div className="flex items-end gap-2 mt-4">
+                  <span className="text-4xl font-serif text-white">₹999</span>
+                  <span className="text-neutral-500 mb-1">/mo</span>
                 </div>
+                <p className="text-sm text-neutral-400 mt-2">Billed ₹5,994 every 6 months</p>
               </div>
               
-              <ul className="space-y-3 mt-6 border-t border-[#333] pt-6">
-                <li className="flex items-center gap-3 text-neutral-400 font-light text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-white" /> Unlimited Events
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-3 text-white font-medium text-sm">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" /> 
+                  500 GB Storage
                 </li>
-                <li className="flex items-center gap-3 text-neutral-400 font-light text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-white" /> Unlimited Lead Generation
-                </li>
-                <li className="flex items-center gap-3 text-neutral-400 font-light text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-white" /> Direct Google Drive Integration
-                </li>
-                <li className="flex items-center gap-3 text-neutral-400 font-light text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-white" /> Custom Branding
-                </li>
+                {commonFeatures.map((f, i) => (
+                  <li key={i} className="flex items-start gap-3 text-neutral-400 font-light text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-neutral-600 shrink-0" /> 
+                    {f}
+                  </li>
+                ))}
               </ul>
             </div>
 
             <button
-              onClick={handlePay}
-              disabled={loading}
-              className="w-full bg-neutral-100 text-neutral-900 py-4 rounded-full font-medium hover:bg-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              onClick={() => handlePay('6_months', 599400)}
+              disabled={loading !== null}
+              className="w-full bg-neutral-800 text-white py-4 rounded-full font-medium hover:bg-neutral-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {loading ? 'Processing...' : 'Contact Sales via WhatsApp'}
+              {loading === '6_months' ? 'Processing...' : 'Choose Standard'}
             </button>
-          </>
-        )}
+          </div>
 
-        <div className="mt-8 text-center flex items-center justify-center gap-2 text-neutral-600 text-xs font-medium tracking-wider uppercase">
-          <ShieldCheck className="w-4 h-4" /> Secure payment process
+          {/* 12 Months Plan */}
+          <div className="bg-gradient-to-b from-[#111] to-[#0a0a0a] border border-blue-500/30 rounded-3xl p-8 shadow-2xl relative flex flex-col justify-between hover:border-blue-500/50 transition-colors transform md:-translate-y-4">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full flex items-center gap-1 text-xs font-bold uppercase tracking-wider">
+              <Star className="w-3 h-3" /> Best Value - 2 Months Free
+            </div>
+            <div>
+              <div className="mb-8">
+                <span className="text-blue-400 font-semibold tracking-wide uppercase text-sm">Pro</span>
+                <div className="flex items-end gap-2 mt-4">
+                  <span className="text-4xl font-serif text-white">₹899</span>
+                  <span className="text-neutral-500 mb-1">/mo</span>
+                </div>
+                <p className="text-sm text-neutral-400 mt-2">Billed ₹10,788 every 12 months</p>
+              </div>
+              
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-3 text-white font-medium text-sm">
+                  <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" /> 
+                  1 TB Storage
+                </li>
+                {commonFeatures.map((f, i) => (
+                  <li key={i} className="flex items-start gap-3 text-neutral-300 font-light text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0" /> 
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <button
+              onClick={() => handlePay('12_months', 1078800)}
+              disabled={loading !== null}
+              className="w-full bg-blue-600 text-white py-4 rounded-full font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+            >
+              {loading === '12_months' ? 'Processing...' : 'Choose Pro'}
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-12 text-center flex items-center justify-center gap-2 text-neutral-600 text-xs font-medium tracking-wider uppercase">
+          <ShieldCheck className="w-4 h-4" /> Secure payment powered by Razorpay
         </div>
         
         <div className="mt-8 text-center">

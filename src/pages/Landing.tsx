@@ -145,7 +145,7 @@ export default function Landing() {
             The definitive operating system for elite photographers. Instantly capture leads, automate marketing, and build a billion-dollar brand from every event.
           </motion.p>
           
-          {/* Action Area */}
+            {/* Action Area */}
           <motion.div variants={itemVariants} className="space-y-6 max-w-sm">
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -161,6 +161,16 @@ export default function Landing() {
                 <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
               <span className="relative z-10 font-bold">Continue with Google</span>
+              <ChevronRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate('/payment')}
+              className="w-full bg-[#4A6DE1] text-white py-4 px-8 rounded-full font-bold tracking-wide hover:shadow-[0_0_40px_rgba(74,109,225,0.4)] transition-all flex items-center justify-center gap-3 group overflow-hidden relative shadow-[0_0_20px_rgba(74,109,225,0.2)]"
+            >
+              <span className="relative z-10">Pay Now</span>
               <ChevronRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
             </motion.button>
 

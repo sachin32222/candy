@@ -43,7 +43,11 @@ export default function Dashboard() {
         const querySnapshot = await getDocs(q);
         const eventsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
         setEvents(eventsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
 
+      try {
         const leadsQ = query(collection(db, 'leads'), where('photographerId', '==', user.uid));
         const leadsSnapshot = await getDocs(leadsQ);
         const counts: Record<string, number> = {};
@@ -53,7 +57,7 @@ export default function Dashboard() {
         });
         setLeadsCountByEvent(counts);
       } catch (error) {
-        handleFirestoreError(error, OperationType.LIST, 'events');
+        console.error("Error fetching leads:", error);
       } finally {
         setLoading(false);
       }
@@ -101,11 +105,8 @@ export default function Dashboard() {
       setShowCreateModal(false);
       setNewEvent({ name: '', venue: '' });
     } catch (error: any) {
-      console.error(error);
+      console.error("Error creating event:", error);
       setError(error?.message || "Failed to create event. Please try again.");
-      if (error && error.code) {
-        handleFirestoreError(error, OperationType.CREATE, 'events');
-      }
     } finally {
       setCreating(false);
     }
@@ -118,9 +119,8 @@ export default function Dashboard() {
       await deleteDoc(doc(db, 'events', eventId));
       setEvents(events.filter(event => event.id !== eventId));
     } catch (error: any) {
-      console.error(error);
+      console.error("Error deleting event:", error);
       setError("Failed to delete event.");
-      handleFirestoreError(error, OperationType.DELETE, `events/${eventId}`);
     }
   };
 

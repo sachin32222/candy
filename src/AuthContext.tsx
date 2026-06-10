@@ -87,12 +87,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return credential.accessToken;
       }
     } catch (error: any) {
-      console.error('Error signing in', error);
       if (error?.code === 'auth/popup-closed-by-user') {
-        throw new Error('Sign-in popup was closed before completing. Please try again.');
+        console.warn('Sign-in popup was closed by user.');
+        return;
+      } else if (error?.code === 'auth/cancelled-popup-request') {
+        console.warn('Sign-in popup request was cancelled.');
+        return;
       } else if (error?.code === 'auth/popup-blocked') {
+        console.error('Error signing in', error);
         throw new Error('Sign-in popup was blocked by your browser. Please allow popups for this site.');
       }
+      console.error('Error signing in', error);
       throw error;
     }
   };
@@ -102,14 +107,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateProfile = async (data: Partial<UserProfile>) => {
-    if (!user) return;
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
     try {
-      const docRef = doc(db, 'users', user.uid);
-      const updatedProfile = { ...profile, ...data } as UserProfile;
-      await setDoc(docRef, updatedProfile, { merge: true });
-      setProfile(updatedProfile);
+      const docRef = doc(db, 'users', currentUser.uid);
+      await setDoc(docRef, data, { merge: true });
+      
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setProfile(docSnap.data() as UserProfile);
+      }
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
+      console.error("Error updating profile:", error);
+      throw error;
     }
   };
 

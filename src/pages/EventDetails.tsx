@@ -52,7 +52,7 @@ export default function EventDetails() {
           setLeads(leadsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
         }
       } catch (error) {
-        handleFirestoreError(error, OperationType.GET, `events/${eventId}`);
+        console.error("Error fetching event details:", error);
       } finally {
         setLoading(false);
       }

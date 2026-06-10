@@ -76,7 +76,7 @@ export default function Gallery() {
           setError("Event not found.");
         }
       } catch (error) {
-        handleFirestoreError(error, OperationType.GET, `events/${eventId}`);
+        console.error("Error fetching gallery:", error);
         setError("Failed to load gallery.");
       } finally {
         setLoading(false);

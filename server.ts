@@ -2,6 +2,8 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import Razorpay from "razorpay";
+import crypto from "crypto";
 
 async function startServer() {
   const app = express();
@@ -10,6 +12,54 @@ async function startServer() {
   // Increase payload size limit since we'll be transferring self base64 images
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+  app.post("/api/create-razorpay-order", async (req, res) => {
+    try {
+      const { amount, plan } = req.body;
+      
+      const key_id = process.env.RAZORPAY_KEY_ID || "rzp_live_SzqRSW7PoAIHkz";
+      const key_secret = process.env.RAZORPAY_KEY_SECRET || "DIhb5T64azdquNnJTajoK9M8";
+
+      const rzp = new Razorpay({
+        key_id,
+        key_secret
+      });
+
+      const order = await rzp.orders.create({
+        amount: amount, // amount in paise
+        currency: "INR",
+        receipt: `rcpt_${Date.now()}`
+      });
+
+      res.json({ orderId: order.id, amount: order.amount, currency: order.currency, key_id });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: "Failed to create order" });
+    }
+  });
+
+  app.post("/api/verify-payment", async (req, res) => {
+    try {
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+      
+      const key_secret = process.env.RAZORPAY_KEY_SECRET || "DIhb5T64azdquNnJTajoK9M8";
+      
+      const body = razorpay_order_id + "|" + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac("sha256", key_secret)
+        .update(body.toString())
+        .digest("hex");
+
+      if (expectedSignature === razorpay_signature) {
+        res.json({ success: true });
+      } else {
+        res.status(400).json({ success: false, error: "Invalid signature" });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to verify payment" });
+    }
+  });
 
   // API route for AI image analysis
   app.post("/api/analyze-images", async (req, res) => {
