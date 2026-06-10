@@ -167,7 +167,7 @@ export default function Landing() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => navigate('/payment')}
+              onClick={() => window.open('/#/payment', '_blank')}
               className="w-full bg-[#4A6DE1] text-white py-4 px-8 rounded-full font-bold tracking-wide hover:shadow-[0_0_40px_rgba(74,109,225,0.4)] transition-all flex items-center justify-center gap-3 group overflow-hidden relative shadow-[0_0_20px_rgba(74,109,225,0.2)]"
             >
               <span className="relative z-10">Pay Now</span>
