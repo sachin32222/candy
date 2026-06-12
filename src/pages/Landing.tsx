@@ -290,6 +290,8 @@ export default function Landing() {
               <a href="/terms.html" className="hover:opacity-100 transition-opacity" target="_blank" rel="noopener noreferrer">Terms</a>
               <span>/</span>
               <a href="/privacy.html" className="hover:opacity-100 transition-opacity" target="_blank" rel="noopener noreferrer">Privacy</a>
+              <span>/</span>
+              <a href="/#/faq" className="hover:opacity-100 transition-opacity" target="_blank" rel="noopener noreferrer">FAQ</a>
             </div>
           </div>
         </motion.div>

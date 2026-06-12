@@ -14,6 +14,7 @@ import GuestLanding from './pages/GuestLanding';
 import Gallery from './pages/Gallery';
 import Payment from './pages/Payment';
 import AdminPanel from './pages/AdminPanel';
+import FAQ from './pages/FAQ';
 
 import About from './pages/About';
 
@@ -77,6 +78,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/about" element={<About />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><ProfileSetup /></PrivateRoute>} />
