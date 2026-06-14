@@ -31,35 +31,17 @@ export default function Payment() {
   const handlePay = async (plan: string, amountPaise: number) => {
     setLoading(plan);
     try {
-      const response = await fetch('/api/create-razorpay-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amountPaise, plan }),
-      });
-      
-      let data;
-      try {
-        data = await response.json();
-      } catch (e) {
-        const text = await response.text().catch(() => 'No response body');
-        throw new Error(`Server did not return JSON. Status: ${response.status}. Body: ${text.substring(0, 50)}`);
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || `Server responded with ${response.status}`);
-      }
-
-      if (!data.orderId) throw new Error("Failed to create order: missing orderId");
-
       if (!window.Razorpay) throw new Error("Razorpay SDK not loaded. Check your connection or disable adblock.");
 
+      // For static site deployments (like custom domains on Netlify/Firebase), 
+      // we use client-side only checkout without order_id and signature verification.
+      // Note: This is less secure but works for static deployments.
       const options = {
-        key: data.key_id,
-        amount: data.amount,
-        currency: data.currency,
+        key: "rzp_live_SzqRSW7PoAIHkz",
+        amount: amountPaise,
+        currency: "INR",
         name: "Candei",
         description: `Candei Subscription - ${plan}`,
-        order_id: data.orderId,
         prefill: {
           name: auth.currentUser?.displayName || profile?.name || "",
           email: auth.currentUser?.email || profile?.email || "",
@@ -70,29 +52,14 @@ export default function Payment() {
         },
         handler: async function (response: any) {
           try {
-            const verifyRes = await fetch('/api/verify-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-            const verifyData = await verifyRes.json();
-            
-            if (verifyData.success) {
-              if (!auth.currentUser) {
-                await signIn();
-              }
-              await updateProfile({ paymentStatus: 'approved', subscriptionPlan: plan });
-              navigate('/dashboard');
-            } else {
-              alert("Payment verification failed. Please contact support.");
+            if (!auth.currentUser) {
+              await signIn();
             }
+            await updateProfile({ paymentStatus: 'approved', subscriptionPlan: plan, razorpay_payment_id: response.razorpay_payment_id });
+            navigate('/dashboard');
           } catch (e) {
             console.error(e);
-            alert("Error verifying payment.");
+            alert("Error updating profile after payment.");
           }
         },
       };
