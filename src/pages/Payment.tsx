@@ -31,15 +31,6 @@ export default function Payment() {
   const handlePay = async (plan: string, amountPaise: number) => {
     setLoading(plan);
     try {
-      if (!user) {
-        await signIn();
-      }
-
-      if (!auth.currentUser) {
-        setLoading(null);
-        return; // User cancelled sign in
-      }
-
       const response = await fetch('/api/create-razorpay-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,6 +69,9 @@ export default function Payment() {
             const verifyData = await verifyRes.json();
             
             if (verifyData.success) {
+              if (!auth.currentUser) {
+                await signIn();
+              }
               await updateProfile({ paymentStatus: 'approved', subscriptionPlan: plan });
               navigate('/dashboard');
             } else {
