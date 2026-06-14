@@ -32,9 +32,9 @@ async function startServer() {
       });
 
       res.json({ orderId: order.id, amount: order.amount, currency: order.currency, key_id });
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      res.status(500).json({ error: "Failed to create order" });
+      res.status(500).json({ error: e?.error?.description || e?.message || "Failed to create order" });
     }
   });
 

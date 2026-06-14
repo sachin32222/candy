@@ -36,9 +36,22 @@ export default function Payment() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: amountPaise, plan }),
       });
-      const data = await response.json();
+      
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        const text = await response.text().catch(() => 'No response body');
+        throw new Error(`Server did not return JSON. Status: ${response.status}. Body: ${text.substring(0, 50)}`);
+      }
 
-      if (!data.orderId) throw new Error("Failed to create order");
+      if (!response.ok) {
+        throw new Error(data.error || `Server responded with ${response.status}`);
+      }
+
+      if (!data.orderId) throw new Error("Failed to create order: missing orderId");
+
+      if (!window.Razorpay) throw new Error("Razorpay SDK not loaded. Check your connection or disable adblock.");
 
       const options = {
         key: data.key_id,
@@ -90,9 +103,9 @@ export default function Payment() {
       });
       rzp.open();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error initiating payment:', error);
-      alert("Something went wrong loading checkout.");
+      alert(`Checkout Error: ${error.message || "Unknown error occurred"}`);
     } finally {
       setLoading(null);
     }
