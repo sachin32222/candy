@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { Camera, Users, TrendingUp, ExternalLink, ChevronRight } from 'lucide-react';
+import { Camera, Users, TrendingUp, ExternalLink, ChevronRight, Instagram } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const FLOATING_ELEMENTS = Array.from({ length: 20 }, (_, i) => ({
@@ -17,6 +17,7 @@ export default function Landing() {
   const { user, signIn, authError } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   useEffect(() => {
     if (authError) {
@@ -189,7 +190,7 @@ export default function Landing() {
                   whileTap={{ scale: 0.98 }}
                   href="/story.html"
                   target="_blank"
-                  className="w-full bg-[#1a1a1a] text-white border border-[#333] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#252525] transition-all flex items-center justify-center gap-2 text-sm"
+                  className="w-full bg-[#1a1a1a] text-white border border-[#9a9d96] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#33003b] transition-all flex items-center justify-center gap-2 text-sm"
                 >
                   Our Story
                 </motion.a>
@@ -199,7 +200,7 @@ export default function Landing() {
                 whileTap={{ scale: 0.98 }}
                 href="/why-candei.html"
                 target="_blank"
-                className="w-full bg-[#301934] text-[#b500ff] border border-[#b500ff]/30 py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#3d2042] transition-all flex items-center justify-center gap-2 text-sm"
+                className="w-full bg-[#33003b] text-white border border-[#9a9d96] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#3d2042] transition-all flex items-center justify-center gap-2 text-sm"
               >
                 Why Candei
               </motion.a>
@@ -224,13 +225,13 @@ export default function Landing() {
               </motion.div>
             )}
             
-            <motion.p variants={itemVariants} className="text-[#301934] text-[10px] text-center font-medium uppercase tracking-[0.2em] hover:text-[#b500ff] hover:drop-shadow-[0_0_8px_rgba(181,0,255,1)] transition-all duration-300 cursor-default">
+            <motion.p variants={itemVariants} className="text-[#f8a600] text-[10px] text-center font-medium uppercase tracking-[0.2em] hover:text-[#f8a600] transition-all duration-300 cursor-default">
               Join 24,000+ elite photographers
             </motion.p>
           </motion.div>
 
           {/* Feature Grid Mini */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 gap-8 mt-20 border-t border-[#333] pt-12 max-w-lg">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 gap-8 mt-20 border-t border-[#908888] pt-12 max-w-lg mb-8">
             <motion.div whileHover={{ y: -5 }} className="group">
               <div className="flex items-center gap-2 mb-3 text-white">
                 <div className="p-2 rounded-full bg-[#0f0f0f] group-hover:bg-white group-hover:text-neutral-900 transition-colors">
@@ -250,29 +251,64 @@ export default function Landing() {
               <p className="text-neutral-500 text-xs leading-relaxed font-light transition-colors group-hover:text-neutral-300">Automate Google reviews, Instagram follows, and long-term client retention.</p>
             </motion.div>
           </motion.div>
+
+          {/* Social Icons - Inlined & Aligned */}
+          <motion.div 
+            variants={itemVariants}
+            className="flex items-center gap-6 mt-4 pointer-events-auto"
+          >
+            <a href="https://www.instagram.com/get_candei?igsh=a3NneHRpYXQ5anln" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity text-white hover:text-fuchsia-400">
+              <Instagram className="w-6 h-6" />
+            </a>
+            <a href="https://wa.me/919318465272" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity text-white hover:text-emerald-400">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            </a>
+          </motion.div>
         </motion.div>
       </div>
 
-      {/* Right Column: Imagery */}
+      {/* Right Column: Imagery / Video */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5 }}
-        className="hidden md:block md:w-[45%] relative bg-[#0f0f0f] border-l border-[#333] overflow-hidden"
+        className="hidden md:flex flex-col items-center justify-center md:w-[45%] relative bg-[#0f0f0f] border-l border-[#333] overflow-hidden p-8"
       >
-        <motion.img 
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-          src="https://images.unsplash.com/photo-1621510427847-cc17a3aafa16?q=80&w=2670&auto=format&fit=crop" 
-          alt="Professional Equipment / Camera"
-          className="absolute inset-0 w-full h-full object-cover object-center opacity-70 grayscale-[20%]"
-          referrerPolicy="no-referrer"
-        />
-        {/* Subtle vignette/gradient over the image to make it look premium */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/50 to-transparent opacity-100"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent opacity-80"></div>
-        <div className="absolute inset-0 bg-black/20 mix-blend-multiply"></div>
+        {/* Subtle vignette/gradient over the edge to blend nicely */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0f0f0f] via-transparent to-transparent w-[15%] pointer-events-none z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-80 h-[20%] mt-auto pointer-events-none z-10"></div>
+        
+        <div className="w-full relative aspect-video max-w-[1270px] max-h-[720px] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(74,109,225,0.15)] border border-white/5 z-20 bg-black">
+          {!isVideoPlaying ? (
+            <div 
+              className="absolute inset-0 w-full h-full cursor-pointer group flex items-center justify-center z-30"
+              onClick={() => setIsVideoPlaying(true)}
+            >
+              <img 
+                src="https://img.youtube.com/vi/sHooRInnHvE/maxresdefault.jpg" 
+                alt="Candei OS Platform Overview" 
+                width="1270"
+                height="720"
+                className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+              />
+              <div className="relative w-20 h-20 bg-red-600/90 rounded-2xl flex items-center justify-center backdrop-blur-sm group-hover:bg-red-600 group-hover:scale-105 transition-all duration-300 shadow-2xl">
+                <svg className="w-10 h-10 text-white ml-2" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+          ) : (
+            <iframe
+              width="1270"
+              height="720"
+              src="https://www.youtube.com/embed/sHooRInnHvE?autoplay=1&controls=1&rel=0"
+              className="absolute inset-0 w-full h-full border-0 animate-in fade-in duration-500 z-10"
+              title="Candei OS Platform Overview"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          )}
+        </div>
         
         {/* Little UI ornamentation */}
         <motion.div 
