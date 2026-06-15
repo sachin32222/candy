@@ -1,5 +1,5 @@
 {
   "name": "Candy",
   "description": "Candy helps photographers maximize every event. Instantly capture leads on the spot, create real-time engagement with guests, and deliver professional photos immediately. Seamlessly convert happy attendees into paying clients with automated follow-ups and a delightful guest experience.",
-  "requestFramePermissions": []
+  "requestFramePermissions": ["camera"]
 }
