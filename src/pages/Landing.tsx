@@ -115,7 +115,7 @@ export default function Landing() {
   };
 
   return (
-    <div className={`min-h-screen font-sans flex flex-col md:flex-row overflow-hidden relative ${isLiveMode ? 'bg-black' : 'bg-[#0f0f0f]'}`}>
+    <div className={`min-h-screen font-sans flex flex-col md:flex-row overflow-x-hidden relative ${isLiveMode ? 'bg-black' : 'bg-[#0f0f0f]'}`}>
       
       {/* Background Particles Area / Live Video */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -134,7 +134,7 @@ export default function Landing() {
       </div>
 
       {/* Left Column: Content */}
-      <div className="w-full md:w-[55%] flex flex-col justify-center px-8 sm:px-16 lg:px-24 py-16 relative z-10 min-h-screen">
+      <div className="w-full md:w-[55%] flex flex-col justify-center px-6 sm:px-16 lg:px-24 pt-32 pb-16 md:py-16 relative z-10 min-h-screen md:min-h-0">
         
         {/* Brand/Logo Area */}
         <motion.div 
@@ -321,7 +321,7 @@ export default function Landing() {
 
             <div className="w-px h-6 bg-white/20 mx-1 md:mx-2 hidden lg:block"></div>
 
-            <div className="text-white border border-white/10 backdrop-blur-3xl px-4 py-2 rounded-xl bg-black/40 shadow-2xl flex-shrink-0 hidden md:block">
+            <div className="text-white border border-white/10 backdrop-blur-3xl px-3 py-1.5 md:px-4 md:py-2 rounded-xl bg-black/40 shadow-2xl flex-shrink-0 mb-4 sm:mb-0 w-full sm:w-auto flex justify-center sm:block">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse"></div>
@@ -345,7 +345,7 @@ export default function Landing() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5 }}
-        className={`hidden md:flex flex-col items-center justify-center md:w-[45%] relative border-l border-[#333] overflow-hidden p-8 transition-colors duration-500 ${isLiveMode ? 'bg-transparent' : 'bg-[#0f0f0f]'}`}
+        className={`flex flex-col items-center justify-center w-full md:w-[45%] relative border-t md:border-t-0 md:border-l border-[#333] p-8 md:px-8 py-16 md:py-8 transition-colors duration-500 z-10 ${isLiveMode ? 'bg-transparent' : 'bg-[#0f0f0f]'}`}
       >
         {/* Subtle vignette/gradient over the edge to blend nicely */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#0f0f0f] via-transparent to-transparent w-[15%] pointer-events-none z-10"></div>
@@ -358,11 +358,14 @@ export default function Landing() {
               onClick={() => setIsVideoPlaying(true)}
             >
               <img 
-                src="https://img.youtube.com/vi/sHooRInnHvE/maxresdefault.jpg" 
+                src="https://img.youtube.com/vi/sHooRInnHvE/hqdefault.jpg" 
                 alt="Candei OS Platform Overview" 
                 width="1270"
                 height="720"
                 className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                onError={(e) => {
+                  e.currentTarget.src = "https://img.youtube.com/vi/sHooRInnHvE/0.jpg";
+                }}
               />
               <div className="relative w-20 h-20 bg-red-600/90 rounded-2xl flex items-center justify-center backdrop-blur-sm group-hover:bg-red-600 group-hover:scale-105 transition-all duration-300 shadow-2xl">
                 <svg className="w-10 h-10 text-white ml-2" fill="currentColor" viewBox="0 0 24 24">
