@@ -15,6 +15,7 @@ import Gallery from './pages/Gallery';
 import Payment from './pages/Payment';
 import AdminPanel from './pages/AdminPanel';
 import FAQ from './pages/FAQ';
+import Integrations from './pages/Integrations';
 
 import About from './pages/About';
 
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><ProfileSetup /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+          <Route path="/integrations" element={<PrivateRoute><Integrations /></PrivateRoute>} />
           <Route path="/events/:eventId" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
           <Route path="/e/:eventId" element={<GuestLanding />} />
           <Route path="/gallery/:eventId" element={<Gallery />} />

@@ -307,7 +307,7 @@ export default function Dashboard() {
               <button 
                 onClick={() => {
                   setShowConnectModal(false);
-                  setShowPlaygroundWarning(true);
+                  navigate('/integrations');
                 }}
                 className="group p-6 rounded-2xl bg-[#0a0a0a] border border-[#222] hover:border-[#444] hover:bg-[#151515] transition-all flex flex-col items-center text-center gap-4"
               >
@@ -323,7 +323,7 @@ export default function Dashboard() {
               <button 
                 onClick={() => {
                   setShowConnectModal(false);
-                  setShowPlaygroundWarning(true);
+                  navigate('/integrations');
                 }}
                 className="group p-6 rounded-2xl bg-[#0a0a0a] border border-[#222] hover:border-[#444] hover:bg-[#151515] transition-all flex flex-col items-center text-center gap-4"
               >

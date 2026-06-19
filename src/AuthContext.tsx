@@ -18,6 +18,14 @@ interface UserProfile {
   driveConnected?: boolean;
   createdAt?: string;
   paymentStatus?: 'pending' | 'initiated' | 'approved' | 'declined';
+  waAppId?: string;
+  waAppSecret?: string;
+  waPhoneNumberId?: string;
+  waToken?: string;
+  igAppId?: string;
+  igAppSecret?: string;
+  igAccountId?: string;
+  igToken?: string;
 }
 
 interface AuthContextType {
