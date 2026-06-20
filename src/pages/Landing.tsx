@@ -172,7 +172,7 @@ export default function Landing() {
           </motion.h1>
           
           <motion.p variants={itemVariants} className="text-lg font-light leading-relaxed mb-12 max-w-sm bg-gradient-to-r from-neutral-400 via-neutral-100 to-neutral-400 bg-clip-text text-transparent animate-text-gradient">
-            The definitive operating system for elite photographers. Instantly capture leads, automate marketing, and build a billion-dollar brand from every event.
+            An AI-powered operating system for photographers that automatically organizes, searches, delivers, markets, and monetizes event photography using computer vision and generative AI.
           </motion.p>
           
             {/* Action Area */}
