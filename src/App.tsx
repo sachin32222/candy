@@ -23,6 +23,8 @@ import About from './pages/About';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalSoundListener } from './components/GlobalSoundListener';
+import WhatsAppWidget from './components/WhatsAppWidget';
+import CursorStardust from './components/CursorStardust';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, authError, logout } = useAuth();
@@ -77,6 +79,7 @@ export default function App() {
     <ErrorBoundary>
       <AuthProvider>
         <GlobalSoundListener />
+        <CursorStardust />
         <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -93,6 +96,7 @@ export default function App() {
           <Route path="/e/:eventId" element={<GuestLanding />} />
           <Route path="/gallery/:eventId" element={<Gallery />} />
         </Routes>
+        <WhatsAppWidget />
       </Router>
     </AuthProvider>
     </ErrorBoundary>

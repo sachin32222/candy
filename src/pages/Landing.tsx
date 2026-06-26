@@ -19,6 +19,26 @@ export default function Landing() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const vantaRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let vantaEffect: any = null;
+    if (vantaRef.current && (window as any).VANTA) {
+      vantaEffect = (window as any).VANTA.RINGS({
+        el: vantaRef.current,
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00
+      });
+    }
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, []);
 
   useEffect(() => {
     if (authError) {
@@ -116,7 +136,7 @@ export default function Landing() {
   };
 
   return (
-    <div className={`min-h-screen font-sans flex flex-col md:flex-row overflow-x-hidden relative ${isLiveMode ? 'bg-black' : 'bg-[#0f0f0f]'}`}>
+    <div ref={vantaRef} className={`min-h-screen font-sans flex flex-col md:flex-row overflow-x-hidden relative ${isLiveMode ? 'bg-black' : 'bg-[#0f0f0f]'}`}>
       
       {/* Background Particles Area / Live Video */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -199,8 +219,7 @@ export default function Landing() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => window.open('/#/payment', '_blank')}
-              style={{ backgroundColor: '#0D94FB', borderWidth: '0.33333px', borderStyle: 'inset' }}
-              className="w-full text-white py-4 px-8 rounded-full font-bold tracking-wide hover:opacity-90 transition-all flex items-center justify-center gap-3 group overflow-hidden relative shadow-[0_0_20px_rgba(13,148,251,0.3)]"
+              className="glow-on-hover w-full flex items-center justify-center gap-3 h-[56px] font-medium"
             >
               <span className="relative z-10">Pay Now</span>
               <ChevronRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
@@ -212,20 +231,18 @@ export default function Landing() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => window.open('/#/about', '_blank')}
-                  style={{ backgroundColor: '#000000', borderStyle: 'groove' }}
-                  className="w-full text-white border border-[#333] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#252525] transition-all flex items-center justify-center gap-2 text-sm"
+                  className="glow-on-hover w-full flex items-center justify-center gap-2 h-[56px] font-medium"
                 >
-                  About Us
+                  <span className="relative z-10">About Us</span>
                 </motion.button>
                 <motion.a
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   href="/story.html"
                   target="_blank"
-                  style={{ borderStyle: 'groove' }}
-                  className="w-full bg-[#1a1a1a] text-white border border-[#9a9d96] py-4 px-8 rounded-full font-medium tracking-wide hover:bg-[#33003b] transition-all flex items-center justify-center gap-2 text-sm"
+                  className="glow-on-hover w-full flex items-center justify-center gap-2 h-[56px] font-medium"
                 >
-                  Our Story
+                  <span className="relative z-10">Our Story</span>
                 </motion.a>
               </div>
               <motion.a
@@ -233,27 +250,26 @@ export default function Landing() {
                 whileTap={{ scale: 0.98 }}
                 href="/why-candei.html"
                 target="_blank"
-                style={{ backgroundColor: '#0D94FB', borderWidth: '0.33333px', borderStyle: 'inset' }}
-                className="w-full text-white border border-[#9a9d96] py-4 px-8 rounded-full font-medium tracking-wide hover:opacity-90 transition-all flex items-center justify-center gap-2 text-sm shadow-[0_0_20px_rgba(13,148,251,0.3)]"
+                className="glow-on-hover w-full flex items-center justify-center gap-2 h-[56px] font-medium"
               >
-                Why Candei
+                <span className="relative z-10">Why Candei</span>
               </motion.a>
               <div className="flex flex-col sm:flex-row gap-4 w-full">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/knowledge-base')}
-                  className="w-full bg-black/40 backdrop-blur-md text-[#0D94FB] border border-[#0D94FB]/30 py-3 px-6 rounded-full font-medium hover:bg-[#0D94FB]/10 transition-all flex items-center justify-center gap-2 text-sm"
+                  className="glow-on-hover w-full flex items-center justify-center gap-2 h-[56px] font-medium"
                 >
-                  Knowledge Base
+                  <span className="relative z-10">Knowledge Base</span>
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/blogs')}
-                  className="w-full bg-black/40 backdrop-blur-md text-emerald-400 border border-emerald-400/30 py-3 px-6 rounded-full font-medium hover:bg-emerald-400/10 transition-all flex items-center justify-center gap-2 text-sm"
+                  className="glow-on-hover w-full flex items-center justify-center gap-2 h-[56px] font-medium"
                 >
-                  Blogs
+                  <span className="relative z-10">Blogs</span>
                 </motion.button>
               </div>
             </div>
@@ -307,7 +323,7 @@ export default function Landing() {
           {/* Social Icons & Live Toggle */}
           <motion.div 
             variants={itemVariants}
-            className="flex flex-wrap items-center gap-4 md:gap-6 mt-6 pointer-events-auto w-full"
+            className="flex flex-wrap items-center gap-3 md:gap-4 mt-6 pointer-events-auto w-full"
           >
             <a href="https://www.instagram.com/get_candei?igsh=a3NneHRpYXQ5anln" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity text-white hover:text-fuchsia-400 flex-shrink-0">
               <Instagram className="w-6 h-6" />
@@ -316,19 +332,19 @@ export default function Landing() {
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
             </a>
             
-            <div className="w-px h-6 bg-white/20 mx-1 md:mx-2 hidden sm:block"></div>
+            <div className="w-px h-5 bg-white/20 mx-1 hidden sm:block"></div>
             
             {isLiveMode && (
               <button 
                 onClick={switchCamera}
-                className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white/20 hover:scale-105 transition-all shadow-lg flex-shrink-0"
+                className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white/20 hover:scale-105 transition-all shadow-lg flex-shrink-0"
               >
                 <RefreshCw className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             )}
             <button 
               onClick={toggleLiveMode}
-              className={`flex items-center justify-center gap-2 px-3 py-2 md:px-5 md:py-2.5 rounded-lg md:rounded-xl font-medium tracking-wide text-xs md:text-sm backdrop-blur-md transition-all shadow-xl border flex-shrink-0 ${
+              className={`flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl font-medium tracking-wide text-xs md:text-sm backdrop-blur-md transition-all shadow-xl border flex-shrink-0 ${
                 isLiveMode 
                   ? 'bg-red-500/20 text-red-500 border-red-500/30 hover:bg-red-500/30 hover:scale-105' 
                   : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30 hover:scale-105'
@@ -338,7 +354,7 @@ export default function Landing() {
               {isLiveMode ? 'Turn Off Live' : 'Live Me'}
             </button>
 
-            <div className="w-px h-6 bg-white/20 mx-1 md:mx-2 hidden lg:block"></div>
+            <div className="w-px h-5 bg-white/20 mx-1 hidden sm:block"></div>
 
             <div className="text-white border border-white/10 backdrop-blur-3xl px-3 py-1.5 md:px-4 md:py-2 rounded-xl bg-black/40 shadow-2xl flex-shrink-0 mb-4 sm:mb-0 w-full sm:w-auto flex justify-center sm:block">
               <div className="flex flex-col gap-1">
