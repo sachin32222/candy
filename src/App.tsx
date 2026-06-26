@@ -16,6 +16,8 @@ import Payment from './pages/Payment';
 import AdminPanel from './pages/AdminPanel';
 import FAQ from './pages/FAQ';
 import Integrations from './pages/Integrations';
+import Blogs from './pages/Blogs';
+import KnowledgeBase from './pages/KnowledgeBase';
 
 import About from './pages/About';
 
@@ -80,6 +82,8 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/knowledge-base" element={<KnowledgeBase />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><ProfileSetup /></PrivateRoute>} />

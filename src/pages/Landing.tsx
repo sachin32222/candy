@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { Camera, Users, TrendingUp, ExternalLink, ChevronRight, Instagram, Video, VideoOff, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
+import DiscountPopup from '../components/DiscountPopup';
 
 const FLOATING_ELEMENTS = Array.from({ length: 20 }, (_, i) => ({
   id: i,
@@ -237,6 +238,24 @@ export default function Landing() {
               >
                 Why Candei
               </motion.a>
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/knowledge-base')}
+                  className="w-full bg-black/40 backdrop-blur-md text-[#0D94FB] border border-[#0D94FB]/30 py-3 px-6 rounded-full font-medium hover:bg-[#0D94FB]/10 transition-all flex items-center justify-center gap-2 text-sm"
+                >
+                  Knowledge Base
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/blogs')}
+                  className="w-full bg-black/40 backdrop-blur-md text-emerald-400 border border-emerald-400/30 py-3 px-6 rounded-full font-medium hover:bg-emerald-400/10 transition-all flex items-center justify-center gap-2 text-sm"
+                >
+                  Blogs
+                </motion.button>
+              </div>
             </div>
             
             {error && (
@@ -400,7 +419,7 @@ export default function Landing() {
             </p>
         </motion.div>
       </motion.div>
-      
+      <DiscountPopup />
     </div>
   );
 }
