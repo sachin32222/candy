@@ -17,8 +17,12 @@ async function startServer() {
     try {
       const { amount, plan } = req.body;
       
-      const key_id = process.env.RAZORPAY_KEY_ID || "rzp_live_SzqRSW7PoAIHkz";
-      const key_secret = process.env.RAZORPAY_KEY_SECRET || "DIhb5T64azdquNnJTajoK9M8";
+      const key_id = process.env.RAZORPAY_KEY_ID;
+      const key_secret = process.env.RAZORPAY_KEY_SECRET;
+
+      if (!key_id || !key_secret) {
+        return res.status(500).json({ error: "Razorpay credentials not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET." });
+      }
 
       const rzp = new Razorpay({
         key_id,
@@ -42,7 +46,10 @@ async function startServer() {
     try {
       const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
       
-      const key_secret = process.env.RAZORPAY_KEY_SECRET || "DIhb5T64azdquNnJTajoK9M8";
+      const key_secret = process.env.RAZORPAY_KEY_SECRET;
+      if (!key_secret) {
+        return res.status(500).json({ error: "Razorpay credentials not configured. Please set RAZORPAY_KEY_SECRET." });
+      }
       
       const body = razorpay_order_id + "|" + razorpay_payment_id;
       const expectedSignature = crypto
@@ -65,6 +72,10 @@ async function startServer() {
   app.post("/api/analyze-images", async (req, res) => {
     try {
       const { selfieBase64, images } = req.body;
+
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: "GEMINI_API_KEY is not configured." });
+      }
       
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       
@@ -150,6 +161,41 @@ async function startServer() {
     } catch (error) {
       console.error("Error analyzing images:", error);
       res.status(500).json({ error: "AI analysis failed." });
+    }
+  });
+
+  // Meta (Instagram & WhatsApp) Webhook Verification
+  app.get("/api/meta/webhook", (req, res) => {
+    const mode = req.query["hub.mode"];
+    const token = req.query["hub.verify_token"];
+    const challenge = req.query["hub.challenge"];
+
+    const verifyToken = process.env.META_VERIFY_TOKEN || "candei_secret_meta_webhook_2026";
+
+    if (mode === "subscribe" && token === verifyToken) {
+      console.log("[Meta Webhook] Verification successful");
+      // Return raw challenge string with HTTP 200 (do not wrap in JSON)
+      return res.status(200).send(String(challenge ?? ""));
+    } else {
+      console.warn("[Meta Webhook] Verification failed - mode or token mismatch", {
+        mode,
+        tokenReceived: token ? "[REDACTED]" : undefined,
+      });
+      return res.status(403).send("Forbidden");
+    }
+  });
+
+  // Meta (Instagram & WhatsApp) Event Reception
+  app.post("/api/meta/webhook", (req, res) => {
+    try {
+      const payload = req.body;
+      console.log("[Meta Webhook] Received event payload:", JSON.stringify(payload, null, 2));
+
+      // Immediately respond with HTTP 200 OK so Meta does not retry
+      return res.status(200).json({ status: "EVENT_RECEIVED" });
+    } catch (error) {
+      console.error("[Meta Webhook] Error processing event:", error);
+      return res.status(200).json({ status: "EVENT_RECEIVED" });
     }
   });
 
