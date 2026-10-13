@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const errorDescription = searchParams.get("error_description");
 
     if (error || !code) {
-      console.error("[Instagram Callback] Error:", error, errorDescription);
+      console.error("[Instagram Callback] OAuth Error:", error, errorDescription);
       return NextResponse.redirect(
         new URL(`/dashboard/automations?error=${encodeURIComponent(errorDescription || error || "access_denied")}`, request.url)
       );
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const clientSecret = process.env.META_APP_SECRET;
 
     if (!clientSecret) {
-      console.error("[Instagram Callback] Missing META_APP_SECRET");
+      console.error("[Instagram Callback] Missing META_APP_SECRET in environment variables");
       return NextResponse.redirect(
         new URL("/dashboard/automations?error=missing_meta_app_secret", request.url)
       );
@@ -57,14 +57,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { user_id } = tokenData;
-    console.log("[Instagram Callback] Successfully connected user:", user_id);
+    const { access_token, user_id } = tokenData;
+    console.log("[Instagram Callback] Connected user_id:", user_id);
 
     return NextResponse.redirect(
       new URL(`/dashboard/automations?status=connected&user_id=${user_id || ""}`, request.url)
     );
   } catch (err: any) {
-    console.error("[Instagram Callback] Crash:", err);
+    console.error("[Instagram Callback] Fatal Error:", err);
     return NextResponse.redirect(
       new URL(`/dashboard/automations?error=${encodeURIComponent(err?.message || "server_error")}`, request.url)
     );

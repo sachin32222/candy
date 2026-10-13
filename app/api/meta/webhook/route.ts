@@ -1,4 +1,4 @@
-import { processMetaWebhookEvent } from "@/src/utils/metaCredentials";
+import { processMetaWebhookEvent } from "../../../../src/utils/metaCredentials";
 
 /**
  * Meta Webhook Handler for Instagram Comments & Direct Messages

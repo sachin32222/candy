@@ -1,4 +1,4 @@
-import { processMetaWebhookEvent } from "@/src/utils/metaCredentials";
+import { processMetaWebhookEvent } from "../../src/utils/metaCredentials";
 
 export default function handler(req: any, res: any) {
   if (req.method === "GET") {
