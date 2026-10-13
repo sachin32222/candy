@@ -24,35 +24,37 @@ export async function GET(request: Request) {
   }
 
   const tenantId = state;
-  const appId = process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID || process.env.META_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID || "1090179470293810";
-  const appSecret = process.env.META_APP_SECRET || "b3bbe58e977ddb226d3cabd457ef8b6d";
+  const clientId = process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID || "1090179470293810";
+  const clientSecret = process.env.META_APP_SECRET || "472774808ad949133b7748ee5eb65187";
   const redirectUri = "https://getcandei.com/api/auth/instagram/callback";
 
   try {
-    console.log(`[Instagram OAuth Callback] Initiating token exchange for tenant: ${tenantId} using client_id: ${appId}`);
+    console.log(`[Instagram OAuth Callback] Initiating token exchange for tenant: ${tenantId} using client_id: ${clientId}`);
 
     // 1. Exchange authorization code for short-lived access token
-    // Supports Instagram Business Login token exchange endpoint
     const form = new URLSearchParams();
-    form.append("client_id", appId);
-    form.append("client_secret", appSecret);
+    form.append("client_id", clientId);
+    form.append("client_secret", clientSecret);
     form.append("grant_type", "authorization_code");
     form.append("redirect_uri", redirectUri);
     form.append("code", code);
 
-    // Try api.instagram.com/oauth/access_token (standard for Instagram Business Login)
+    // POST request to https://api.instagram.com/oauth/access_token
     let shortTokenRes = await fetch("https://api.instagram.com/oauth/access_token", {
       method: "POST",
-      body: form,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: form.toString(),
     });
     let shortTokenData = await shortTokenRes.json();
 
-    // Fallback to graph.facebook.com if needed
+    // Fallback to graph.facebook.com endpoint if needed
     if (!shortTokenRes.ok || !shortTokenData.access_token) {
       console.warn("[Instagram OAuth] api.instagram.com exchange failed, trying graph.facebook.com endpoint:", shortTokenData?.error_message || shortTokenData?.error?.message);
       const fbTokenUrl = new URL("https://graph.facebook.com/v21.0/oauth/access_token");
-      fbTokenUrl.searchParams.set("client_id", appId);
-      fbTokenUrl.searchParams.set("client_secret", appSecret);
+      fbTokenUrl.searchParams.set("client_id", clientId);
+      fbTokenUrl.searchParams.set("client_secret", clientSecret);
       fbTokenUrl.searchParams.set("redirect_uri", redirectUri);
       fbTokenUrl.searchParams.set("code", code);
 
@@ -78,7 +80,7 @@ export async function GET(request: Request) {
     // 2. Exchange short-lived token for a 60-day long-lived access token
     const longTokenUrl = new URL("https://graph.instagram.com/access_token");
     longTokenUrl.searchParams.set("grant_type", "ig_exchange_token");
-    longTokenUrl.searchParams.set("client_secret", appSecret);
+    longTokenUrl.searchParams.set("client_secret", clientSecret);
     longTokenUrl.searchParams.set("access_token", shortLivedToken);
 
     let longTokenRes = await fetch(longTokenUrl.toString());
@@ -105,7 +107,7 @@ export async function GET(request: Request) {
       instagramAccountId = "ig_" + Date.now();
     }
 
-    // 4. Save credentials to database using placeholder DB helper
+    // 4. Save credentials to database using DB helper
     await saveTenantMetaCredentials({
       tenantId,
       instagramAccountId,

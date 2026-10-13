@@ -252,20 +252,36 @@ export interface ExchangeResult {
  */
 export async function processInstagramOAuthCallback(code: string, state: string): Promise<ExchangeResult> {
   const tenantId = state;
-  const appId = process.env.META_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID || process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID || "1090179470293810";
-  const appSecret = process.env.META_APP_SECRET || "b3bbe58e977ddb226d3cabd457ef8b6d";
+  const appId = process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID || process.env.META_APP_ID || "1090179470293810";
+  const appSecret = process.env.META_APP_SECRET || "472774808ad949133b7748ee5eb65187";
   const redirectUri = process.env.META_REDIRECT_URI || "https://getcandei.com/api/auth/instagram/callback";
 
   try {
-    // 1. Exchange authorization code for short-lived token
-    const tokenUrl = new URL("https://graph.facebook.com/v21.0/oauth/access_token");
-    tokenUrl.searchParams.set("client_id", appId);
-    tokenUrl.searchParams.set("client_secret", appSecret);
-    tokenUrl.searchParams.set("redirect_uri", redirectUri);
-    tokenUrl.searchParams.set("code", code);
+    // 1. Exchange authorization code for short-lived token via api.instagram.com
+    const form = new URLSearchParams();
+    form.append("client_id", appId);
+    form.append("client_secret", appSecret);
+    form.append("grant_type", "authorization_code");
+    form.append("redirect_uri", redirectUri);
+    form.append("code", code);
 
-    const shortTokenRes = await fetch(tokenUrl.toString());
-    const shortTokenData = await shortTokenRes.json();
+    let shortTokenRes = await fetch("https://api.instagram.com/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: form.toString(),
+    });
+    let shortTokenData = await shortTokenRes.json();
+
+    if (!shortTokenRes.ok || !shortTokenData.access_token) {
+      const tokenUrl = new URL("https://graph.facebook.com/v21.0/oauth/access_token");
+      tokenUrl.searchParams.set("client_id", appId);
+      tokenUrl.searchParams.set("client_secret", appSecret);
+      tokenUrl.searchParams.set("redirect_uri", redirectUri);
+      tokenUrl.searchParams.set("code", code);
+
+      shortTokenRes = await fetch(tokenUrl.toString());
+      shortTokenData = await shortTokenRes.json();
+    }
 
     if (!shortTokenRes.ok || !shortTokenData.access_token) {
       const errMsg = shortTokenData.error?.message || "Failed to exchange authorization code for access token";
