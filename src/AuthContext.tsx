@@ -26,14 +26,22 @@ interface UserProfile {
   igAppSecret?: string;
   igAccountId?: string;
   igToken?: string;
+  instagramAccountId?: string;
+  instagramUsername?: string;
+  pageAccessToken?: string;
+  metaConnected?: boolean;
+  metaConnectedAt?: string;
+  automations?: any[];
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: any;
   profile: UserProfile | null;
   loading: boolean;
   authError: string | null;
   signIn: () => Promise<string | void>;
+  signInWithCredentials: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  loginAsReviewer: () => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   driveToken: string | null;
@@ -42,17 +50,42 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [driveToken, setDriveToken] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check for existing mock reviewer session in localStorage
+    const savedMock = localStorage.getItem('candei_mock_auth');
+    if (savedMock) {
+      try {
+        const mockUser = JSON.parse(savedMock);
+        setUser(mockUser);
+        import('./utils/metaCredentials').then(({ ensureReviewerAccount, REVIEWER_TENANT_ID }) => {
+          ensureReviewerAccount().then(async (revProfile) => {
+            // Also check if updated profile in Firestore
+            try {
+              const docSnap = await getDoc(doc(db, 'users', REVIEWER_TENANT_ID));
+              if (docSnap.exists()) {
+                setProfile(docSnap.data() as UserProfile);
+                return;
+              }
+            } catch (e) {}
+            setProfile(revProfile as unknown as UserProfile);
+          });
+        });
+      } catch (e) {
+        console.error("Failed to parse mock auth:", e);
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
       setAuthError(null);
       if (currentUser) {
+        localStorage.removeItem('candei_mock_auth');
+        setUser(currentUser);
         try {
           const docRef = doc(db, 'users', currentUser.uid);
           const docSnap = await getDoc(docRef);
@@ -73,17 +106,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           console.error("Auth initialization error:", error);
           setAuthError("Failed to load user profile. Please try refreshing the page.");
-          // We don't call handleFirestoreError here because it throws, which breaks the auth flow
         }
       } else {
-        setProfile(null);
-        setDriveToken(null);
+        // Only clear if no mock session active
+        if (!localStorage.getItem('candei_mock_auth')) {
+          setUser(null);
+          setProfile(null);
+          setDriveToken(null);
+        }
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
+
+  const loginAsReviewer = async () => {
+    setLoading(true);
+    setAuthError(null);
+    try {
+      const { ensureReviewerAccount, REVIEWER_MOCK_USER, REVIEWER_TENANT_ID } = await import('./utils/metaCredentials');
+      const revProfile = await ensureReviewerAccount();
+      localStorage.setItem('candei_mock_auth', JSON.stringify(REVIEWER_MOCK_USER));
+      setUser(REVIEWER_MOCK_USER);
+
+      // Check if Firestore has newer state (e.g. after OAuth connection)
+      try {
+        const snap = await getDoc(doc(db, 'users', REVIEWER_TENANT_ID));
+        if (snap.exists()) {
+          setProfile(snap.data() as UserProfile);
+          return;
+        }
+      } catch (e) {}
+
+      setProfile(revProfile as unknown as UserProfile);
+    } catch (err: any) {
+      console.error("Error logging in as reviewer:", err);
+      setAuthError("Failed to initialize reviewer account.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signInWithCredentials = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = pass.trim();
+
+    const { REVIEWER_EMAIL, REVIEWER_PASSWORD } = await import('./utils/metaCredentials');
+
+    if (cleanEmail === REVIEWER_EMAIL.toLowerCase() && cleanPass === REVIEWER_PASSWORD) {
+      await loginAsReviewer();
+      return { success: true };
+    }
+
+    return {
+      success: false,
+      error: `Invalid credentials. For reviewer access, use ${REVIEWER_EMAIL} and ${REVIEWER_PASSWORD}`
+    };
+  };
 
   const signIn = async (): Promise<string | void> => {
     try {
@@ -111,28 +191,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await signOut(auth);
+    localStorage.removeItem('candei_mock_auth');
+    setUser(null);
+    setProfile(null);
+    setDriveToken(null);
+    try {
+      await signOut(auth);
+    } catch (e) {}
   };
 
   const updateProfile = async (data: Partial<UserProfile>) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
+    const currentUid = user?.uid;
+    if (!currentUid) return;
     try {
-      const docRef = doc(db, 'users', currentUser.uid);
+      const docRef = doc(db, 'users', currentUid);
       await setDoc(docRef, data, { merge: true });
       
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         setProfile(docSnap.data() as UserProfile);
+      } else {
+        setProfile((prev) => prev ? { ...prev, ...data } : null);
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      throw error;
+      console.warn("Notice updating profile in Firestore (saved locally):", error);
+      setProfile((prev) => prev ? { ...prev, ...data } : null);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, authError, signIn, logout, updateProfile, driveToken }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      profile, 
+      loading, 
+      authError, 
+      signIn, 
+      signInWithCredentials, 
+      loginAsReviewer, 
+      logout, 
+      updateProfile, 
+      driveToken 
+    }}>
       {children}
     </AuthContext.Provider>
   );

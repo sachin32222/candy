@@ -18,7 +18,12 @@
         "corporateDiscount": { "type": "string" },
         "paymentStatus": { "type": "string", "enum": ["pending", "initiated", "approved", "declined"] },
         "driveConnected": { "type": "boolean" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "instagramAccountId": { "type": "string" },
+        "instagramUsername": { "type": "string" },
+        "pageAccessToken": { "type": "string" },
+        "metaConnected": { "type": "boolean" },
+        "metaConnectedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["uid", "name", "email"]
     },

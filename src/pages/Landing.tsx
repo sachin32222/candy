@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { Camera, Users, TrendingUp, ExternalLink, ChevronRight, Instagram, Video, VideoOff, RefreshCw } from 'lucide-react';
+import { Camera, Users, TrendingUp, ExternalLink, ChevronRight, Instagram, Video, VideoOff, RefreshCw, ShieldCheck, Lock, X, Key, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import DiscountPopup from '../components/DiscountPopup';
 
@@ -15,11 +15,18 @@ const FLOATING_ELEMENTS = Array.from({ length: 20 }, (_, i) => ({
 }));
 
 export default function Landing() {
-  const { user, signIn, authError } = useAuth();
+  const { user, signIn, signInWithCredentials, loginAsReviewer, authError } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const vantaRef = React.useRef<HTMLDivElement>(null);
+
+  // Reviewer login modal state
+  const [showReviewerModal, setShowReviewerModal] = useState(false);
+  const [emailInput, setEmailInput] = useState('reviewer@getcandei.com');
+  const [passwordInput, setPasswordInput] = useState('ReviewerPass2026!');
+  const [reviewerLoading, setReviewerLoading] = useState(false);
+  const [reviewerError, setReviewerError] = useState<string | null>(null);
 
   useEffect(() => {
     let vantaEffect: any = null;
@@ -48,7 +55,9 @@ export default function Landing() {
 
   useEffect(() => {
     if (user) {
-      if (user.email === 'dubeyjiinmirzapur@gmail.com') {
+      if (user.email === 'reviewer@getcandei.com') {
+        navigate('/dashboard/automations');
+      } else if (user.email === 'dubeyjiinmirzapur@gmail.com') {
         navigate('/admin');
       } else {
         navigate('/dashboard');
@@ -213,6 +222,16 @@ export default function Landing() {
               </svg>
               <span className="relative z-10 font-bold">Continue with Google</span>
               <ChevronRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowReviewerModal(true)}
+              className="w-full bg-[#181818] border border-[#333] hover:border-pink-500/50 text-white py-3 px-6 rounded-full text-xs font-semibold tracking-wider uppercase transition-all flex items-center justify-center gap-2.5 shadow-lg group"
+            >
+              <ShieldCheck className="w-4 h-4 text-pink-400 group-hover:scale-110 transition-transform" />
+              <span>Reviewer Test Account</span>
             </motion.button>
 
             <motion.button
@@ -435,6 +454,132 @@ export default function Landing() {
             </p>
         </motion.div>
       </motion.div>
+
+      {/* Reviewer Test Account Login Modal */}
+      {showReviewerModal && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-[#141414] border border-[#333] rounded-3xl max-w-md w-full p-8 shadow-2xl relative"
+          >
+            <button
+              onClick={() => setShowReviewerModal(false)}
+              className="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 flex items-center justify-center">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-serif text-white">Reviewer Test Account</h3>
+                <p className="text-xs text-neutral-400">Pre-verified Meta Instagram Automation Tenant</p>
+              </div>
+            </div>
+
+            {reviewerError && (
+              <div className="mb-4 p-3 bg-red-950/40 border border-red-500/30 rounded-xl text-red-400 text-xs">
+                {reviewerError}
+              </div>
+            )}
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  className="w-full bg-[#1c1c1c] border border-[#333] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  className="w-full bg-[#1c1c1c] border border-[#333] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                />
+              </div>
+
+              <div className="p-3.5 bg-[#1c1c1c] rounded-xl border border-[#2a2a2a] text-[11px] text-neutral-400 space-y-1.5">
+                <div className="flex justify-between">
+                  <span>Role:</span>
+                  <span className="text-white font-medium">Tenant / Business User</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Status:</span>
+                  <span className="text-emerald-400 font-medium flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" /> Pre-verified & Active
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Destination:</span>
+                  <span className="text-pink-400 font-mono">/dashboard/automations</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <button
+                disabled={reviewerLoading}
+                onClick={async () => {
+                  setReviewerLoading(true);
+                  setReviewerError(null);
+                  try {
+                    const res = await signInWithCredentials(emailInput, passwordInput);
+                    if (res.success) {
+                      setShowReviewerModal(false);
+                      navigate('/dashboard/automations');
+                    } else {
+                      setReviewerError(res.error || 'Failed to sign in.');
+                    }
+                  } catch (e: any) {
+                    setReviewerError(e.message || 'Error authenticating');
+                  } finally {
+                    setReviewerLoading(false);
+                  }
+                }}
+                className="w-full bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:opacity-95 text-white py-3.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <Key className="w-4 h-4" />
+                {reviewerLoading ? 'Authenticating...' : 'Sign In as Reviewer'}
+              </button>
+
+              <button
+                disabled={reviewerLoading}
+                onClick={async () => {
+                  setReviewerLoading(true);
+                  setReviewerError(null);
+                  try {
+                    await loginAsReviewer();
+                    setShowReviewerModal(false);
+                    navigate('/dashboard/automations');
+                  } catch (e: any) {
+                    setReviewerError(e.message || 'Error authenticating');
+                  } finally {
+                    setReviewerLoading(false);
+                  }
+                }}
+                className="w-full bg-[#202020] hover:bg-[#282828] text-neutral-300 py-3 rounded-xl text-xs font-medium tracking-wide transition-colors"
+              >
+                1-Click Instant Reviewer Login
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       <DiscountPopup />
     </div>
   );

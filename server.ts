@@ -7,7 +7,16 @@ import crypto from "crypto";
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+
+  // Parse --port and --host from CLI args or default to 3000 / 0.0.0.0
+  const portArgIdx = process.argv.indexOf("--port");
+  const hostArgIdx = process.argv.indexOf("--host");
+  const PORT = portArgIdx !== -1 && process.argv[portArgIdx + 1]
+    ? parseInt(process.argv[portArgIdx + 1], 10)
+    : 3000;
+  const HOST = hostArgIdx !== -1 && process.argv[hostArgIdx + 1]
+    ? process.argv[hostArgIdx + 1]
+    : "0.0.0.0";
 
   // Increase payload size limit since we'll be transferring self base64 images
   app.use(express.json({ limit: "50mb" }));
@@ -191,6 +200,15 @@ async function startServer() {
       const payload = req.body;
       console.log("[Meta Webhook] Received event payload:", JSON.stringify(payload, null, 2));
 
+      // Asynchronously process automation triggers
+      import("./src/utils/metaCredentials").then(({ processMetaWebhookEvent }) => {
+        processMetaWebhookEvent(payload).catch((e) => {
+          console.error("[Meta Webhook] Async event error:", e);
+        });
+      }).catch((e) => {
+        console.error("[Meta Webhook] Import error:", e);
+      });
+
       // Immediately respond with HTTP 200 OK so Meta does not retry
       return res.status(200).json({ status: "EVENT_RECEIVED" });
     } catch (error) {
@@ -199,10 +217,56 @@ async function startServer() {
     }
   });
 
+  // Meta Instagram OAuth Callback
+  app.get("/api/auth/instagram/callback", async (req, res) => {
+    try {
+      const { code, state, error, error_message, error_description } = req.query;
+
+      if (error || error_message || error_description) {
+        console.warn("[Instagram Callback] Error from Meta:", error, error_message || error_description);
+        return res.redirect(`/#/dashboard/automations?error=${encodeURIComponent(String(error_message || error_description || error))}`);
+      }
+
+      if (!code || !state) {
+        return res.redirect("/#/dashboard/automations?error=missing_parameters");
+      }
+
+      const { processInstagramOAuthCallback } = await import("./src/utils/metaCredentials");
+      const result = await processInstagramOAuthCallback(String(code), String(state));
+
+      if (result.success) {
+        return res.redirect("/#/dashboard/automations?status=connected");
+      } else {
+        return res.redirect(`/#/dashboard/automations?error=${encodeURIComponent(result.error || "oauth_failed")}`);
+      }
+    } catch (err: any) {
+      console.error("[Instagram Callback] Error:", err);
+      return res.redirect("/#/dashboard/automations?error=oauth_failed");
+    }
+  });
+
+  // Meta Instagram Compliance Routes
+  app.all("/api/auth/instagram/deauthorize", (req, res) => {
+    console.log("[Meta Compliance] Deauthorize callback hit:", req.body || req.query);
+    res.status(200).json({ status: "DEAUTHORIZED", message: "User session deauthorized successfully." });
+  });
+
+  app.all("/api/auth/instagram/delete-data", (req, res) => {
+    const confirmationCode = "candei_del_" + crypto.randomBytes(8).toString("hex");
+    console.log("[Meta Compliance] Data deletion callback hit:", { body: req.body, code: confirmationCode });
+    res.status(200).json({
+      url: `https://getcandei.com/deletion-status?code=${confirmationCode}`,
+      confirmation_code: confirmationCode,
+    });
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: false, // Prevent WebSocket port conflicts in dev environment
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);
@@ -214,9 +278,27 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  // Pre-seed mock reviewer account for Meta App Review
+  import("./src/utils/metaCredentials").then(({ ensureReviewerAccount }) => {
+    ensureReviewerAccount().catch((err) => {
+      console.warn("[Meta DB] Reviewer seeding warning:", err);
+    });
   });
+
+  const server = app.listen(PORT, HOST, () => {
+    console.log(`  ➜  Local:   http://localhost:${PORT}/`);
+    console.log(`  ➜  Network: http://${HOST}:${PORT}/`);
+    console.log(`Server running on http://${HOST}:${PORT}`);
+  });
+
+  const handleShutdown = () => {
+    server.close(() => {
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGTERM", handleShutdown);
+  process.on("SIGINT", handleShutdown);
 }
 
 startServer();

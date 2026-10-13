@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle, ArrowRight, Trash2, Eye, Users, Instagram, MessageCircle, Sparkles, Globe, Mail } from 'lucide-react';
+import { Plus, Settings, LogOut, Camera, Calendar, Link as LinkIcon, AlertCircle, ArrowRight, Trash2, Eye, Users, Instagram, MessageCircle, Sparkles, Globe, Mail, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
 import { createDriveFolder } from '../utils/drive';
 
@@ -158,6 +158,10 @@ export default function Dashboard() {
                   <span className="text-[10px] tracking-widest uppercase hidden sm:block">Admin</span>
                 </Link>
               )}
+              <Link to="/dashboard/automations" className="text-pink-400 hover:text-pink-300 transition-colors flex items-center gap-2 group bg-pink-500/10 border border-pink-500/20 px-3 py-1.5 rounded-full">
+                <Zap className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] tracking-widest uppercase font-semibold">Automations</span>
+              </Link>
               <button onClick={() => setShowConnectModal(true)} className="text-neutral-400 hover:text-white transition-colors flex items-center gap-2 group">
                 <LinkIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                 <span className="text-[10px] tracking-widest uppercase hidden sm:block">Connect</span>
@@ -307,7 +311,7 @@ export default function Dashboard() {
               <button 
                 onClick={() => {
                   setShowConnectModal(false);
-                  navigate('/integrations');
+                  navigate('/dashboard/automations');
                 }}
                 className="group p-6 rounded-2xl bg-[#0a0a0a] border border-[#222] hover:border-[#444] hover:bg-[#151515] transition-all flex flex-col items-center text-center gap-4"
               >

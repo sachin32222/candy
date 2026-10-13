@@ -1,3 +1,5 @@
+import { processMetaWebhookEvent } from "@/src/utils/metaCredentials";
+
 export default function handler(req: any, res: any) {
   if (req.method === "GET") {
     const query = req.query || {};
@@ -31,6 +33,12 @@ export default function handler(req: any, res: any) {
     try {
       const payload = req.body;
       console.log("[Meta Webhook] Received event payload:", JSON.stringify(payload, null, 2));
+
+      // Asynchronously process automation triggers
+      processMetaWebhookEvent(payload).catch((e) => {
+        console.error("[Meta Webhook] Async event error:", e);
+      });
+
       if (typeof res.status === "function") {
         return res.status(200).json({ status: "EVENT_RECEIVED" });
       } else {

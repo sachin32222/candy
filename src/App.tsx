@@ -16,6 +16,7 @@ import Payment from './pages/Payment';
 import AdminPanel from './pages/AdminPanel';
 import FAQ from './pages/FAQ';
 import Integrations from './pages/Integrations';
+import Automations from './pages/Automations';
 import Blogs from './pages/Blogs';
 import KnowledgeBase from './pages/KnowledgeBase';
 
@@ -92,6 +93,8 @@ export default function App() {
           <Route path="/profile" element={<PrivateRoute><ProfileSetup /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           <Route path="/integrations" element={<PrivateRoute><Integrations /></PrivateRoute>} />
+          <Route path="/dashboard/automations" element={<PrivateRoute><Automations /></PrivateRoute>} />
+          <Route path="/automations" element={<PrivateRoute><Automations /></PrivateRoute>} />
           <Route path="/events/:eventId" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
           <Route path="/e/:eventId" element={<GuestLanding />} />
           <Route path="/gallery/:eventId" element={<Gallery />} />

@@ -36,7 +36,7 @@ export default function Integrations() {
     setSavingWa(true);
     try {
       await updateProfile({
-        waAppId: '1478950790187834',
+        waAppId: '1090179470293810',
         waAppSecret: 'b3bbe58e977ddb226d3cabd457ef8b6d',
         waPhoneNumberId: 'simulated_phone_id',
         waToken: 'simulated_wa_token'
@@ -53,7 +53,7 @@ export default function Integrations() {
     setSavingIg(true);
     try {
       await updateProfile({
-        igAppId: '1478950790187834',
+        igAppId: '1090179470293810',
         igAppSecret: 'b3bbe58e977ddb226d3cabd457ef8b6d',
         igAccountId: 'simulated_account_id',
         igToken: 'simulated_ig_token'
@@ -201,14 +201,20 @@ export default function Integrations() {
 
             {igConnected ? (
               <div className="space-y-4">
-                <button className="w-full bg-[#1a1a1a] border border-[#333] hover:bg-[#222] text-white py-3 px-6 rounded-xl font-medium transition-all flex items-center justify-between group">
+                <button 
+                  onClick={() => navigate('/dashboard/automations')}
+                  className="w-full bg-[#1a1a1a] border border-[#333] hover:bg-[#222] text-white py-3 px-6 rounded-xl font-medium transition-all flex items-center justify-between group"
+                >
                   <div className="flex items-center gap-3">
                     <Zap className="w-5 h-5 text-fuchsia-400" />
-                    <span>Story Mention Automation</span>
+                    <span>Automation Rules Engine</span>
                   </div>
-                  <span className="text-[10px] uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300">Configure</span>
+                  <span className="text-[10px] uppercase tracking-wider text-pink-400 group-hover:text-pink-300 font-semibold">Manage Rules →</span>
                 </button>
-                <button className="w-full bg-[#1a1a1a] border border-[#333] hover:bg-[#222] text-white py-3 px-6 rounded-xl font-medium transition-all flex items-center justify-between group">
+                <button 
+                  onClick={() => navigate('/dashboard/automations')}
+                  className="w-full bg-[#1a1a1a] border border-[#333] hover:bg-[#222] text-white py-3 px-6 rounded-xl font-medium transition-all flex items-center justify-between group"
+                >
                   <div className="flex items-center gap-3">
                     <Clock className="w-5 h-5 text-neutral-400" />
                     <span>Keyword Auto-Replies</span>
@@ -221,13 +227,15 @@ export default function Integrations() {
                 </div>
               </div>
             ) : (
-              <button 
-                onClick={() => setShowIgModal(true)}
-                className="w-full bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 hover:from-fuchsia-500 hover:to-fuchsia-400 text-white py-4 px-6 rounded-xl font-medium transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(217,70,239,0.2)]"
-              >
-                <Instagram className="w-5 h-5" />
-                Connect Instagram Feed
-              </button>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => navigate('/dashboard/automations')}
+                  className="w-full bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 hover:from-fuchsia-500 hover:to-fuchsia-400 text-white py-4 px-6 rounded-xl font-medium transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(217,70,239,0.2)]"
+                >
+                  <Instagram className="w-5 h-5" />
+                  Connect & Setup Automations
+                </button>
+              </div>
             )}
           </motion.div>
         </div>
