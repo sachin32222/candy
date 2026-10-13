@@ -20,9 +20,7 @@ export default async function handler(req: any, res: any) {
     const clientId = process.env.META_APP_ID || "1090179470293810";
     const clientSecret = process.env.META_APP_SECRET || "472774808ad949133b7748ee5eb65187";
 
-    const host = (req.headers && req.headers.host) || "getcandei.com";
-    const origin = host.includes("www") ? "https://www.getcandei.com" : "https://getcandei.com";
-    const redirectUri = `${origin}/api/auth/instagram/callback`;
+    const redirectUri = "https://getcandei.com/api/auth/instagram/callback";
 
     const formData = new URLSearchParams();
     formData.append("client_id", clientId);
