@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     console.log("[Instagram Callback] Connected user_id:", user_id);
 
     return NextResponse.redirect(
-      new URL(`/dashboard/automations?status=connected&user_id=${user_id || ""}`, request.url)
+      `https://getcandei.com/dashboard/automations?status=connected&user_id=${user_id || ""}`
     );
   } catch (err: any) {
     console.error("[Instagram Callback] Fatal Error:", err);

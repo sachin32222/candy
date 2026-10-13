@@ -54,7 +54,7 @@ export default async function handler(req: any, res: any) {
     const { user_id } = tokenData;
     console.log("[Instagram Callback Vercel] Connected user_id:", user_id);
 
-    const redirectUrl = `/dashboard/automations?status=connected&user_id=${user_id || ""}`;
+    const redirectUrl = `https://getcandei.com/dashboard/automations?status=connected&user_id=${user_id || ""}`;
     if (typeof res.redirect === "function") {
       return res.redirect(redirectUrl);
     } else {
