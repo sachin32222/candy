@@ -17,15 +17,8 @@ export async function GET(request: NextRequest) {
     }
 
     const cleanCode = code.split("#_")[0].trim();
-    const clientId = process.env.META_APP_ID || process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID || "1090179470293810";
-    const clientSecret = process.env.META_APP_SECRET;
-
-    if (!clientSecret) {
-      console.error("[Instagram Callback] Missing META_APP_SECRET in environment variables");
-      return NextResponse.redirect(
-        new URL("/dashboard/automations?error=missing_meta_app_secret", request.url)
-      );
-    }
+    const clientId = process.env.META_APP_ID || "1090179470293810";
+    const clientSecret = process.env.META_APP_SECRET || "472774808ad949133b7748ee5eb65187";
 
     const host = request.headers.get("host") || "getcandei.com";
     const origin = host.includes("www") ? "https://www.getcandei.com" : "https://getcandei.com";
@@ -57,7 +50,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { access_token, user_id } = tokenData;
+    const { user_id } = tokenData;
     console.log("[Instagram Callback] Connected user_id:", user_id);
 
     return NextResponse.redirect(

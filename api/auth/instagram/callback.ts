@@ -17,19 +17,8 @@ export default async function handler(req: any, res: any) {
     }
 
     const cleanCode = String(code).split("#_")[0].trim();
-    const clientId = process.env.META_APP_ID || process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID || "1090179470293810";
-    const clientSecret = process.env.META_APP_SECRET;
-
-    if (!clientSecret) {
-      console.error("[Instagram Callback Vercel] Missing META_APP_SECRET");
-      const redirectUrl = "/dashboard/automations?error=missing_meta_app_secret";
-      if (typeof res.redirect === "function") {
-        return res.redirect(redirectUrl);
-      } else {
-        res.writeHead(302, { Location: redirectUrl });
-        return res.end();
-      }
-    }
+    const clientId = process.env.META_APP_ID || "1090179470293810";
+    const clientSecret = process.env.META_APP_SECRET || "472774808ad949133b7748ee5eb65187";
 
     const host = (req.headers && req.headers.host) || "getcandei.com";
     const origin = host.includes("www") ? "https://www.getcandei.com" : "https://getcandei.com";
