@@ -205,11 +205,6 @@ export default function Automations() {
     setRules(updated);
     try {
       await updateProfile({ automations: updated });
-      const { doc, updateDoc } = await import('firebase/firestore');
-      const { db } = await import('../firebase');
-      await updateDoc(doc(db, 'users', currentTenantId), {
-        automations: updated
-      });
     } catch (e) {
       console.error('Failed to delete rule:', e);
     }

@@ -30,20 +30,28 @@ export default function Landing() {
 
   useEffect(() => {
     let vantaEffect: any = null;
-    if (vantaRef.current && (window as any).VANTA) {
-      vantaEffect = (window as any).VANTA.RINGS({
-        el: vantaRef.current,
-        mouseControls: true,
-        touchControls: true,
-        gyroControls: false,
-        minHeight: 200.00,
-        minWidth: 200.00,
-        scale: 1.00,
-        scaleMobile: 1.00
-      });
+    try {
+      if (vantaRef.current && (window as any).VANTA && (window as any).VANTA.RINGS) {
+        vantaEffect = (window as any).VANTA.RINGS({
+          el: vantaRef.current,
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          minHeight: 200.00,
+          minWidth: 200.00,
+          scale: 1.00,
+          scaleMobile: 1.00
+        });
+      }
+    } catch (e) {
+      console.warn("Vanta background initialization error:", e);
     }
     return () => {
-      if (vantaEffect) vantaEffect.destroy();
+      try {
+        if (vantaEffect) vantaEffect.destroy();
+      } catch (e) {
+        // ignore
+      }
     };
   }, []);
 
@@ -74,7 +82,7 @@ export default function Landing() {
     }
   };
 
-  const containerVariants = {
+  const containerVariants: any = {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1,
@@ -82,7 +90,7 @@ export default function Landing() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: any = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
   };

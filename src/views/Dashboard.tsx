@@ -124,7 +124,7 @@ export default function Dashboard() {
     }
   };
 
-  const containerVariants = {
+  const containerVariants: any = {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1, 
@@ -132,7 +132,7 @@ export default function Dashboard() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: any = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
   };
@@ -142,7 +142,7 @@ export default function Dashboard() {
       <motion.nav 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as any }}
         className="bg-[#0f0f0f]/80 backdrop-blur-xl border-b border-[#333] sticky top-0 z-40"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

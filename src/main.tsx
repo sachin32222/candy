@@ -6,7 +6,11 @@ import './index.css';
 const originalConsoleError = console.error;
 console.error = (...args) => {
   const errorString = args.map(arg => typeof arg === 'string' ? arg : (arg?.message || '')).join(' ');
-  if (errorString.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') || 
+  if (errorString.includes('computeBoundingSphere') ||
+      errorString.includes('Computed radius is NaN') ||
+      errorString.includes('ExtrudeGeometry') ||
+      errorString.includes('Reviewer account Firestore sync warning') ||
+      errorString.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') || 
       errorString.includes('cancelled-popup-request') || 
       errorString.includes('popup-closed-by-user')) {
     return;

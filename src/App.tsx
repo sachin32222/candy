@@ -6,21 +6,21 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
-import Landing from './pages/Landing';
-import Dashboard from './pages/Dashboard';
-import ProfileSetup from './pages/ProfileSetup';
-import EventDetails from './pages/EventDetails';
-import GuestLanding from './pages/GuestLanding';
-import Gallery from './pages/Gallery';
-import Payment from './pages/Payment';
-import AdminPanel from './pages/AdminPanel';
-import FAQ from './pages/FAQ';
-import Integrations from './pages/Integrations';
-import Automations from './pages/Automations';
-import Blogs from './pages/Blogs';
-import KnowledgeBase from './pages/KnowledgeBase';
+import Landing from './views/Landing';
+import Dashboard from './views/Dashboard';
+import ProfileSetup from './views/ProfileSetup';
+import EventDetails from './views/EventDetails';
+import GuestLanding from './views/GuestLanding';
+import Gallery from './views/Gallery';
+import Payment from './views/Payment';
+import AdminPanel from './views/AdminPanel';
+import FAQ from './views/FAQ';
+import Integrations from './views/Integrations';
+import Automations from './views/Automations';
+import Blogs from './views/Blogs';
+import KnowledgeBase from './views/KnowledgeBase';
 
-import About from './pages/About';
+import About from './views/About';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalSoundListener } from './components/GlobalSoundListener';

@@ -1,10 +1,5 @@
 import React from "react";
 
-export const metadata = {
-  title: "Candei — The Core System for Photographers",
-  description: "Candei Instagram Automations & Booking Platform",
-};
-
 export default function RootLayout({
   children,
 }: {

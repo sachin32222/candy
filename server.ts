@@ -88,8 +88,8 @@ async function startServer() {
       
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       
-      const imageParts = [];
-      const validIndices = [];
+      const imageParts: any[] = [];
+      const validIndices: any[] = [];
       
       // limit max images to 50
       const maxImagesToAnalyze = Math.min(images.length, 50);

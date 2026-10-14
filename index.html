@@ -24,6 +24,44 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+      // Prevent Vanta Rings ExtrudeGeometry curveSegments: 0 from producing NaN vertices in Three.js
+      if (window.THREE) {
+        if (window.THREE.ExtrudeGeometry) {
+          const OrigExtrudeGeometry = window.THREE.ExtrudeGeometry;
+          window.THREE.ExtrudeGeometry = function(shapes, options) {
+            const safeOptions = Object.assign({}, options);
+            if (!safeOptions.curveSegments || safeOptions.curveSegments <= 0) {
+              safeOptions.curveSegments = 12;
+            }
+            return new OrigExtrudeGeometry(shapes, safeOptions);
+          };
+          window.THREE.ExtrudeGeometry.prototype = OrigExtrudeGeometry.prototype;
+        }
+
+        if (window.THREE.BufferGeometry && window.THREE.BufferGeometry.prototype) {
+          const origComputeBoundingSphere = window.THREE.BufferGeometry.prototype.computeBoundingSphere;
+          window.THREE.BufferGeometry.prototype.computeBoundingSphere = function() {
+            const pos = this.attributes && this.attributes.position;
+            if (pos && pos.array) {
+              for (let i = 0; i < pos.array.length; i++) {
+                if (Number.isNaN(pos.array[i])) {
+                  pos.array[i] = 0;
+                }
+              }
+            }
+            try {
+              origComputeBoundingSphere.call(this);
+              if (this.boundingSphere && Number.isNaN(this.boundingSphere.radius)) {
+                this.boundingSphere.radius = 1;
+              }
+            } catch (e) {
+              // Ignore sphere computation errors
+            }
+          };
+        }
+      }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.rings.min.js"></script>
   </head>
   <body>

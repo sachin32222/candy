@@ -99,7 +99,7 @@ export default function GuestLanding() {
     }
   };
 
-  const containerVariants = {
+  const containerVariants: any = {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1, 
@@ -107,7 +107,7 @@ export default function GuestLanding() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: any = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
   };
@@ -129,7 +129,7 @@ export default function GuestLanding() {
         <motion.div 
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] as any }}
           className="md:w-1/2 h-64 md:h-auto relative z-10 border-r border-[#333] overflow-hidden"
         >
           <motion.img 

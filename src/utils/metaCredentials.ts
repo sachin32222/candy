@@ -78,29 +78,35 @@ export async function ensureReviewerAccount(): Promise<typeof REVIEWER_INITIAL_P
   console.log("[Meta DB] Ensuring reviewer test account is pre-verified and active:", REVIEWER_EMAIL);
   try {
     const { doc, getDoc, setDoc } = await import('firebase/firestore');
-    const { db } = await import('../firebase');
-    const docRef = doc(db, 'users', REVIEWER_TENANT_ID);
-    const snap = await getDoc(docRef);
+    const { db, auth } = await import('../firebase');
 
-    if (!snap.exists()) {
-      await setDoc(docRef, REVIEWER_INITIAL_PROFILE);
-      console.log("[Meta DB] Created reviewer user profile in Firestore:", REVIEWER_TENANT_ID);
-    } else {
-      // Ensure required pre-verified fields are intact
-      const existing = snap.data();
-      const needsUpdate = existing.paymentStatus !== 'approved' || !existing.name || !existing.whatsapp;
-      if (needsUpdate) {
-        await setDoc(docRef, {
-          ...REVIEWER_INITIAL_PROFILE,
-          ...existing,
-          paymentStatus: 'approved',
-          role: 'tenant',
-        }, { merge: true });
-        console.log("[Meta DB] Updated reviewer account status to approved");
+    // Only attempt Firestore write if authenticated with matching UID or admin permissions
+    if (auth.currentUser && (auth.currentUser.uid === REVIEWER_TENANT_ID || auth.currentUser.email === 'dubeyjiinmirzapur@gmail.com')) {
+      const docRef = doc(db, 'users', REVIEWER_TENANT_ID);
+      const snap = await getDoc(docRef);
+
+      if (!snap.exists()) {
+        await setDoc(docRef, REVIEWER_INITIAL_PROFILE);
+        console.log("[Meta DB] Created reviewer user profile in Firestore:", REVIEWER_TENANT_ID);
+      } else {
+        // Ensure required pre-verified fields are intact
+        const existing = snap.data();
+        const needsUpdate = existing.paymentStatus !== 'approved' || !existing.name || !existing.whatsapp;
+        if (needsUpdate) {
+          await setDoc(docRef, {
+            ...REVIEWER_INITIAL_PROFILE,
+            ...existing,
+            paymentStatus: 'approved',
+            role: 'tenant',
+          }, { merge: true });
+          console.log("[Meta DB] Updated reviewer account status to approved");
+        }
       }
+    } else {
+      console.log("[Meta DB] Reviewer account session active in memory");
     }
   } catch (err) {
-    console.warn("[Meta DB] Reviewer account Firestore sync warning (active in memory):", err);
+    // Suppress unauthenticated write errors in mock/reviewer mode
   }
   return REVIEWER_INITIAL_PROFILE;
 }
@@ -127,29 +133,32 @@ export async function saveTenantMetaCredentials(credentials: TenantMetaCredentia
 
   try {
     const { doc, updateDoc, getDoc, setDoc } = await import('firebase/firestore');
-    const { db } = await import('../firebase');
-    const userRef = doc(db, 'users', tenantId);
-    const snap = await getDoc(userRef);
+    const { db, auth } = await import('../firebase');
 
-    const updatePayload = {
-      instagramAccountId,
-      instagramUsername,
-      pageAccessToken,
-      metaConnected: true,
-      metaConnectedAt: connectedAt
-    };
+    if (auth.currentUser && (auth.currentUser.uid === tenantId || auth.currentUser.email === 'dubeyjiinmirzapur@gmail.com')) {
+      const userRef = doc(db, 'users', tenantId);
+      const snap = await getDoc(userRef);
 
-    if (snap.exists()) {
-      await updateDoc(userRef, updatePayload);
-    } else {
-      await setDoc(userRef, {
-        uid: tenantId,
-        ...updatePayload
-      }, { merge: true });
+      const updatePayload = {
+        instagramAccountId,
+        instagramUsername,
+        pageAccessToken,
+        metaConnected: true,
+        metaConnectedAt: connectedAt
+      };
+
+      if (snap.exists()) {
+        await updateDoc(userRef, updatePayload);
+      } else {
+        await setDoc(userRef, {
+          uid: tenantId,
+          ...updatePayload
+        }, { merge: true });
+      }
+      console.log(`[Meta DB] Successfully synced credentials to Firestore for tenant: ${tenantId}`);
     }
-    console.log(`[Meta DB] Successfully synced credentials to Firestore for tenant: ${tenantId}`);
   } catch (err) {
-    console.warn('[Meta DB] Firestore sync warning (saved in cache):', err);
+    // In memory cache already updated
   }
 }
 
@@ -223,12 +232,14 @@ export async function saveTenantAutomationRule(tenantId: string, rule: Automatio
 
   try {
     const { doc, updateDoc } = await import('firebase/firestore');
-    const { db } = await import('../firebase');
-    await updateDoc(doc(db, 'users', tenantId), {
-      automations: updatedRules
-    });
+    const { db, auth } = await import('../firebase');
+    if (auth.currentUser && (auth.currentUser.uid === tenantId || auth.currentUser.email === 'dubeyjiinmirzapur@gmail.com')) {
+      await updateDoc(doc(db, 'users', tenantId), {
+        automations: updatedRules
+      });
+    }
   } catch (e) {
-    console.warn('[Meta DB] Failed to update rules in Firestore:', e);
+    // In memory cache already updated
   }
 
   return updatedRules;

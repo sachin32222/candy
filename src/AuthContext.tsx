@@ -18,6 +18,8 @@ interface UserProfile {
   driveConnected?: boolean;
   createdAt?: string;
   paymentStatus?: 'pending' | 'initiated' | 'approved' | 'declined';
+  subscriptionPlan?: string;
+  razorpay_payment_id?: string;
   waAppId?: string;
   waAppSecret?: string;
   waPhoneNumberId?: string;

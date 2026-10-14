@@ -141,7 +141,7 @@ export default function EventDetails() {
       for (const file of files) {
         const compressedBlob = await compressImage(file);
         
-        let driveFile = null;
+        let driveFile: any = null;
         if (activeDriveToken && event.driveLink) {
           try {
             // Upload original to drive
