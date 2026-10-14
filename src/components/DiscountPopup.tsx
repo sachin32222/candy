@@ -97,7 +97,7 @@ Heard About Us: ${formData.heardAboutUs}`;
             {step === 2 && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-neutral-500 mb-2">Do you use Google Ads/Meta Ads or Just Dial?</label>
+                  <label className="block text-xs uppercase tracking-widest text-neutral-500 mb-2">Do you use Google Ads or Meta Ads?</label>
                   <select
                     value={formData.adsUsage}
                     onChange={(e) => handleChange('adsUsage', e.target.value)}
@@ -106,7 +106,6 @@ Heard About Us: ${formData.heardAboutUs}`;
                     <option value="">Select Option</option>
                     <option value="Yes, Google Ads">Yes, Google Ads</option>
                     <option value="Yes, Meta Ads">Yes, Meta Ads</option>
-                    <option value="Yes, Just Dial">Yes, Just Dial</option>
                     <option value="No, I don't use any">No, I don't use any</option>
                   </select>
                 </div>
