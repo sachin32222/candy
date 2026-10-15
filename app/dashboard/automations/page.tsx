@@ -4,7 +4,7 @@ import React, { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Instagram, MessageCircle, MessageSquare, Radio, Check, Sparkles, Activity } from 'lucide-react';
+import { Instagram, MessageCircle, MessageSquare, Radio, Check, Sparkles } from 'lucide-react';
 
 function AutomationContent() {
   const searchParams = useSearchParams();
@@ -13,7 +13,6 @@ function AutomationContent() {
   const token = searchParams.get('token');
   const error = searchParams.get('error');
 
-  // Use URL param or default to the verified connected account ID
   const activeUserId = userIdParam || '39530882969891710';
   const isConnected = statusParam === 'connected' || Boolean(userIdParam) || true;
 
@@ -21,7 +20,6 @@ function AutomationContent() {
   const [commentReplyActive, setCommentReplyActive] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Sync initial connection if redirected from OAuth callback
   useEffect(() => {
     if (userIdParam && statusParam === 'connected') {
       const syncInitialConnection = async () => {
@@ -37,7 +35,6 @@ function AutomationContent() {
             payload.access_token = token;
           }
           await setDoc(doc(db, 'instagram_connections', userIdParam), payload, { merge: true });
-          console.log('[Automations] Initial connection synced to Firestore:', userIdParam);
         } catch (e) {
           console.warn('[Automations] Firestore sync warning:', e);
         }
@@ -46,7 +43,6 @@ function AutomationContent() {
     }
   }, [userIdParam, statusParam, token]);
 
-  // Toggle DM Auto-Reply and persist to Firestore
   const handleToggleDm = async () => {
     const nextVal = !dmReplyActive;
     setDmReplyActive(nextVal);
@@ -62,13 +58,12 @@ function AutomationContent() {
         { merge: true }
       );
     } catch (e) {
-      console.warn('[Automations] Could not sync DM toggle to Firestore:', e);
+      console.warn('[Automations] Could not sync DM toggle:', e);
     } finally {
-      setTimeout(() => setIsSyncing(false), 400);
+      setTimeout(() => setIsSyncing(false), 300);
     }
   };
 
-  // Toggle Comments Auto-Reply and persist to Firestore
   const handleToggleComments = async () => {
     const nextVal = !commentReplyActive;
     setCommentReplyActive(nextVal);
@@ -84,210 +79,432 @@ function AutomationContent() {
         { merge: true }
       );
     } catch (e) {
-      console.warn('[Automations] Could not sync comments toggle to Firestore:', e);
+      console.warn('[Automations] Could not sync comments toggle:', e);
     } finally {
-      setTimeout(() => setIsSyncing(false), 400);
+      setTimeout(() => setIsSyncing(false), 300);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-neutral-100 p-4 sm:p-6 md:p-10 font-sans selection:bg-[#4A6DE1]/30">
-      <div className="max-w-4xl mx-auto space-y-6">
-        
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-neutral-800">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] flex items-center justify-center shadow-lg shadow-pink-500/10 flex-shrink-0">
-              <Instagram className="w-6 h-6 text-white" />
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#0a0a0a',
+        color: '#ededed',
+        padding: '32px 16px',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+        display: 'flex',
+        justifyContent: 'center',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '860px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '24px',
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingBottom: '20px',
+            borderBottom: '1px solid #222222',
+            flexWrap: 'wrap',
+            gap: '16px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '14px',
+                background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 4px 16px rgba(220, 39, 67, 0.3)',
+              }}
+            >
+              <Instagram style={{ width: '26px', height: '26px', color: '#ffffff' }} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight text-white">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em' }}>
                   Instagram AI Automations
                 </h1>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20">
-                  <Sparkles className="w-3 h-3" />
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    padding: '2px 8px',
+                    borderRadius: '9999px',
+                    backgroundColor: 'rgba(238, 42, 123, 0.12)',
+                    color: '#f472b6',
+                    border: '1px solid rgba(238, 42, 123, 0.25)',
+                  }}
+                >
+                  <Sparkles style={{ width: '12px', height: '12px' }} />
                   Live Agent
                 </span>
               </div>
-              <p className="text-sm text-neutral-400 mt-0.5">
+              <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#888888' }}>
                 Real-time automated DM and comment reply triggers for Candei Creators
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-center">
-            {isSyncing && (
-              <span className="text-xs text-neutral-400 animate-pulse flex items-center gap-1.5 bg-neutral-900 border border-neutral-800 px-3 py-1.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />
-                Syncing changes...
-              </span>
-            )}
-          </div>
+          {isSyncing && (
+            <div
+              style={{
+                fontSize: '12px',
+                color: '#aaaaaa',
+                backgroundColor: '#161616',
+                border: '1px solid #2a2a2a',
+                padding: '6px 14px',
+                borderRadius: '9999px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <span
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: '#4A6DE1',
+                }}
+              />
+              Syncing to Cloud...
+            </div>
+          )}
         </div>
 
-        {/* Error notification if OAuth failed */}
+        {/* Error Notice */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-950/40 border border-red-800/60 text-red-200 text-sm flex items-center gap-3">
-            <span className="w-2 h-2 rounded-full bg-red-400" />
-            <p>Authentication error: {error}</p>
+          <div
+            style={{
+              padding: '14px 18px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(127, 29, 29, 0.3)',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
+              color: '#fca5a5',
+              fontSize: '14px',
+            }}
+          >
+            Connection error: {error}
           </div>
         )}
 
         {/* Status Card */}
-        <div className="bg-[#121212] border border-neutral-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-            {/* Account Status Badge */}
-            <div className="space-y-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Account Status
-              </span>
-              <div className="flex items-center gap-2.5">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 text-sm font-semibold shadow-[0_0_15px_rgba(16,185,129,0.25)]">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                  </span>
-                  Connected
-                </div>
+        <div
+          style={{
+            backgroundColor: '#121212',
+            border: '1px solid #242424',
+            borderRadius: '16px',
+            padding: '24px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '24px',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.45)',
+          }}
+        >
+          {/* Account Status Badge */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#888888' }}>
+              Account Status
+            </span>
+            <div>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  color: '#34d399',
+                  padding: '6px 16px',
+                  borderRadius: '9999px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  boxShadow: '0 0 16px rgba(16, 185, 129, 0.25)',
+                }}
+              >
+                <span
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: '#10b981',
+                    boxShadow: '0 0 8px #10b981',
+                  }}
+                />
+                Connected
               </div>
             </div>
+          </div>
 
-            {/* Instagram User ID */}
-            <div className="space-y-1.5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Instagram User ID
-              </span>
-              <div className="flex items-center gap-2 font-mono text-sm text-neutral-200 bg-neutral-900/90 border border-neutral-800 px-3 py-1.5 rounded-lg w-fit">
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{activeUserId}</span>
-              </div>
+          {/* Instagram User ID */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#888888' }}>
+              Instagram User ID
+            </span>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontFamily: 'SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                fontSize: '13px',
+                color: '#e0e0e0',
+                backgroundColor: '#1a1a1a',
+                border: '1px solid #2a2a2a',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                width: 'fit-content',
+              }}
+            >
+              <Check style={{ width: '14px', height: '14px', color: '#34d399' }} />
+              <span>{activeUserId}</span>
             </div>
+          </div>
 
-            {/* Webhook Status */}
-            <div className="space-y-1.5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Webhook Status
+          {/* Webhook Status */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#888888' }}>
+              Webhook Status
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Radio style={{ width: '16px', height: '16px', color: '#34d399' }} />
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#34d399' }}>
+                Active &amp; Listening
               </span>
-              <div className="flex items-center gap-2 text-sm text-neutral-200 font-medium">
-                <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-                <span className="text-emerald-400 font-semibold">Active &amp; Listening</span>
-              </div>
-              <p className="text-[11px] text-neutral-400">Dispatches real-time webhooks on messages &amp; comments</p>
             </div>
+            <span style={{ fontSize: '11px', color: '#777777' }}>
+              Dispatches real-time webhooks on messages &amp; comments
+            </span>
           </div>
         </div>
 
         {/* Automation Toggles Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-base font-semibold text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#4A6DE1]" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px' }}>
+            <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#ffffff' }}>
               Automation Rules &amp; Triggers
             </h2>
-            <span className="text-xs text-neutral-400">Instant toggle • Synced to Cloud</span>
+            <span style={{ fontSize: '12px', color: '#777777' }}>Instant toggle • Synced to Cloud</span>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {/* a) Auto-Reply to Instagram DMs */}
-            <div className="bg-[#121212] border border-neutral-800 hover:border-neutral-700/80 rounded-2xl p-5 sm:p-6 transition-all duration-200 flex items-center justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-                  dmReplyActive ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30' : 'bg-neutral-800/60 text-neutral-400 border border-neutral-800'
-                }`}>
-                  <MessageCircle className="w-5 h-5" />
+            <div
+              style={{
+                backgroundColor: '#121212',
+                border: '1px solid #242424',
+                borderRadius: '16px',
+                padding: '20px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    backgroundColor: dmReplyActive ? 'rgba(99, 102, 241, 0.15)' : '#1c1c1c',
+                    color: dmReplyActive ? '#818cf8' : '#777777',
+                    border: dmReplyActive ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid #282828',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <MessageCircle style={{ width: '20px', height: '20px' }} />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2.5">
-                    <h3 className="text-base font-semibold text-white">
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>
                       Auto-Reply to Instagram DMs
                     </h3>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                      dmReplyActive ? 'bg-indigo-500/20 text-indigo-300' : 'bg-neutral-800 text-neutral-400'
-                    }`}>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        padding: '2px 8px',
+                        borderRadius: '9999px',
+                        backgroundColor: dmReplyActive ? 'rgba(99, 102, 241, 0.2)' : '#1e1e1e',
+                        color: dmReplyActive ? '#a5b4fc' : '#777777',
+                      }}
+                    >
                       {dmReplyActive ? 'Enabled' : 'Paused'}
                     </span>
                   </div>
-                  <p className="text-sm text-neutral-400">
+                  <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#888888' }}>
                     Send instant replies &amp; links when leads message you
                   </p>
                 </div>
               </div>
 
-              {/* Working Switch Toggle Button */}
+              {/* Toggle Button */}
               <button
                 type="button"
                 role="switch"
                 aria-checked={dmReplyActive}
                 onClick={handleToggleDm}
-                className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#4A6DE1]/50 ${
-                  dmReplyActive ? 'bg-[#4A6DE1]' : 'bg-neutral-800'
-                }`}
+                style={{
+                  position: 'relative',
+                  display: 'inline-flex',
+                  width: '48px',
+                  height: '26px',
+                  borderRadius: '9999px',
+                  backgroundColor: dmReplyActive ? '#4A6DE1' : '#282828',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '2px',
+                  alignItems: 'center',
+                  flexShrink: 0,
+                  transition: 'background-color 0.2s ease',
+                  outline: 'none',
+                }}
               >
                 <span
-                  aria-hidden="true"
-                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                    dmReplyActive ? 'translate-x-5' : 'translate-x-0'
-                  }`}
+                  style={{
+                    display: 'inline-block',
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ffffff',
+                    transform: dmReplyActive ? 'translateX(22px)' : 'translateX(0px)',
+                    transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  }}
                 />
               </button>
             </div>
 
             {/* b) Auto-Reply to Comments */}
-            <div className="bg-[#121212] border border-neutral-800 hover:border-neutral-700/80 rounded-2xl p-5 sm:p-6 transition-all duration-200 flex items-center justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-                  commentReplyActive ? 'bg-pink-500/15 text-pink-400 border border-pink-500/30' : 'bg-neutral-800/60 text-neutral-400 border border-neutral-800'
-                }`}>
-                  <MessageSquare className="w-5 h-5" />
+            <div
+              style={{
+                backgroundColor: '#121212',
+                border: '1px solid #242424',
+                borderRadius: '16px',
+                padding: '20px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    backgroundColor: commentReplyActive ? 'rgba(236, 72, 153, 0.15)' : '#1c1c1c',
+                    color: commentReplyActive ? '#f472b6' : '#777777',
+                    border: commentReplyActive ? '1px solid rgba(236, 72, 153, 0.3)' : '1px solid #282828',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <MessageSquare style={{ width: '20px', height: '20px' }} />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2.5">
-                    <h3 className="text-base font-semibold text-white">
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>
                       Auto-Reply to Comments
                     </h3>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                      commentReplyActive ? 'bg-pink-500/20 text-pink-300' : 'bg-neutral-800 text-neutral-400'
-                    }`}>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        padding: '2px 8px',
+                        borderRadius: '9999px',
+                        backgroundColor: commentReplyActive ? 'rgba(236, 72, 153, 0.2)' : '#1e1e1e',
+                        color: commentReplyActive ? '#fbcfe8' : '#777777',
+                      }}
+                    >
                       {commentReplyActive ? 'Enabled' : 'Paused'}
                     </span>
                   </div>
-                  <p className="text-sm text-neutral-400">
+                  <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#888888' }}>
                     Automatically engage with post and reel comments
                   </p>
                 </div>
               </div>
 
-              {/* Working Switch Toggle Button */}
+              {/* Toggle Button */}
               <button
                 type="button"
                 role="switch"
                 aria-checked={commentReplyActive}
                 onClick={handleToggleComments}
-                className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#4A6DE1]/50 ${
-                  commentReplyActive ? 'bg-[#4A6DE1]' : 'bg-neutral-800'
-                }`}
+                style={{
+                  position: 'relative',
+                  display: 'inline-flex',
+                  width: '48px',
+                  height: '26px',
+                  borderRadius: '9999px',
+                  backgroundColor: commentReplyActive ? '#4A6DE1' : '#282828',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '2px',
+                  alignItems: 'center',
+                  flexShrink: 0,
+                  transition: 'background-color 0.2s ease',
+                  outline: 'none',
+                }}
               >
                 <span
-                  aria-hidden="true"
-                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                    commentReplyActive ? 'translate-x-5' : 'translate-x-0'
-                  }`}
+                  style={{
+                    display: 'inline-block',
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ffffff',
+                    transform: commentReplyActive ? 'translateX(22px)' : 'translateX(0px)',
+                    transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  }}
                 />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Footer Note */}
-        <div className="pt-4 text-center">
-          <p className="text-xs text-neutral-400">
+        {/* Footer */}
+        <div style={{ paddingTop: '16px', textAlign: 'center' }}>
+          <p style={{ margin: 0, fontSize: '12px', color: '#666666' }}>
             Candei Instagram AI Engine • Connected through Meta Graph API Webhooks
           </p>
         </div>
-
       </div>
     </div>
   );
@@ -297,11 +514,18 @@ export default function AutomationsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0a0a0a] text-neutral-400 p-8 flex items-center justify-center font-sans">
-          <div className="flex items-center gap-3">
-            <span className="w-2 h-2 rounded-full bg-[#4A6DE1] animate-ping" />
-            <span>Loading Instagram automations...</span>
-          </div>
+        <div
+          style={{
+            minHeight: '100vh',
+            backgroundColor: '#0a0a0a',
+            color: '#888888',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          }}
+        >
+          Loading Instagram automations...
         </div>
       }
     >
