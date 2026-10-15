@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const targetBaseUrl =
+    process.env.APP_URL ||
+    "https://ais-dev-ca353np4q7qykag2banko6-576418229533.asia-east1.run.app";
+
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
@@ -12,7 +18,7 @@ export async function GET(request: NextRequest) {
     if (error || !code) {
       console.error("[Instagram Callback] OAuth Error:", error, errorDescription);
       return NextResponse.redirect(
-        new URL(`/dashboard/automations?error=${encodeURIComponent(errorDescription || error || "access_denied")}`, request.url)
+        `${targetBaseUrl}/#/dashboard/automations?error=${encodeURIComponent(errorDescription || error || "access_denied")}`
       );
     }
 
@@ -44,23 +50,40 @@ export async function GET(request: NextRequest) {
       console.error("[Instagram Callback] Token exchange failed:", tokenData);
       const msg = tokenData?.error_message || tokenData?.error?.message || "token_exchange_failed";
       return NextResponse.redirect(
-        new URL(`/dashboard/automations?error=${encodeURIComponent(msg)}`, request.url)
+        `${targetBaseUrl}/#/dashboard/automations?error=${encodeURIComponent(msg)}`
       );
     }
 
     const { access_token, user_id } = tokenData;
     console.log("[Instagram Callback] Token exchange succeeded for user_id:", user_id);
 
+    // Save/merge credentials to Firestore collection instagram_connections using user_id as doc ID
+    if (user_id) {
+      try {
+        await setDoc(
+          doc(db, "instagram_connections", String(user_id)),
+          {
+            user_id: user_id,
+            access_token: access_token,
+            status: "connected",
+            updated_at: new Date(),
+          },
+          { merge: true }
+        );
+        console.log("[Instagram Callback] Successfully saved credentials to Firestore for:", user_id);
+      } catch (dbErr) {
+        console.error("[Instagram Callback] Firestore save error:", dbErr);
+      }
+    }
+
+    // Clean redirect directly to the main hash-based route
     return NextResponse.redirect(
-      new URL(
-        `/dashboard/automations?status=connected&user_id=${user_id || ""}&token=${encodeURIComponent(access_token || "")}`,
-        request.url
-      )
+      `${targetBaseUrl}/#/dashboard/automations?status=connected&user_id=${user_id || ""}`
     );
   } catch (err: any) {
     console.error("[Instagram Callback] Fatal Error:", err);
     return NextResponse.redirect(
-      new URL(`/dashboard/automations?error=${encodeURIComponent(err?.message || "server_error")}`, request.url)
+      `${targetBaseUrl}/#/dashboard/automations?error=${encodeURIComponent(err?.message || "server_error")}`
     );
   }
 }

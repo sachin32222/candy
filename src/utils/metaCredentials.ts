@@ -391,7 +391,26 @@ export async function findTenantByInstagramId(igAccountId: string): Promise<{
   instagramUsername: string;
   automations: AutomationRule[];
 } | null> {
-  // 1. Search in-memory cache first
+  // 1. Check instagram_connections collection directly (document id is igAccountId)
+  try {
+    const { doc, getDoc } = await import('firebase/firestore');
+    const { db } = await import('../firebase');
+    const connDoc = await getDoc(doc(db, 'instagram_connections', igAccountId));
+    if (connDoc.exists()) {
+      const connData = connDoc.data();
+      const rules = Array.isArray(connData.automations) ? connData.automations : [];
+      return {
+        tenantId: igAccountId,
+        pageAccessToken: connData.access_token || '',
+        instagramUsername: connData.username || connData.instagramUsername || 'candei_creator',
+        automations: rules,
+      };
+    }
+  } catch (err) {
+    console.warn('[Meta DB] instagram_connections lookup warning for IG Account:', err);
+  }
+
+  // 2. Search in-memory cache
   for (const [tenantId, creds] of tenantCredentialsCache.entries()) {
     if (creds.instagramAccountId === igAccountId) {
       const rules = await getTenantAutomationRules(tenantId);
@@ -404,7 +423,7 @@ export async function findTenantByInstagramId(igAccountId: string): Promise<{
     }
   }
 
-  // 2. Query Firestore users collection
+  // 3. Query Firestore users collection
   try {
     const { collection, query, where, getDocs, limit } = await import('firebase/firestore');
     const { db } = await import('../firebase');
