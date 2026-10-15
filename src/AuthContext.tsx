@@ -184,8 +184,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('Sign-in popup request was cancelled.');
         return;
       } else if (error?.code === 'auth/popup-blocked') {
-        console.error('Error signing in', error);
+        console.warn('Sign-in popup was blocked by browser.');
         throw new Error('Sign-in popup was blocked by your browser. Please allow popups for this site.');
+      } else if (error?.code === 'auth/unauthorized-domain') {
+        console.warn(`[Firebase Auth] Domain (${window.location.hostname}) is not in Firebase authorized domains list.`);
+        throw new Error(`Domain (${window.location.hostname}) is not in Firebase Authorized Domains. Use the 1-Click Reviewer/Demo login or add this domain in Firebase Console.`);
       }
       console.error('Error signing in', error);
       throw error;

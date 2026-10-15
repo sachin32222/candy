@@ -152,5 +152,9 @@ service cloud.firestore {
       allow update: if false; // Leads shouldn't be updated
       allow delete: if isAuthenticated() && resource.data.photographerId == request.auth.uid;
     }
+
+    match /instagram_connections/{connectionId} {
+      allow read, write: if true;
+    }
   }
 }

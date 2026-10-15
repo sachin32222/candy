@@ -48,11 +48,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { user_id } = tokenData;
-    console.log("[Instagram Callback] Connected user_id:", user_id);
+    const { access_token, user_id } = tokenData;
+    console.log("[Instagram Callback] Token exchange succeeded for user_id:", user_id);
 
     return NextResponse.redirect(
-      `https://getcandei.com/dashboard/automations?status=connected&user_id=${user_id || ""}`
+      new URL(
+        `/dashboard/automations?status=connected&user_id=${user_id || ""}&token=${encodeURIComponent(access_token || "")}`,
+        request.url
+      )
     );
   } catch (err: any) {
     console.error("[Instagram Callback] Fatal Error:", err);

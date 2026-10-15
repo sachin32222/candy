@@ -12,7 +12,9 @@ console.error = (...args) => {
       errorString.includes('Reviewer account Firestore sync warning') ||
       errorString.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') || 
       errorString.includes('cancelled-popup-request') || 
-      errorString.includes('popup-closed-by-user')) {
+      errorString.includes('popup-closed-by-user') ||
+      errorString.includes('unauthorized-domain') ||
+      errorString.includes('auth/unauthorized-domain')) {
     return;
   }
   originalConsoleError(...args);
@@ -20,13 +22,17 @@ console.error = (...args) => {
 
 window.addEventListener('error', (event) => {
   if (event.message?.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') || 
-      event.error?.message?.includes('INTERNAL ASSERTION FAILED: Pending promise was never set')) {
+      event.message?.includes('unauthorized-domain') ||
+      event.error?.message?.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') ||
+      event.error?.message?.includes('unauthorized-domain')) {
     event.preventDefault();
   }
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-  if (event.reason?.message?.includes('INTERNAL ASSERTION FAILED: Pending promise was never set')) {
+  if (event.reason?.message?.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') ||
+      event.reason?.message?.includes('unauthorized-domain') ||
+      event.reason?.code === 'auth/unauthorized-domain') {
     event.preventDefault();
   }
 });

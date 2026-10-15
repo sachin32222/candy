@@ -308,6 +308,17 @@ export default function Landing() {
                 className="p-4 bg-red-950/30 border border-red-900/50 rounded-2xl text-red-500 text-sm flex flex-col items-center gap-3 overflow-hidden"
               >
                 <p className="text-center">{error}</p>
+                {error.includes('Authorized Domains') && (
+                  <button 
+                    onClick={async () => {
+                      await loginAsReviewer();
+                      navigate('/dashboard/automations');
+                    }}
+                    className="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-indigo-600 hover:opacity-95 rounded-xl text-white transition-all flex items-center gap-2 text-xs font-semibold uppercase tracking-wider shadow-lg"
+                  >
+                    1-Click Instant Demo Login
+                  </button>
+                )}
                 {window !== window.top && (
                   <button 
                     onClick={() => window.open(window.location.href, '_blank')}
