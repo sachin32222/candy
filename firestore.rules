@@ -153,7 +153,11 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && resource.data.photographerId == request.auth.uid;
     }
 
-    match /instagram_connections/{connectionId} {
+    match /instagram_connections/{docId} {
+      allow read, write: if true;
+    }
+
+    match /instagram_rules/{docId} {
       allow read, write: if true;
     }
   }

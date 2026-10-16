@@ -92,6 +92,10 @@
       "schema": "InstagramConnection",
       "description": "OAuth token connections for Instagram"
     },
+    "/instagram_rules/{ruleId}": {
+      "schema": "InstagramConnection",
+      "description": "Rules for Instagram auto replies"
+    },
     "/events/{eventId}": {
       "schema": "Event",
       "description": "Events created by photographers"

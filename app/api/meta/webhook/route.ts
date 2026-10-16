@@ -1,9 +1,11 @@
-import { processMetaWebhookEvent } from "../../../../src/utils/metaCredentials";
-
 /**
  * Meta Webhook Handler for Instagram Comments & Direct Messages
  * Path: app/api/meta/webhook/route.ts
  */
+
+import { handleMetaIncomingEvent } from "@/lib/instagram-webhook";
+
+export const dynamic = "force-dynamic";
 
 // 1. GET Method: Webhook Handshake Verification
 export async function GET(request: Request) {
@@ -15,35 +17,35 @@ export async function GET(request: Request) {
   const verifyToken = process.env.META_VERIFY_TOKEN || "candei_secret_meta_webhook_2026";
 
   if (mode === "subscribe" && token === verifyToken) {
-    console.log("[Meta Webhook] Verification successful");
-    // Return raw challenge as plain text with HTTP 200 (not wrapped in JSON)
+    console.log("[Meta Webhook] Verification handshake successful. Returning challenge:", challenge);
     return new Response(challenge ?? "", {
       status: 200,
       headers: { "Content-Type": "text/plain" },
     });
   }
 
-  console.warn("[Meta Webhook] Verification failed - unauthorized token or mode mismatch");
+  console.warn("[Meta Webhook] Verification handshake failed - token or mode mismatch:", {
+    mode,
+    tokenProvided: token ? "[REDACTED]" : undefined,
+  });
   return new Response("Forbidden", { status: 403 });
 }
 
-// 2. POST Method: Incoming Event Reception & Asynchronous Processing
+// 2. POST Method: Incoming Event Reception & Immediate 200 OK
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-
-    console.log("[Meta Webhook] Received incoming event payload:", JSON.stringify(payload, null, 2));
+    console.log("[Meta Webhook] Incoming webhook event received:", JSON.stringify(payload, null, 2));
 
     // Immediately trigger asynchronous event processing without blocking HTTP response
-    processMetaWebhookEvent(payload).catch((error) => {
-      console.error("[Meta Webhook] Error processing event asynchronously:", error);
+    handleMetaIncomingEvent(payload).catch((error) => {
+      console.error("[Meta Webhook] Asynchronous processing error:", error);
     });
 
-    // Immediately acknowledge receipt with HTTP 200 OK to prevent Meta from retrying
+    // Immediately return 200 OK with { status: "EVENT_RECEIVED" }
     return Response.json({ status: "EVENT_RECEIVED" }, { status: 200 });
   } catch (error) {
-    console.error("[Meta Webhook] Failed to parse incoming JSON payload:", error);
-    // Still return 200 to satisfy Meta webhook acknowledgment
+    console.error("[Meta Webhook] Error parsing incoming webhook JSON:", error);
     return Response.json({ status: "EVENT_RECEIVED" }, { status: 200 });
   }
 }

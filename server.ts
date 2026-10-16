@@ -201,8 +201,8 @@ async function startServer() {
       console.log("[Meta Webhook] Received event payload:", JSON.stringify(payload, null, 2));
 
       // Asynchronously process automation triggers
-      import("./src/utils/metaCredentials").then(({ processMetaWebhookEvent }) => {
-        processMetaWebhookEvent(payload).catch((e) => {
+      import("./lib/instagram-webhook").then(({ handleMetaIncomingEvent }) => {
+        handleMetaIncomingEvent(payload).catch((e) => {
           console.error("[Meta Webhook] Async event error:", e);
         });
       }).catch((e) => {
