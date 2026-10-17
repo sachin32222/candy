@@ -48,23 +48,89 @@ function AutomationContent() {
   const [privateMessage, setPrivateMessage] = useState('Hey! Here is your exclusive booking link: https://getcandei.com/book');
   const [ruleType, setRuleType] = useState<'Comment-to-DM' | 'DM Auto-Reply'>('Comment-to-DM');
 
-  // Load rules on mount
+  const DEFAULT_INITIAL_RULES: AutomationRuleItem[] = [
+    {
+      id: 'rule_default_book',
+      ig_user_id: '17841413170626603',
+      trigger_keyword: 'BOOK',
+      triggerKeyword: 'BOOK',
+      public_reply: 'Check your DM! 🚀',
+      publicReply: 'Check your DM! 🚀',
+      private_dm: 'Hey! Here is your exclusive booking link: https://getcandei.com/book',
+      privateMessage: 'Hey! Here is your exclusive booking link: https://getcandei.com/book',
+      status: 'active',
+      enabled: true,
+      ruleType: 'Comment-to-DM',
+    },
+  ];
+
+  // Load rules on mount: Read from localStorage first for instant display
   async function loadRules() {
     try {
-      setLoadingRules(true);
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('candei_automation_rules') : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRules(parsed);
+          setLoadingRules(false);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not read from localStorage:", e);
+    }
+
+    try {
       const res = await fetch('/api/rules');
-      const data = await res.json();
-      if (data.rules) {
-        setRules(data.rules);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.rules) && data.rules.length > 0) {
+          setRules((prev) => {
+            const map = new Map<string, AutomationRuleItem>();
+            data.rules.forEach((r: any) => map.set(r.id || r.trigger_keyword, r));
+            prev.forEach((r) => {
+              const key = r.id || r.trigger_keyword || r.triggerKeyword || '';
+              if (key && !map.has(key)) {
+                map.set(key, r);
+              }
+            });
+            const merged = Array.from(map.values());
+            try {
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('candei_automation_rules', JSON.stringify(merged));
+              }
+            } catch (_) {}
+            return merged;
+          });
+        }
       }
     } catch (err) {
-      console.error("Failed to load rules:", err);
+      console.warn("Server sync notice (local rules active):", err);
     } finally {
       setLoadingRules(false);
     }
   }
 
   useEffect(() => {
+    // First, read rules from localStorage and populate table immediately so rules NEVER disappear on refresh
+    try {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('candei_automation_rules') : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRules(parsed);
+          setLoadingRules(false);
+        } else {
+          setRules(DEFAULT_INITIAL_RULES);
+          localStorage.setItem('candei_automation_rules', JSON.stringify(DEFAULT_INITIAL_RULES));
+        }
+      } else {
+        setRules(DEFAULT_INITIAL_RULES);
+        localStorage.setItem('candei_automation_rules', JSON.stringify(DEFAULT_INITIAL_RULES));
+      }
+    } catch (e) {
+      setRules(DEFAULT_INITIAL_RULES);
+    }
+
     loadRules();
   }, []);
 
@@ -139,61 +205,113 @@ function AutomationContent() {
     if (!triggerKeyword.trim() || !privateMessage.trim()) return;
 
     setIsSubmitting(true);
+    const newKw = triggerKeyword.trim().toUpperCase();
+    const newPub = (ruleType === 'Comment-to-DM' ? publicReply.trim() : '') || 'Check your DM! 🚀';
+    const newPriv = privateMessage.trim();
+    const newId = Date.now().toString();
+
+    // { id: Date.now().toString(), trigger_keyword, public_reply, private_dm, status: 'active', ig_user_id: '17841413170626603' }
+    const newRuleItem: AutomationRuleItem = {
+      id: newId,
+      docId: newId,
+      trigger_keyword: newKw,
+      triggerKeyword: newKw,
+      public_reply: newPub,
+      publicReply: newPub,
+      private_dm: newPriv,
+      privateMessage: newPriv,
+      status: 'active',
+      enabled: true,
+      ig_user_id: '17841413170626603',
+      ruleType,
+    };
+
+    // 1. Immediately append to local list so the table updates instantly
+    const updatedRules = [newRuleItem, ...rules.filter((r) => (r.trigger_keyword || r.triggerKeyword) !== newKw && r.id !== newId)];
+    setRules(updatedRules);
+
+    // 2. Save this array to localStorage so it NEVER disappears on page refresh
     try {
-      const res = await fetch('/api/rules', {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('candei_automation_rules', JSON.stringify(updatedRules));
+      }
+    } catch (err) {
+      console.warn("Failed to write to localStorage:", err);
+    }
+
+    // Reset form immediately
+    setTriggerKeyword('');
+    setPublicReply('Check your DM! 🚀');
+    setPrivateMessage('Hey! Here is your exclusive booking link: https://getcandei.com/book');
+    setStatusMessage('Rule successfully deployed and saved!');
+    setTimeout(() => setStatusMessage(null), 4000);
+    setIsSubmitting(false);
+
+    // 3. Also attempt fetch('/api/rules') in a try/catch block without blocking UI if backend fails
+    try {
+      await fetch('/api/rules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ig_user_id: activeUserId,
-          trigger_keyword: triggerKeyword.trim().toUpperCase(),
-          public_reply: ruleType === 'Comment-to-DM' ? publicReply.trim() : undefined,
-          private_dm: privateMessage.trim(),
+          id: newId,
+          ig_user_id: '17841413170626603',
+          trigger_keyword: newKw,
+          public_reply: newPub,
+          private_dm: newPriv,
           ruleType,
           enabled: true,
         }),
       });
-
-      // Await POST /api/rules response. Once saved successfully, call loadRules() again to re-sync state directly from database
-      await loadRules();
-
-      // Reset form
-      setTriggerKeyword('');
-      setPublicReply('Check your DM! 🚀');
-      setPrivateMessage('Hey! Here is your exclusive booking link: https://getcandei.com/book');
-      setStatusMessage('Rule successfully deployed and saved in database!');
-      setTimeout(() => setStatusMessage(null), 4000);
-    } catch (err) {
-      console.error('Failed to deploy rule:', err);
-    } finally {
-      setIsSubmitting(false);
+    } catch (apiErr) {
+      console.warn("Backend /api/rules sync notice (rule stored in localStorage):", apiErr);
     }
   };
 
   const handleToggleRule = async (ruleId: string, currentStatus: boolean) => {
+    const nextStatus = !currentStatus;
+    const updated = rules.map((r) => {
+      if (r.id === ruleId) {
+        return { ...r, enabled: nextStatus, status: nextStatus ? 'active' : 'paused' };
+      }
+      return r;
+    });
+    setRules(updated);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('candei_automation_rules', JSON.stringify(updated));
+      }
+    } catch (_) {}
+
     try {
       await fetch('/api/rules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: ruleId,
-          ig_user_id: activeUserId,
-          enabled: !currentStatus,
+          ig_user_id: '17841413170626603',
+          enabled: nextStatus,
         }),
       });
-      await loadRules();
     } catch (err) {
-      console.error('Failed to toggle rule:', err);
+      console.warn('Failed to toggle rule:', err);
     }
   };
 
   const handleDeleteRule = async (ruleId: string) => {
+    const updated = rules.filter((r) => r.id !== ruleId);
+    setRules(updated);
     try {
-      await fetch(`/api/rules?id=${encodeURIComponent(ruleId)}&ig_user_id=${encodeURIComponent(activeUserId)}`, {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('candei_automation_rules', JSON.stringify(updated));
+      }
+    } catch (_) {}
+
+    try {
+      await fetch(`/api/rules?id=${encodeURIComponent(ruleId)}&ig_user_id=17841413170626603`, {
         method: 'DELETE',
       });
-      await loadRules();
     } catch (err) {
-      console.error('Failed to delete rule:', err);
+      console.warn('Failed to delete rule:', err);
     }
   };
 

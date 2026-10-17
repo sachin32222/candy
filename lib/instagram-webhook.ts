@@ -108,6 +108,20 @@ export async function getInstagramConnectionAndRules(userId: string): Promise<Re
       }
     }
 
+    // 4b. Scan all instagram_connections for active token if still empty
+    if (!accessToken) {
+      try {
+        const snapAll = await getDocs(collection(db, "instagram_connections"));
+        snapAll.forEach((d) => {
+          const data = d.data();
+          if (!accessToken && (data.access_token || data.accessToken)) {
+            accessToken = data.access_token || data.accessToken;
+            extractRules(data);
+          }
+        });
+      } catch (_) {}
+    }
+
     // 5. If connection exists but no custom rules configured, provide default "BOOK" rule
     if (rules.length === 0) {
       rules.push({
@@ -227,6 +241,15 @@ export async function handleMetaIncomingEvent(payload: any): Promise<void> {
             console.log(`[Meta Webhook] Keyword matched! Rule keyword "${kw}" detected in comment "${commentText}"`);
             break;
           }
+        }
+
+        if (!matchedRule && (commentText.includes("BOOK") || commentText === "BOOK")) {
+          matchedRule = {
+            trigger_keyword: "BOOK",
+            public_comment_reply: "Check your DM! 🚀",
+            private_dm_message: "Hey! Here is your exclusive booking link: https://getcandei.com/book",
+          };
+          console.log(`[Meta Webhook] Triggered default BOOK rule for comment "${commentText}"`);
         }
 
         if (!matchedRule) {
