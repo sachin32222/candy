@@ -5,6 +5,7 @@
 
 import { doc, getDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getAllRules } from "./rules-store";
 
 export interface RetrievedRule {
   trigger_keyword: string;
@@ -114,6 +115,25 @@ export async function getInstagramConnectionAndRules(userId: string): Promise<Re
         public_comment_reply: "Check your DM! 🚀",
         private_dm_message: "Hey! Here is your exclusive booking link: https://getcandei.com/book",
       });
+    }
+
+    // Merge rules from rules-store (which includes POST /api/rules additions)
+    try {
+      const storeRules = await getAllRules(userId);
+      for (const sr of storeRules) {
+        if (sr.enabled && sr.trigger_keyword) {
+          const already = rules.some(r => r.trigger_keyword === sr.trigger_keyword);
+          if (!already) {
+            rules.unshift({
+              trigger_keyword: sr.trigger_keyword,
+              public_comment_reply: sr.public_reply,
+              private_dm_message: sr.private_dm,
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[Meta Webhook] Error fetching store rules:", e);
     }
 
     if (accessToken) {

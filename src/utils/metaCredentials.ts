@@ -12,13 +12,21 @@ export interface TenantMetaCredentials {
 
 export interface AutomationRule {
   id: string;
-  tenantId: string;
-  ruleType: 'Comment-to-DM' | 'DM Auto-Reply';
-  triggerKeyword: string;
+  docId?: string;
+  tenantId?: string;
+  ig_user_id?: string;
+  ruleType?: 'Comment-to-DM' | 'DM Auto-Reply' | string;
+  rule_type?: string;
+  triggerKeyword?: string;
+  trigger_keyword?: string;
   publicReply?: string;
-  privateMessage: string;
-  enabled: boolean;
-  createdAt: string;
+  public_reply?: string;
+  privateMessage?: string;
+  private_dm?: string;
+  status?: string;
+  enabled?: boolean;
+  createdAt?: string;
+  created_at?: string;
 }
 
 export const REVIEWER_TENANT_ID = "reviewer_meta_tenant_2026";

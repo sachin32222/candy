@@ -4,7 +4,23 @@ import React, { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Instagram, MessageCircle, MessageSquare, Radio, Check, Sparkles } from 'lucide-react';
+import { Instagram, MessageCircle, MessageSquare, Radio, Check, Sparkles, Plus, Trash2, Zap, Send } from 'lucide-react';
+
+interface AutomationRuleItem {
+  id: string;
+  docId?: string;
+  ig_user_id?: string;
+  trigger_keyword: string;
+  public_reply: string;
+  private_dm: string;
+  status: string;
+  enabled: boolean;
+  created_at?: string;
+  triggerKeyword?: string;
+  publicReply?: string;
+  privateMessage?: string;
+  ruleType?: string;
+}
 
 function AutomationContent() {
   const searchParams = useSearchParams();
@@ -19,6 +35,38 @@ function AutomationContent() {
   const [dmReplyActive, setDmReplyActive] = useState(true);
   const [commentReplyActive, setCommentReplyActive] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Automation Rules state
+  const [rules, setRules] = useState<AutomationRuleItem[]>([]);
+  const [loadingRules, setLoadingRules] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  // Form state
+  const [triggerKeyword, setTriggerKeyword] = useState('');
+  const [publicReply, setPublicReply] = useState('Check your DM! 🚀');
+  const [privateMessage, setPrivateMessage] = useState('Hey! Here is your exclusive booking link: https://getcandei.com/book');
+  const [ruleType, setRuleType] = useState<'Comment-to-DM' | 'DM Auto-Reply'>('Comment-to-DM');
+
+  // Load rules on mount
+  async function loadRules() {
+    try {
+      setLoadingRules(true);
+      const res = await fetch('/api/rules');
+      const data = await res.json();
+      if (data.rules) {
+        setRules(data.rules);
+      }
+    } catch (err) {
+      console.error("Failed to load rules:", err);
+    } finally {
+      setLoadingRules(false);
+    }
+  }
+
+  useEffect(() => {
+    loadRules();
+  }, []);
 
   useEffect(() => {
     if (userIdParam && statusParam === 'connected') {
@@ -41,7 +89,7 @@ function AutomationContent() {
       };
       syncInitialConnection();
     }
-  }, [userIdParam, statusParam, token]);
+  }, [userIdParam, statusParam, token, dmReplyActive, commentReplyActive]);
 
   const handleToggleDm = async () => {
     const nextVal = !dmReplyActive;
@@ -85,6 +133,70 @@ function AutomationContent() {
     }
   };
 
+  // Deploy Rule Handler
+  const handleDeployRule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!triggerKeyword.trim() || !privateMessage.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ig_user_id: activeUserId,
+          trigger_keyword: triggerKeyword.trim().toUpperCase(),
+          public_reply: ruleType === 'Comment-to-DM' ? publicReply.trim() : undefined,
+          private_dm: privateMessage.trim(),
+          ruleType,
+          enabled: true,
+        }),
+      });
+
+      // Await POST /api/rules response. Once saved successfully, call loadRules() again to re-sync state directly from database
+      await loadRules();
+
+      // Reset form
+      setTriggerKeyword('');
+      setPublicReply('Check your DM! 🚀');
+      setPrivateMessage('Hey! Here is your exclusive booking link: https://getcandei.com/book');
+      setStatusMessage('Rule successfully deployed and saved in database!');
+      setTimeout(() => setStatusMessage(null), 4000);
+    } catch (err) {
+      console.error('Failed to deploy rule:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleRule = async (ruleId: string, currentStatus: boolean) => {
+    try {
+      await fetch('/api/rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: ruleId,
+          ig_user_id: activeUserId,
+          enabled: !currentStatus,
+        }),
+      });
+      await loadRules();
+    } catch (err) {
+      console.error('Failed to toggle rule:', err);
+    }
+  };
+
+  const handleDeleteRule = async (ruleId: string) => {
+    try {
+      await fetch(`/api/rules?id=${encodeURIComponent(ruleId)}&ig_user_id=${encodeURIComponent(activeUserId)}`, {
+        method: 'DELETE',
+      });
+      await loadRules();
+    } catch (err) {
+      console.error('Failed to delete rule:', err);
+    }
+  };
+
   return (
     <div
       style={{
@@ -101,7 +213,7 @@ function AutomationContent() {
       <div
         style={{
           width: '100%',
-          maxWidth: '860px',
+          maxWidth: '920px',
           display: 'flex',
           flexDirection: 'column',
           gap: '24px',
@@ -192,6 +304,26 @@ function AutomationContent() {
             </div>
           )}
         </div>
+
+        {/* Status Notification Banner */}
+        {statusMessage && (
+          <div
+            style={{
+              padding: '12px 18px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+              border: '1px solid rgba(16, 185, 129, 0.35)',
+              color: '#6ee7b7',
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <Check style={{ width: '16px', height: '16px' }} />
+            {statusMessage}
+          </div>
+        )}
 
         {/* Error Notice */}
         {error && (
@@ -303,7 +435,7 @@ function AutomationContent() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px' }}>
             <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#ffffff' }}>
-              Automation Rules &amp; Triggers
+              General Automation Triggers
             </h2>
             <span style={{ fontSize: '12px', color: '#777777' }}>Instant toggle • Synced to Cloud</span>
           </div>
@@ -335,7 +467,6 @@ function AutomationContent() {
                     backgroundColor: dmReplyActive ? 'rgba(99, 102, 241, 0.15)' : '#1c1c1c',
                     color: dmReplyActive ? '#818cf8' : '#777777',
                     border: dmReplyActive ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid #282828',
-                    transition: 'all 0.2s ease',
                   }}
                 >
                   <MessageCircle style={{ width: '20px', height: '20px' }} />
@@ -429,7 +560,6 @@ function AutomationContent() {
                     backgroundColor: commentReplyActive ? 'rgba(236, 72, 153, 0.15)' : '#1c1c1c',
                     color: commentReplyActive ? '#f472b6' : '#777777',
                     border: commentReplyActive ? '1px solid rgba(236, 72, 153, 0.3)' : '1px solid #282828',
-                    transition: 'all 0.2s ease',
                   }}
                 >
                   <MessageSquare style={{ width: '20px', height: '20px' }} />
@@ -497,6 +627,346 @@ function AutomationContent() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Deploy New Automation Rule Form */}
+        <div
+          style={{
+            backgroundColor: '#141414',
+            border: '1px solid #2a2a2a',
+            borderRadius: '16px',
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#ffffff' }}>
+                Create Automation Rule
+              </h2>
+              <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#888888' }}>
+                Define trigger keyword, public comment reply, and private DM link
+              </p>
+            </div>
+            <span
+              style={{
+                fontSize: '11px',
+                color: '#f472b6',
+                backgroundColor: 'rgba(238, 42, 123, 0.1)',
+                padding: '4px 10px',
+                borderRadius: '9999px',
+                border: '1px solid rgba(238, 42, 123, 0.2)',
+              }}
+            >
+              Comment-to-DM Engine
+            </span>
+          </div>
+
+          <form onSubmit={handleDeployRule} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              {/* Trigger Keyword */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#cccccc', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Trigger Keyword
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. BOOK, PRICE, LINK, WEDDING"
+                  value={triggerKeyword}
+                  onChange={(e) => setTriggerKeyword(e.target.value.toUpperCase())}
+                  style={{
+                    backgroundColor: '#1b1b1b',
+                    border: '1px solid #333333',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontFamily: 'monospace',
+                    outline: 'none',
+                  }}
+                />
+                <span style={{ fontSize: '11px', color: '#666666' }}>
+                  Case-insensitive match on incoming user comments
+                </span>
+              </div>
+
+              {/* Public Comment Reply */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#cccccc', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Public Comment Reply
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Check your DM! 🚀"
+                  value={publicReply}
+                  onChange={(e) => setPublicReply(e.target.value)}
+                  style={{
+                    backgroundColor: '#1b1b1b',
+                    border: '1px solid #333333',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                />
+                <span style={{ fontSize: '11px', color: '#666666' }}>
+                  Public response posted under their comment
+                </span>
+              </div>
+            </div>
+
+            {/* Private DM Message */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: '#cccccc', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Private DM Message
+              </label>
+              <textarea
+                required
+                rows={3}
+                placeholder="e.g. Hey! Here is your exclusive booking link: https://getcandei.com/book"
+                value={privateMessage}
+                onChange={(e) => setPrivateMessage(e.target.value)}
+                style={{
+                  backgroundColor: '#1b1b1b',
+                  border: '1px solid #333333',
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  lineHeight: '1.5',
+                  outline: 'none',
+                  resize: 'vertical',
+                }}
+              />
+              <span style={{ fontSize: '11px', color: '#666666' }}>
+                Private DM dispatched directly into commenter's inbox via Instagram Graph API
+              </span>
+            </div>
+
+            {/* Submit Button */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '8px' }}>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  backgroundColor: '#ffffff',
+                  color: '#000000',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '12px 24px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitting ? 0.7 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(255, 255, 255, 0.15)',
+                }}
+              >
+                <Zap style={{ width: '16px', height: '16px' }} />
+                {isSubmitting ? 'DEPLOYING...' : 'DEPLOY RULE'}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Active Automation Rules Table */}
+        <div
+          style={{
+            backgroundColor: '#121212',
+            border: '1px solid #242424',
+            borderRadius: '16px',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid #242424',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#ffffff' }}>
+                Active Automation Rules
+              </h2>
+              <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#888888' }}>
+                {rules.length} rule{rules.length !== 1 ? 's' : ''} currently saved in database &amp; active on Meta webhook listeners
+              </p>
+            </div>
+            <button
+              onClick={() => loadRules()}
+              style={{
+                backgroundColor: '#1e1e1e',
+                border: '1px solid #333333',
+                color: '#cccccc',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
+            >
+              Refresh Rules
+            </button>
+          </div>
+
+          {loadingRules ? (
+            <div style={{ padding: '36px', textAlign: 'center', color: '#888888', fontSize: '14px' }}>
+              Loading saved automation rules...
+            </div>
+          ) : rules.length === 0 ? (
+            <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+              <p style={{ margin: 0, color: '#888888', fontSize: '14px' }}>
+                No custom automation rules deployed yet. Fill the form above and click &quot;DEPLOY RULE&quot;.
+              </p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#181818', borderBottom: '1px solid #242424', color: '#888888', textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.05em' }}>
+                    <th style={{ padding: '14px 20px' }}>Status</th>
+                    <th style={{ padding: '14px 20px' }}>Type</th>
+                    <th style={{ padding: '14px 20px' }}>Trigger Keyword</th>
+                    <th style={{ padding: '14px 20px' }}>Public Reply</th>
+                    <th style={{ padding: '14px 20px' }}>Private DM</th>
+                    <th style={{ padding: '14px 20px', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rules.map((rule, idx) => {
+                    const isRuleActive = rule.enabled !== false && rule.status !== 'paused';
+                    const kw = rule.trigger_keyword || rule.triggerKeyword || 'BOOK';
+                    const pub = rule.public_reply || rule.publicReply || 'Check your DM! 🚀';
+                    const priv = rule.private_dm || rule.privateMessage || '';
+                    const rType = rule.ruleType || 'Comment-to-DM';
+
+                    return (
+                      <tr
+                        key={rule.id || `rule_${idx}`}
+                        style={{
+                          borderBottom: '1px solid #1c1c1c',
+                          backgroundColor: idx % 2 === 0 ? 'transparent' : '#141414',
+                        }}
+                      >
+                        {/* Status Toggle */}
+                        <td style={{ padding: '16px 20px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleRule(rule.id, isRuleActive)}
+                            style={{
+                              position: 'relative',
+                              display: 'inline-flex',
+                              width: '36px',
+                              height: '20px',
+                              borderRadius: '9999px',
+                              backgroundColor: isRuleActive ? '#10b981' : '#333333',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '2px',
+                              alignItems: 'center',
+                              transition: 'background-color 0.2s ease',
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                width: '16px',
+                                height: '16px',
+                                borderRadius: '50%',
+                                backgroundColor: '#ffffff',
+                                transform: isRuleActive ? 'translateX(16px)' : 'translateX(0px)',
+                                transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                              }}
+                            />
+                          </button>
+                        </td>
+
+                        {/* Type */}
+                        <td style={{ padding: '16px 20px' }}>
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              color: '#f472b6',
+                              backgroundColor: 'rgba(238, 42, 123, 0.1)',
+                              border: '1px solid rgba(238, 42, 123, 0.25)',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                            }}
+                          >
+                            {rType}
+                          </span>
+                        </td>
+
+                        {/* Trigger Keyword */}
+                        <td style={{ padding: '16px 20px' }}>
+                          <span
+                            style={{
+                              fontFamily: 'monospace',
+                              fontWeight: 700,
+                              color: '#ffffff',
+                              backgroundColor: '#222222',
+                              border: '1px solid #333333',
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                            }}
+                          >
+                            &quot;{kw}&quot;
+                          </span>
+                        </td>
+
+                        {/* Public Reply */}
+                        <td style={{ padding: '16px 20px', color: '#cccccc', maxWidth: '200px' }}>
+                          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {pub ? `"${pub}"` : '—'}
+                          </div>
+                        </td>
+
+                        {/* Private DM */}
+                        <td style={{ padding: '16px 20px', color: '#cccccc', maxWidth: '260px' }}>
+                          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            &quot;{priv}&quot;
+                          </div>
+                        </td>
+
+                        {/* Actions */}
+                        <td style={{ padding: '16px 20px', textAlign: 'right' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRule(rule.id)}
+                            title="Delete rule"
+                            style={{
+                              backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              color: '#f87171',
+                              borderRadius: '6px',
+                              padding: '6px 10px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Trash2 style={{ width: '14px', height: '14px' }} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

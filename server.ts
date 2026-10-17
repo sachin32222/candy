@@ -217,6 +217,47 @@ async function startServer() {
     }
   });
 
+  // Server-Side Rules Management
+  app.get("/api/rules", async (req, res) => {
+    try {
+      const igUserId = req.query.ig_user_id as string | undefined;
+      const { getAllRules } = await import("./lib/rules-store");
+      const rules = await getAllRules(igUserId);
+      return res.json({ success: true, rules });
+    } catch (err: any) {
+      console.error("[Express /api/rules GET] Error:", err);
+      return res.status(500).json({ success: false, error: err?.message, rules: [] });
+    }
+  });
+
+  app.post("/api/rules", async (req, res) => {
+    try {
+      const { saveRule, getAllRules } = await import("./lib/rules-store");
+      const saved = await saveRule(req.body);
+      const allRules = await getAllRules(saved.ig_user_id);
+      return res.json({ success: true, rule: saved, rules: allRules });
+    } catch (err: any) {
+      console.error("[Express /api/rules POST] Error:", err);
+      return res.status(500).json({ success: false, error: err?.message });
+    }
+  });
+
+  app.delete("/api/rules", async (req, res) => {
+    try {
+      const id = (req.query.id || req.body?.id) as string;
+      const igUserId = (req.query.ig_user_id || req.body?.ig_user_id) as string | undefined;
+      const { deleteRule, getAllRules } = await import("./lib/rules-store");
+      if (id) {
+        await deleteRule(id, igUserId);
+      }
+      const allRules = await getAllRules(igUserId);
+      return res.json({ success: true, rules: allRules });
+    } catch (err: any) {
+      console.error("[Express /api/rules DELETE] Error:", err);
+      return res.status(500).json({ success: false, error: err?.message });
+    }
+  });
+
   // Meta Instagram OAuth Callback
   app.get("/api/auth/instagram/callback", async (req, res) => {
     try {

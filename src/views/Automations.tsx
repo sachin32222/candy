@@ -82,59 +82,37 @@ export default function Automations() {
     }
   }, [location, profile]);
 
-  // Load rules
+  const loadRules = async () => {
+    try {
+      setLoadingRules(true);
+      const res = await fetch('/api/rules');
+      const data = await res.json();
+      if (data.rules && Array.isArray(data.rules)) {
+        setRules(data.rules);
+      }
+    } catch (err) {
+      console.error("Failed to load rules:", err);
+    } finally {
+      setLoadingRules(false);
+    }
+  };
+
   useEffect(() => {
-    async function load() {
-      if (!currentTenantId) return;
+    async function loadRules() {
       try {
-        setLoadingRules(true);
-        // 1. First check profile automations
-        if (profile?.automations && Array.isArray(profile.automations) && profile.automations.length > 0) {
-          setRules(profile.automations);
-          return;
-        }
-
-        // 2. Check instagram_connections doc if connected
-        if (connectedIgUserId) {
-          try {
-            const { doc, getDoc } = await import('firebase/firestore');
-            const { db } = await import('../firebase');
-            const connSnap = await getDoc(doc(db, 'instagram_connections', connectedIgUserId));
-            if (connSnap.exists() && Array.isArray(connSnap.data().automations) && connSnap.data().automations.length > 0) {
-              setRules(connSnap.data().automations);
-              return;
-            }
-          } catch (e) {
-            console.warn('[Automations] Could not fetch from instagram_connections:', e);
-          }
-        }
-
-        // 3. Check tenant rules in cache/firestore
-        const fetched = await getTenantAutomationRules(currentTenantId);
-        if (fetched && fetched.length > 0) {
-          setRules(fetched);
-        } else {
-          // Starter default rule for preview
-          const defaultRule: AutomationRule = {
-            id: 'rule_default_1',
-            tenantId: currentTenantId,
-            ruleType: 'Comment-to-DM',
-            triggerKeyword: 'BOOK',
-            publicReply: 'Check your DM! 🚀',
-            privateMessage: 'Hey! Here is your exclusive booking link: https://getcandei.com/book',
-            enabled: true,
-            createdAt: new Date().toISOString()
-          };
-          setRules([defaultRule]);
+        const res = await fetch('/api/rules');
+        const data = await res.json();
+        if (data.rules) {
+          setRules(data.rules);
         }
       } catch (err) {
-        console.error('Error loading rules:', err);
+        console.error("Failed to load rules:", err);
       } finally {
         setLoadingRules(false);
       }
     }
-    load();
-  }, [currentTenantId, profile, connectedIgUserId]);
+    loadRules();
+  }, []);
 
   const handleConnectInstagram = () => {
     const redirectUri = 'https://getcandei.com/api/auth/instagram/callback';
@@ -188,45 +166,30 @@ export default function Automations() {
 
     setSubmitting(true);
     try {
-      const newRule: AutomationRule = {
-        id: 'rule_' + Date.now(),
-        tenantId: currentTenantId,
-        ruleType,
-        triggerKeyword: triggerKeyword.trim().toUpperCase(),
-        publicReply: ruleType === 'Comment-to-DM' ? publicReply.trim() : undefined,
-        privateMessage: privateMessage.trim(),
-        enabled: true,
-        createdAt: new Date().toISOString()
-      };
+      const targetDocId = connectedIgUserId || currentTenantId;
 
-      const updated = await saveTenantAutomationRule(currentTenantId, newRule);
-      setRules(updated);
-      await updateProfile({
-        automations: updated
+      const res = await fetch('/api/rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ig_user_id: targetDocId,
+          trigger_keyword: triggerKeyword.trim().toUpperCase(),
+          public_reply: ruleType === 'Comment-to-DM' ? publicReply.trim() : undefined,
+          private_dm: privateMessage.trim(),
+          ruleType,
+          enabled: true
+        })
       });
 
-      // Save rule to Firestore under the connected user in instagram_connections so the webhook engine can execute it
-      const targetDocId = connectedIgUserId || currentTenantId;
-      if (targetDocId) {
-        try {
-          const { doc, setDoc } = await import('firebase/firestore');
-          const { db } = await import('../firebase');
-          await setDoc(doc(db, 'instagram_connections', targetDocId), {
-            instagram_user_id: targetDocId,
-            automations: updated,
-            updated_at: new Date()
-          }, { merge: true });
-          console.log('[Automations] Successfully deployed rule to Firestore under instagram_connections for:', targetDocId);
-        } catch (dbErr) {
-          console.warn('[Automations] Could not sync rule to instagram_connections:', dbErr);
-        }
-      }
+      // Await the POST /api/rules response. Once saved successfully, call loadRules() again to re-sync state directly from database
+      await loadRules();
 
       // Reset form
       setTriggerKeyword('');
       setPublicReply('Check your DM! 🚀');
       setPrivateMessage('Hey! Here is your exclusive booking link: https://getcandei.com/book');
       setShowForm(false);
+      setStatusMessage('Rule successfully deployed and saved in database!');
     } catch (error) {
       console.error('Failed to create rule:', error);
     } finally {
@@ -234,24 +197,24 @@ export default function Automations() {
     }
   };
 
-  const handleToggleRule = async (ruleId: string, currentStatus: boolean) => {
-    const updated = rules.map(r => r.id === ruleId ? { ...r, enabled: !currentStatus } : r);
-    setRules(updated);
+  const handleToggleRule = async (ruleId: string, currentStatus?: boolean) => {
     try {
-      const ruleToUpdate = updated.find(r => r.id === ruleId);
-      if (ruleToUpdate) {
-        await saveTenantAutomationRule(currentTenantId, ruleToUpdate);
-        await updateProfile({ automations: updated });
-        const targetDocId = connectedIgUserId || currentTenantId;
-        if (targetDocId) {
-          try {
-            const { doc, setDoc } = await import('firebase/firestore');
-            const { db } = await import('../firebase');
-            await setDoc(doc(db, 'instagram_connections', targetDocId), {
-              automations: updated,
-              updated_at: new Date()
-            }, { merge: true });
-          } catch (e) {}
+      const targetDocId = connectedIgUserId || currentTenantId;
+      const res = await fetch('/api/rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: ruleId,
+          ig_user_id: targetDocId,
+          enabled: !currentStatus
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.rules && Array.isArray(data.rules)) {
+          setRules(data.rules);
+        } else {
+          await loadRules();
         }
       }
     } catch (e) {
@@ -260,20 +223,18 @@ export default function Automations() {
   };
 
   const handleDeleteRule = async (ruleId: string) => {
-    const updated = rules.filter(r => r.id !== ruleId);
-    setRules(updated);
     try {
-      await updateProfile({ automations: updated });
       const targetDocId = connectedIgUserId || currentTenantId;
-      if (targetDocId) {
-        try {
-          const { doc, setDoc } = await import('firebase/firestore');
-          const { db } = await import('../firebase');
-          await setDoc(doc(db, 'instagram_connections', targetDocId), {
-            automations: updated,
-            updated_at: new Date()
-          }, { merge: true });
-        } catch (e) {}
+      const res = await fetch(`/api/rules?id=${encodeURIComponent(ruleId)}&ig_user_id=${encodeURIComponent(targetDocId)}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.rules && Array.isArray(data.rules)) {
+          setRules(data.rules);
+        } else {
+          await loadRules();
+        }
       }
     } catch (e) {
       console.error('Failed to delete rule:', e);
@@ -646,7 +607,7 @@ export default function Automations() {
                       disabled={submitting}
                       className="bg-white text-neutral-900 hover:bg-neutral-100 px-6 py-3 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all shadow-lg flex items-center gap-2"
                     >
-                      {submitting ? 'Saving...' : 'Deploy Rule'}
+                      {submitting ? 'DEPLOYING...' : 'DEPLOY RULE'}
                     </button>
                   </div>
                 </form>
@@ -710,14 +671,14 @@ export default function Automations() {
                       {/* Toggle Enable / Disable */}
                       <td className="py-5 px-6">
                         <button
-                          onClick={() => handleToggleRule(rule.id, rule.enabled)}
+                          onClick={() => handleToggleRule(rule.id, rule.enabled !== false && rule.status !== 'paused')}
                           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                            rule.enabled ? 'bg-emerald-500' : 'bg-neutral-800'
+                            (rule.enabled !== false && rule.status !== 'paused') ? 'bg-emerald-500' : 'bg-neutral-800'
                           }`}
                         >
                           <span
                             className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                              rule.enabled ? 'translate-x-5' : 'translate-x-0'
+                              (rule.enabled !== false && rule.status !== 'paused') ? 'translate-x-5' : 'translate-x-0'
                             }`}
                           />
                         </button>
@@ -726,30 +687,30 @@ export default function Automations() {
                       {/* Rule Type */}
                       <td className="py-5 px-6">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${
-                          rule.ruleType === 'Comment-to-DM'
+                          (rule.ruleType || rule.rule_type) === 'Comment-to-DM'
                             ? 'bg-pink-500/10 text-pink-300 border-pink-500/20'
                             : 'bg-purple-500/10 text-purple-300 border-purple-500/20'
                         }`}>
-                          {rule.ruleType === 'Comment-to-DM' ? (
+                          {(rule.ruleType || rule.rule_type) === 'Comment-to-DM' ? (
                             <MessageSquare className="w-3 h-3 text-pink-400" />
                           ) : (
                             <Send className="w-3 h-3 text-purple-400" />
                           )}
-                          {rule.ruleType}
+                          {rule.ruleType || rule.rule_type || 'Comment-to-DM'}
                         </span>
                       </td>
 
                       {/* Keyword */}
                       <td className="py-5 px-6 font-mono font-semibold text-white">
                         <span className="px-2.5 py-1 rounded bg-[#202020] border border-[#333] text-xs">
-                          "{rule.triggerKeyword}"
+                          "{rule.triggerKeyword || rule.trigger_keyword}"
                         </span>
                       </td>
 
                       {/* Public Reply */}
                       <td className="py-5 px-6 text-neutral-300 text-xs max-w-xs truncate">
-                        {rule.publicReply ? (
-                          <span className="italic">"{rule.publicReply}"</span>
+                        {(rule.publicReply || rule.public_reply) ? (
+                          <span className="italic">"{rule.publicReply || rule.public_reply}"</span>
                         ) : (
                           <span className="text-neutral-600">—</span>
                         )}
@@ -757,7 +718,7 @@ export default function Automations() {
 
                       {/* Private Message */}
                       <td className="py-5 px-6 text-neutral-300 text-xs max-w-sm truncate">
-                        "{rule.privateMessage}"
+                        "{rule.privateMessage || rule.private_dm}"
                       </td>
 
                       {/* Actions */}
