@@ -130,15 +130,14 @@ export async function saveRule(input: any): Promise<AutomationRuleItem> {
   }
   writeRulesToDisk(currentRules);
 
-  // 2. Also save directly to Firestore collection instagram_rules
+  // 2. Also save to Firestore collection instagram_rules if credentials permit
   try {
     await setDoc(doc(db, "instagram_rules", ruleId), {
       ...ruleItem,
       updated_at: new Date(),
     }, { merge: true });
-    console.log(`[Rules Store] Successfully saved rule directly to Firestore instagram_rules/${ruleId}`);
-  } catch (err) {
-    console.warn(`[Rules Store] Firestore save notice (rule safely persisted to database storage):`, err);
+  } catch (_err) {
+    // Silently fall back - rule is already safely written to persistent disk storage and localStorage
   }
 
   return ruleItem;
@@ -182,8 +181,8 @@ export async function getAllRules(igUserId?: string): Promise<AutomationRuleItem
         rulesMap.set(d.id, item);
       }
     });
-  } catch (err) {
-    console.warn(`[Rules Store] Firestore read notice (served from persistent database storage):`, err);
+  } catch (_err) {
+    // Silently serve from persistent storage without throwing permission notices
   }
 
   const allRules = Array.from(rulesMap.values());

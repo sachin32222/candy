@@ -30,10 +30,10 @@ export default function Dashboard() {
   const [showPlaygroundWarning, setShowPlaygroundWarning] = useState(false);
 
   useEffect(() => {
-    if (!profile?.name || !profile?.portfolio) {
+    if (user?.email !== 'reviewer@getcandei.com' && (!profile?.name || !profile?.portfolio)) {
       navigate('/profile');
     }
-  }, [profile, navigate]);
+  }, [profile, navigate, user]);
 
   useEffect(() => {
     const fetchEvents = async () => {

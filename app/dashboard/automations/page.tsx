@@ -26,8 +26,18 @@ function AutomationContent() {
   const searchParams = useSearchParams();
   const statusParam = searchParams.get('status');
   const userIdParam = searchParams.get('user_id');
+  const usernameParam = searchParams.get('username');
   const token = searchParams.get('token');
   const error = searchParams.get('error');
+
+  const [username, setUsername] = useState<string>(() => {
+    if (usernameParam) return usernameParam;
+    try {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('candei_instagram_username') : null;
+      if (saved) return saved;
+    } catch (_) {}
+    return '';
+  });
 
   const activeUserId = userIdParam || '39530882969891710';
   const isConnected = statusParam === 'connected' || Boolean(userIdParam) || true;
@@ -133,6 +143,35 @@ function AutomationContent() {
 
     loadRules();
   }, []);
+
+  useEffect(() => {
+    if (usernameParam) {
+      setUsername(usernameParam);
+      try {
+        localStorage.setItem('candei_instagram_username', usernameParam);
+      } catch (_) {}
+    }
+
+    async function fetchConnectionStatus() {
+      try {
+        const query = userIdParam || activeUserId;
+        const res = await fetch(`/api/instagram/connection?user_id=${encodeURIComponent(query || '')}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.connected && data.username) {
+            setUsername(data.username);
+            try {
+              localStorage.setItem('candei_instagram_username', data.username);
+            } catch (_) {}
+          }
+        }
+      } catch (err) {
+        console.warn('[Automations] Failed to load connection status:', err);
+      }
+    }
+
+    fetchConnectionStatus();
+  }, [usernameParam, userIdParam, activeUserId]);
 
   useEffect(() => {
     if (userIdParam && statusParam === 'connected') {
@@ -391,7 +430,7 @@ function AutomationContent() {
                 </span>
               </div>
               <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#888888' }}>
-                Real-time automated DM and comment reply triggers for Candei Creators
+                {"Synced with handle @" + (username || "connected_account") + ". Automatic triggers will be monitored 24/7."}
               </p>
             </div>
           </div>

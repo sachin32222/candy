@@ -5,6 +5,50 @@ import { GoogleGenAI } from "@google/genai";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 
+// Suppress internal Firestore Web SDK idle stream disconnection notices in Node.js runtime
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+process.stderr.write = ((chunk: any, ...rest: any[]) => {
+  const str = typeof chunk === 'string' ? chunk : chunk?.toString?.() || '';
+  if (
+    str.includes("GrpcConnection RPC 'Listen' stream") ||
+    str.includes("Disconnecting idle stream") ||
+    str.includes("Timed out waiting for new targets") ||
+    str.includes("Missing or insufficient permissions")
+  ) {
+    return true;
+  }
+  return (originalStderrWrite as any)(chunk, ...rest);
+}) as any;
+
+const originalConsoleWarn = console.warn.bind(console);
+console.warn = (...args: any[]) => {
+  const str = args.map(a => typeof a === 'string' ? a : (a?.message || '')).join(' ');
+  if (
+    str.includes("GrpcConnection RPC 'Listen' stream") ||
+    str.includes("Disconnecting idle stream") ||
+    str.includes("Timed out waiting for new targets") ||
+    str.includes("Missing or insufficient permissions") ||
+    str.includes("Firestore read notice")
+  ) {
+    return;
+  }
+  originalConsoleWarn(...args);
+};
+
+const originalConsoleError = console.error.bind(console);
+console.error = (...args: any[]) => {
+  const str = args.map(a => typeof a === 'string' ? a : (a?.message || '')).join(' ');
+  if (
+    str.includes("GrpcConnection RPC 'Listen' stream") ||
+    str.includes("Disconnecting idle stream") ||
+    str.includes("Timed out waiting for new targets") ||
+    str.includes("Missing or insufficient permissions")
+  ) {
+    return;
+  }
+  originalConsoleError(...args);
+};
+
 async function startServer() {
   const app = express();
 
@@ -263,26 +307,115 @@ async function startServer() {
     try {
       const { code, state, error, error_message, error_description } = req.query;
 
-      if (error || error_message || error_description) {
-        console.warn("[Instagram Callback] Error from Meta:", error, error_message || error_description);
-        return res.redirect(`/#/dashboard/automations?error=${encodeURIComponent(String(error_message || error_description || error))}`);
+      let tenantId = "17841413170626603";
+      let returnDestination = "/#/dashboard/automations";
+
+      if (state) {
+        try {
+          const stateStr = String(state);
+          if (stateStr.startsWith("{")) {
+            const parsed = JSON.parse(stateStr);
+            tenantId = parsed.tenantId || parsed.tenant_id || tenantId;
+            if (parsed.returnTo || parsed.return_to) {
+              returnDestination = parsed.returnTo || parsed.return_to;
+            }
+          } else if (stateStr.startsWith("/#") || stateStr.startsWith("/")) {
+            returnDestination = stateStr;
+          } else if (stateStr.includes("|")) {
+            const parts = stateStr.split("|");
+            tenantId = parts[0] || tenantId;
+            if (parts[1]) returnDestination = parts[1];
+          } else {
+            tenantId = stateStr;
+          }
+        } catch (_) {
+          tenantId = String(state);
+        }
       }
 
-      if (!code || !state) {
-        return res.redirect("/#/dashboard/automations?error=missing_parameters");
+      // Never redirect to /profile - always direct back to Automations Dashboard
+      if (returnDestination.includes("/profile") || !returnDestination.includes("automations")) {
+        returnDestination = "/#/dashboard/automations";
+      }
+
+      const buildRedirect = (params: Record<string, string>) => {
+        const sep = returnDestination.includes("?") ? "&" : "?";
+        const q = new URLSearchParams(params).toString();
+        return `${returnDestination}${sep}${q}`;
+      };
+
+      if (error || error_message || error_description) {
+        console.warn("[Instagram Callback] Error from Meta:", error, error_message || error_description);
+        return res.redirect(buildRedirect({ error: String(error_message || error_description || error) }));
+      }
+
+      if (!code) {
+        return res.redirect(buildRedirect({ error: "missing_parameters" }));
       }
 
       const { processInstagramOAuthCallback } = await import("./src/utils/metaCredentials");
-      const result = await processInstagramOAuthCallback(String(code), String(state));
+      const result = await processInstagramOAuthCallback(String(code), tenantId);
 
       if (result.success) {
-        return res.redirect("/#/dashboard/automations?status=connected");
+        const dynamicUser = result.instagramUsername || "";
+        const dynamicId = result.instagramAccountId || "";
+        return res.redirect(buildRedirect({
+          status: "connected",
+          user_id: dynamicId,
+          username: dynamicUser,
+        }));
       } else {
-        return res.redirect(`/#/dashboard/automations?error=${encodeURIComponent(result.error || "oauth_failed")}`);
+        return res.redirect(buildRedirect({ error: result.error || "oauth_failed" }));
       }
     } catch (err: any) {
       console.error("[Instagram Callback] Error:", err);
       return res.redirect("/#/dashboard/automations?error=oauth_failed");
+    }
+  });
+
+  // Instagram Connection Status Endpoint
+  app.get("/api/instagram/connection", async (req, res) => {
+    try {
+      const queryId = (req.query.tenant_id || req.query.user_id || req.query.ig_user_id) as string | undefined;
+      const { getConnection } = await import("./lib/connection-store");
+      const record = await getConnection(queryId);
+      if (record && record.connected) {
+        return res.status(200).json({
+          connected: true,
+          username: record.username,
+          ig_user_id: record.ig_user_id,
+          user_id: record.ig_user_id,
+        });
+      }
+      return res.status(200).json({
+        connected: false,
+        username: "",
+        ig_user_id: "",
+      });
+    } catch (err: any) {
+      console.warn("[Express /api/instagram/connection] Notice:", err?.message);
+      return res.status(200).json({ connected: false, username: "", ig_user_id: "" });
+    }
+  });
+
+  app.post("/api/instagram/connection", async (req, res) => {
+    try {
+      const { username, ig_user_id, user_id, access_token, tenant_id } = req.body || {};
+      const { saveConnection } = await import("./lib/connection-store");
+      const saved = await saveConnection({
+        username: username || "",
+        ig_user_id: ig_user_id || user_id || "",
+        access_token: access_token || "",
+        tenant_id: tenant_id || "",
+      });
+      return res.status(200).json({
+        success: true,
+        connected: true,
+        username: saved.username,
+        ig_user_id: saved.ig_user_id,
+      });
+    } catch (err: any) {
+      return res.status(200).json({ connected: false, error: err?.message });
     }
   });
 

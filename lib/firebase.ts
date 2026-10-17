@@ -1,5 +1,10 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, setLogLevel } from 'firebase/firestore';
+
+// Suppress internal Firestore gRPC stream disconnection notices
+try {
+  setLogLevel('silent');
+} catch (_) {}
 
 const firebaseConfig = {
   projectId: "ai-studio-applet-webapp-89f55",

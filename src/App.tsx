@@ -59,15 +59,27 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   
   // If not admin, check profile completion and payment status
   if (!isAdmin) {
-    const isProfileComplete = profile?.name && profile?.whatsapp;
+    const isReviewer = user.email === 'reviewer@getcandei.com';
+    const isProfileComplete = Boolean(
+      (profile?.name && profile?.whatsapp) ||
+      isReviewer ||
+      profile?.metaConnected ||
+      profile?.instagramAccountId
+    );
 
-    // Force profile completion first
-    if (!isProfileComplete && location.pathname !== '/profile') {
+    // Never redirect away from automations dashboard or settings
+    const isExemptPath = 
+      location.pathname === '/profile' || 
+      location.pathname.startsWith('/dashboard/automations') || 
+      location.pathname.startsWith('/integrations');
+
+    // Force profile completion first for other pages
+    if (!isProfileComplete && !isExemptPath) {
       return <Navigate to="/profile" />;
     }
 
     // Force payment if profile is complete but not approved
-    if (isProfileComplete && profile?.paymentStatus !== 'approved' && location.pathname !== '/payment' && location.pathname !== '/profile') {
+    if (isProfileComplete && profile?.paymentStatus !== 'approved' && !isReviewer && location.pathname !== '/payment' && !isExemptPath) {
       return <Navigate to="/payment" />;
     }
   }

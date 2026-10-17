@@ -1,5 +1,21 @@
 [
   {
+    "id": "1792253511802",
+    "docId": "1792253511802",
+    "ig_user_id": "17841413170626603",
+    "trigger_keyword": "PRICE",
+    "public_reply": "Check your DM! 🚀",
+    "private_dm": "Hey! Here is your exclusive booking link: https://getcandei.com/book",
+    "status": "active",
+    "enabled": true,
+    "created_at": "2026-10-17T16:11:53.249Z",
+    "triggerKeyword": "PRICE",
+    "publicReply": "Check your DM! 🚀",
+    "privateMessage": "Hey! Here is your exclusive booking link: https://getcandei.com/book",
+    "ruleType": "Comment-to-DM",
+    "tenantId": "17841413170626603"
+  },
+  {
     "id": "rule_1792225934341",
     "docId": "rule_1792225934341",
     "ig_user_id": "39530882969891710",

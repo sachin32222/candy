@@ -58,28 +58,88 @@ export default function Automations() {
 
   const queryParams = new URLSearchParams(location.search);
   const urlUserId = queryParams.get('user_id');
-  const connectedIgUserId = urlUserId || profile?.instagramAccountId || profile?.igAccountId || (user?.email === 'reviewer@getcandei.com' ? '39530882969891710' : undefined);
+  const urlUsername = queryParams.get('username');
 
-  const isConnected = Boolean(profile?.metaConnected || profile?.instagramAccountId || profile?.igAccountId || urlUserId || user?.email === 'reviewer@getcandei.com');
-  const igUsername = profile?.instagramUsername || profile?.insta?.replace('@', '') || (urlUserId ? `ig_creator_${urlUserId.slice(-4)}` : 'candei_creator');
+  // Maintain dynamic state for connected Instagram username
+  const [username, setUsername] = useState<string>(() => {
+    if (urlUsername) return urlUsername;
+    if (profile?.instagramUsername) return profile.instagramUsername;
+    if (profile?.insta) return profile.insta.replace('@', '');
+    try {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('candei_instagram_username') : null;
+      if (saved) return saved;
+    } catch (_) {}
+    return '';
+  });
+
+  const [connectedIgUserId, setConnectedIgUserId] = useState<string>(() => {
+    return urlUserId || profile?.instagramAccountId || profile?.igAccountId || (user?.email === 'reviewer@getcandei.com' ? '39530882969891710' : '');
+  });
+
+  const isConnected = Boolean(
+    profile?.metaConnected || 
+    profile?.instagramAccountId || 
+    profile?.igAccountId || 
+    urlUserId || 
+    connectedIgUserId || 
+    username || 
+    user?.email === 'reviewer@getcandei.com'
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const status = params.get('status');
     const incomingUserId = params.get('user_id');
+    const incomingUsername = params.get('username');
+
+    if (incomingUsername) {
+      setUsername(incomingUsername);
+      try {
+        localStorage.setItem('candei_instagram_username', incomingUsername);
+      } catch (_) {}
+    }
+
+    if (incomingUserId) {
+      setConnectedIgUserId(incomingUserId);
+    }
 
     if (status === 'connected') {
-      setStatusMessage(`Instagram account successfully connected! (User ID: ${incomingUserId || 'Active'}). Your automation engine is live.`);
+      setStatusMessage(`Instagram account successfully connected! (Handle: @${incomingUsername || username || 'connected_account'}). Your automation engine is live.`);
       if (incomingUserId && profile?.instagramAccountId !== incomingUserId) {
         updateProfile({
           metaConnected: true,
           instagramAccountId: incomingUserId,
+          instagramUsername: incomingUsername || username || undefined,
           metaConnectedAt: new Date().toISOString()
         }).catch(console.warn);
       }
     } else if (params.get('error')) {
       setStatusMessage('Connection failed or was canceled. Please try again.');
     }
+
+    // Fetch dynamic connection data from the backend connection status API
+    async function loadConnectionData() {
+      try {
+        const query = incomingUserId || connectedIgUserId || currentTenantId;
+        const res = await fetch(`/api/instagram/connection?user_id=${encodeURIComponent(query || '')}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.connected && data.username) {
+            setUsername(data.username);
+            try {
+              localStorage.setItem('candei_instagram_username', data.username);
+            } catch (_) {}
+            if (data.ig_user_id) {
+              setConnectedIgUserId(data.ig_user_id);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load Instagram connection status:', err);
+      }
+    }
+
+    loadConnectionData();
   }, [location, profile]);
 
   const DEFAULT_INITIAL_RULES: AutomationRule[] = [
@@ -173,10 +233,14 @@ export default function Automations() {
 
   const handleConnectInstagram = () => {
     const redirectUri = 'https://getcandei.com/api/auth/instagram/callback';
+    const statePayload = JSON.stringify({
+      tenantId: currentTenantId,
+      returnTo: '/#/dashboard/automations'
+    });
     const oauthUrl = `https://www.instagram.com/oauth/authorize?force_reauth=true&client_id=${metaAppId}&redirect_uri=${encodeURIComponent(
       redirectUri
     )}&response_type=code&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish,instagram_business_manage_insights&state=${encodeURIComponent(
-      currentTenantId
+      statePayload
     )}`;
 
     window.location.href = oauthUrl;
@@ -184,19 +248,27 @@ export default function Automations() {
 
   const handleSimulateLocalConnect = async () => {
     try {
+      const dynamicName = profile?.insta?.replace('@', '') || (user?.email ? user.email.split('@')[0] : 'studio_account');
+      const dynamicId = 'ig_business_' + Math.random().toString(36).substring(2, 8);
+      setUsername(dynamicName);
+      setConnectedIgUserId(dynamicId);
+      try {
+        localStorage.setItem('candei_instagram_username', dynamicName);
+      } catch (_) {}
+
       await saveTenantMetaCredentials({
         tenantId: currentTenantId,
-        instagramAccountId: 'ig_business_' + Math.random().toString(36).substring(2, 8),
-        instagramUsername: profile?.insta?.replace('@', '') || 'candei_studio',
+        instagramAccountId: dynamicId,
+        instagramUsername: dynamicName,
         pageAccessToken: 'EAAG_simulated_token_' + Date.now()
       });
       await updateProfile({
         metaConnected: true,
         metaConnectedAt: new Date().toISOString(),
-        instagramUsername: profile?.insta?.replace('@', '') || 'candei_studio',
-        instagramAccountId: 'ig_connected'
+        instagramUsername: dynamicName,
+        instagramAccountId: dynamicId
       });
-      setStatusMessage('Connected Instagram account via verified Meta developer handshake.');
+      setStatusMessage(`Connected Instagram account @${dynamicName} via verified Meta developer handshake.`);
     } catch (e) {
       console.error(e);
     }
@@ -204,6 +276,11 @@ export default function Automations() {
 
   const handleDisconnect = async () => {
     try {
+      setUsername('');
+      setConnectedIgUserId('');
+      try {
+        localStorage.removeItem('candei_instagram_username');
+      } catch (_) {}
       await updateProfile({
         metaConnected: false,
         metaConnectedAt: '',
@@ -442,6 +519,12 @@ export default function Automations() {
             <p className="text-neutral-400 text-base max-w-2xl font-light leading-relaxed">
               Instantly turn Instagram comments and Direct Messages into captured photography clients with automated keyword triggers and booking funnels.
             </p>
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1a1a1a] border border-[#333] text-xs text-neutral-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>
+                {"Synced with handle @" + (username || "connected_account") + ". Automatic triggers will be monitored 24/7."}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -490,7 +573,7 @@ export default function Automations() {
                 <p className="text-sm text-neutral-400">
                   {isConnected ? (
                     <span>
-                      Synced with handle <span className="text-white font-medium">@{igUsername}</span>. Automatic triggers will be monitored 24/7.
+                      {"Synced with handle @" + (username || "connected_account") + ". Automatic triggers will be monitored 24/7."}
                     </span>
                   ) : (
                     'Connect your professional Instagram account to authorize Comment-to-DM triggers and DM auto-replies.'

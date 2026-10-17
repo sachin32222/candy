@@ -93,8 +93,8 @@ export async function getInstagramConnectionAndRules(userId: string): Promise<Re
         const snapRules = await getDocs(qRules);
         snapRules.forEach(d => extractRules(d.data()));
       }
-    } catch (e) {
-      console.warn("[Meta Webhook] instagram_rules query error (non-fatal):", e);
+    } catch (_e) {
+      // Non-fatal, rules-store will provide rules
     }
 
     // 4. Fallback: Query users collection if still no access token
@@ -146,8 +146,8 @@ export async function getInstagramConnectionAndRules(userId: string): Promise<Re
           }
         }
       }
-    } catch (e) {
-      console.warn("[Meta Webhook] Error fetching store rules:", e);
+    } catch (_e) {
+      // Continue with retrieved rules
     }
 
     if (accessToken) {

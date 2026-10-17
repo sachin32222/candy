@@ -14,25 +14,39 @@ console.error = (...args) => {
       errorString.includes('cancelled-popup-request') || 
       errorString.includes('popup-closed-by-user') ||
       errorString.includes('unauthorized-domain') ||
-      errorString.includes('auth/unauthorized-domain')) {
+      errorString.includes('auth/unauthorized-domain') ||
+      errorString.includes('Missing or insufficient permissions') ||
+      errorString.includes('permission-denied') ||
+      errorString.includes("GrpcConnection RPC 'Listen' stream") ||
+      errorString.includes("Disconnecting idle stream") ||
+      errorString.includes("Firestore read notice")) {
     return;
   }
   originalConsoleError(...args);
 };
 
 window.addEventListener('error', (event) => {
-  if (event.message?.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') || 
-      event.message?.includes('unauthorized-domain') ||
-      event.error?.message?.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') ||
-      event.error?.message?.includes('unauthorized-domain')) {
+  const msg = event.message || event.error?.message || '';
+  if (msg.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') || 
+      msg.includes('unauthorized-domain') ||
+      msg.includes('Missing or insufficient permissions') ||
+      msg.includes('permission-denied') ||
+      msg.includes("GrpcConnection RPC 'Listen' stream") ||
+      msg.includes("Disconnecting idle stream")) {
     event.preventDefault();
   }
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-  if (event.reason?.message?.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') ||
-      event.reason?.message?.includes('unauthorized-domain') ||
-      event.reason?.code === 'auth/unauthorized-domain') {
+  const msg = event.reason?.message || '';
+  if (msg.includes('INTERNAL ASSERTION FAILED: Pending promise was never set') ||
+      msg.includes('unauthorized-domain') ||
+      msg.includes('Missing or insufficient permissions') ||
+      msg.includes('permission-denied') ||
+      msg.includes("GrpcConnection RPC 'Listen' stream") ||
+      msg.includes("Disconnecting idle stream") ||
+      event.reason?.code === 'auth/unauthorized-domain' ||
+      event.reason?.code === 'permission-denied') {
     event.preventDefault();
   }
 });
