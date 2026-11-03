@@ -13,24 +13,15 @@ import {
   Camera,
   Users,
   TrendingUp,
-  ExternalLink,
   ChevronRight,
   Instagram,
   Video,
   VideoOff,
   RefreshCw,
-  ShieldCheck,
   Lock,
   X,
   Key,
   CheckCircle,
-  CheckCircle2,
-  Sparkles,
-  MessageSquare,
-  Zap,
-  Globe,
-  BarChart3,
-  Star,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import DiscountPopup from '../components/DiscountPopup';
@@ -52,72 +43,6 @@ import Automations from './Automations';
 import Blogs from './Blogs';
 import KnowledgeBase from './KnowledgeBase';
 import About from './About';
-
-const PRICING_FEATURES = [
-  'AI Selfie Finder',
-  'Instant Gallery',
-  'Custom Domain',
-  'Business Branding',
-  'Bulk Upload',
-  'Lead Capture',
-  'AI Automation',
-  'WhatsApp Bot',
-  'Instagram Bot',
-  'Social Growth',
-  'AI Creatives',
-  'Retention Broadcast',
-  'One Click Share and Save',
-  'Growth Analytics',
-  'Branded Portfolio',
-  'Smart Scheduler',
-  'Engagement Analytics',
-  'Customize Theme 70+',
-];
-
-const CORE_FEATURES = [
-  {
-    icon: Sparkles,
-    badge: 'Computer Vision',
-    title: 'AI Selfie Finder',
-    description:
-      'Guests scan an event QR code and snap a selfie to instantly discover and download all their personal high-res photos in seconds.',
-  },
-  {
-    icon: MessageSquare,
-    badge: 'Meta Official API',
-    title: 'Instagram Comment-to-DM',
-    description:
-      'Automatically reply to comments on your Reels and posts and send instant private DMs with pricing guides, booking links, or galleries.',
-  },
-  {
-    icon: Users,
-    badge: 'Pipeline Growth',
-    title: 'Instant Lead Capture',
-    description:
-      'Turn every event attendee into a verified lead with automated WhatsApp and Instagram capture before gallery access.',
-  },
-  {
-    icon: Globe,
-    badge: '70+ Custom Themes',
-    title: 'Live Branded Galleries',
-    description:
-      'Deliver studio-grade galleries in real time with custom domains, watermarks, and one-click social sharing.',
-  },
-  {
-    icon: TrendingUp,
-    badge: 'Reputation Engine',
-    title: 'Brand Equity & Reviews',
-    description:
-      'Automate Google Business reviews, Instagram follows, and WhatsApp retention broadcasts to turn guests into repeat clients.',
-  },
-  {
-    icon: BarChart3,
-    badge: 'Revenue Intelligence',
-    title: 'Engagement & Conversion Analytics',
-    description:
-      'Track gallery views, selfie searches, DM conversions, and campaign ROI from a single unified photographer command center.',
-  },
-];
 
 function StandalonePrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, authError, logout } = useAuth();
@@ -374,12 +299,12 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
           </a>
 
           <nav className="hidden lg:flex items-center gap-8 text-xs uppercase tracking-[0.2em] text-neutral-400 font-medium">
-            <a href="#features" className="hover:text-white transition-colors">
-              Features
-            </a>
-            <a href="#pricing" className="hover:text-white transition-colors">
+            <button
+              onClick={() => navigate('/payment')}
+              className="hover:text-white transition-colors uppercase tracking-[0.2em]"
+            >
               Pricing
-            </a>
+            </button>
             <button
               onClick={() => navigate('/knowledge-base')}
               className="hover:text-white transition-colors uppercase tracking-[0.2em]"
@@ -415,34 +340,6 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
                 Dashboard
               </button>
             )}
-            <button
-              onClick={() => {
-                openAuthModal('Log In');
-                navigate('/login');
-              }}
-              className="px-4 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-neutral-200 hover:text-white border border-white/15 hover:border-white/40 transition-all"
-            >
-              Log In
-            </button>
-            <button
-              onClick={() => {
-                openAuthModal('Sign Up');
-                navigate('/login');
-              }}
-              className="hidden sm:inline-flex px-4 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all"
-            >
-              Sign Up
-            </button>
-            <button
-              onClick={() => {
-                openAuthModal('Get Started');
-                navigate('/login');
-              }}
-              className="px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-[#4A6DE1] to-[#6366f1] text-white hover:opacity-95 shadow-[0_0_25px_rgba(74,109,225,0.4)] transition-all flex items-center gap-1.5"
-            >
-              <span>Get Started</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
           </div>
         </div>
       </header>
@@ -562,16 +459,6 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
                   <span>Log In / Sign Up</span>
                 </motion.button>
               </div>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => openAuthModal('Reviewer Test Account')}
-                className="w-full bg-[#181818] border border-[#333] hover:border-pink-500/50 text-white py-3 px-6 rounded-full text-xs font-semibold tracking-wider uppercase transition-all flex items-center justify-center gap-2.5 shadow-lg group"
-              >
-                <ShieldCheck className="w-4 h-4 text-pink-400 group-hover:scale-110 transition-transform" />
-                <span>Reviewer Test Account</span>
-              </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -811,177 +698,6 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
             </p>
           </motion.div>
         </motion.div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-24 px-6 sm:px-12 lg:px-24 bg-[#0b0b0b] border-t border-[#222] relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#4A6DE1] block mb-4">
-              Core Platform Architecture
-            </span>
-            <h2 className="text-4xl sm:text-5xl font-serif text-white mb-6">
-              Everything You Need to Scale Your Photography Business
-            </h2>
-            <p className="text-neutral-400 font-light text-base sm:text-lg">
-              From instant AI facial recognition galleries at the venue to automated Instagram Comment-to-DM workflows that book your next client while you sleep.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {CORE_FEATURES.map((feature, idx) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={idx}
-                  className="bg-[#141414] border border-[#262626] hover:border-[#4A6DE1]/50 rounded-3xl p-8 transition-all duration-300 flex flex-col justify-between group"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-12 h-12 rounded-2xl bg-[#1c1c1c] border border-[#333] flex items-center justify-center text-[#4A6DE1] group-hover:bg-[#4A6DE1] group-hover:text-white transition-colors">
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-neutral-500 border border-[#2a2a2a] px-3 py-1 rounded-full">
-                        {feature.badge}
-                      </span>
-                    </div>
-                    <h3 className="text-xl font-serif text-white mb-3">{feature.title}</h3>
-                    <p className="text-neutral-400 text-sm font-light leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      openAuthModal('Get Started');
-                      navigate('/login');
-                    }}
-                    className="mt-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#A5BDFC] hover:text-white transition-colors"
-                  >
-                    <span>Get Started</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-24 px-6 sm:px-12 lg:px-24 bg-[#0f0f0f] border-t border-[#222] relative z-10">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="w-14 h-14 bg-[#141414] rounded-2xl flex items-center justify-center mx-auto mb-6 border border-[#333]">
-              <Zap className="w-7 h-7 text-[#4A6DE1]" />
-            </div>
-            <h2 className="text-4xl md:text-5xl font-serif text-white mb-4">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-neutral-400 font-light text-lg">
-              Unlock all premium photography automation, AI galleries, and Meta CRM features.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Standard Plan */}
-            <div className="bg-[#161616] border border-[#333] rounded-3xl p-8 shadow-2xl relative flex flex-col justify-between hover:border-[#555] transition-colors">
-              <div>
-                <div className="mb-8">
-                  <span className="text-emerald-400 font-semibold tracking-wide uppercase text-sm">
-                    Standard
-                  </span>
-                  <div className="flex items-end gap-2 mt-4">
-                    <span className="text-4xl font-serif text-white">₹999</span>
-                    <span className="text-neutral-500 mb-1">/mo</span>
-                  </div>
-                  <p className="text-sm text-neutral-400 mt-2">Billed ₹5,994 every 6 months</p>
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-start gap-3 text-white font-medium text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                    500 GB Storage
-                  </li>
-                  {PRICING_FEATURES.map((f, i) => (
-                    <li key={i} className="flex items-start gap-3 text-neutral-400 font-light text-sm">
-                      <CheckCircle2 className="w-5 h-5 text-neutral-600 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => {
-                    openAuthModal('Get Started - Standard');
-                    navigate('/login');
-                  }}
-                  className="w-full bg-neutral-800 text-white py-4 rounded-full font-medium hover:bg-neutral-700 transition-colors flex items-center justify-center gap-2"
-                >
-                  Get Started with Standard
-                </button>
-                <button
-                  onClick={() => navigate('/payment')}
-                  className="w-full text-xs text-neutral-400 hover:text-white uppercase tracking-wider py-2 transition-colors"
-                >
-                  Proceed Directly to Checkout →
-                </button>
-              </div>
-            </div>
-
-            {/* Pro Plan */}
-            <div className="bg-gradient-to-b from-[#141824] to-[#0a0a0a] border border-blue-500/40 rounded-3xl p-8 shadow-2xl relative flex flex-col justify-between hover:border-blue-500/70 transition-colors">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full flex items-center gap-1 text-xs font-bold uppercase tracking-wider">
-                <Star className="w-3 h-3" /> Best Value - 2 Months Free
-              </div>
-              <div>
-                <div className="mb-8">
-                  <span className="text-blue-400 font-semibold tracking-wide uppercase text-sm">
-                    Pro
-                  </span>
-                  <div className="flex items-end gap-2 mt-4">
-                    <span className="text-4xl font-serif text-white">₹899</span>
-                    <span className="text-neutral-500 mb-1">/mo</span>
-                  </div>
-                  <p className="text-sm text-neutral-400 mt-2">Billed ₹10,788 every 12 months</p>
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-start gap-3 text-white font-medium text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />
-                    1 TB Storage
-                  </li>
-                  {PRICING_FEATURES.map((f, i) => (
-                    <li key={i} className="flex items-start gap-3 text-neutral-300 font-light text-sm">
-                      <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => {
-                    openAuthModal('Get Started - Pro');
-                    navigate('/login');
-                  }}
-                  className="w-full bg-blue-600 text-white py-4 rounded-full font-medium hover:bg-blue-500 transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
-                >
-                  Get Started with Pro
-                </button>
-                <button
-                  onClick={() => navigate('/payment')}
-                  className="w-full text-xs text-blue-300 hover:text-white uppercase tracking-wider py-2 transition-colors"
-                >
-                  Proceed Directly to Checkout →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Footer */}
