@@ -408,13 +408,18 @@ export async function processInstagramOAuthCallback(code: string, state: string)
     });
 
     try {
-      const { saveConnection } = await import("../../lib/connection-store");
-      await saveConnection({
-        username: instagramUsername,
-        ig_user_id: instagramAccountId,
-        access_token: pageAccessToken,
-        tenant_id: tenantId,
-      });
+      if (typeof window !== "undefined") {
+        fetch("/api/instagram/connection", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: instagramUsername,
+            ig_user_id: instagramAccountId,
+            access_token: pageAccessToken,
+            tenant_id: tenantId,
+          }),
+        }).catch(() => {});
+      }
     } catch (_) {}
 
     return {

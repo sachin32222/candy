@@ -118,9 +118,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       setLoading(false);
+    }, (error) => {
+      console.warn("Firebase Auth listener error, falling back gracefully:", error);
+      setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Safety timeout: ensure loading finishes even if Firebase network is delayed
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
+    return () => {
+      clearTimeout(safetyTimer);
+      unsubscribe();
+    };
   }, []);
 
   const loginAsReviewer = async () => {

@@ -1,8 +1,11 @@
-export default function HomePage() {
-  return (
-    <main style={{ padding: "40px 20px", textAlign: "center" }}>
-      <h1>Candei</h1>
-      <p>The Core System for Photographers</p>
-    </main>
-  );
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const Landing = dynamic(() => import('../src/views/Landing'), {
+  ssr: false,
+});
+
+export default function Home() {
+  return <Landing />;
 }

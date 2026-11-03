@@ -96,6 +96,8 @@ export default function App() {
         <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Landing />} />
+          <Route path="/signup" element={<Landing />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/blogs" element={<Blogs />} />
@@ -110,6 +112,7 @@ export default function App() {
           <Route path="/events/:eventId" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
           <Route path="/e/:eventId" element={<GuestLanding />} />
           <Route path="/gallery/:eventId" element={<Gallery />} />
+          <Route path="*" element={<Landing />} />
         </Routes>
         <WhatsAppWidget />
       </Router>
