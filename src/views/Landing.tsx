@@ -278,76 +278,10 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
 
   return (
     <div className="min-h-screen font-sans bg-[#0f0f0f] text-white flex flex-col overflow-x-hidden relative">
-      {/* Top Navbar */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-[#0f0f0f]/80 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 h-20 flex items-center justify-between gap-4">
-          <a
-            href="/#/"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="flex items-center gap-3 group"
-          >
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-500">
-              <Camera className="w-5 h-5 text-neutral-900" />
-            </div>
-            <span className="bg-gradient-to-r from-neutral-200 via-neutral-400 to-neutral-200 bg-clip-text text-transparent text-xs font-bold tracking-[0.3em] uppercase">
-              Candei OS
-            </span>
-          </a>
-
-          <nav className="hidden lg:flex items-center gap-8 text-xs uppercase tracking-[0.2em] text-neutral-400 font-medium">
-            <button
-              onClick={() => navigate('/payment')}
-              className="hover:text-white transition-colors uppercase tracking-[0.2em]"
-            >
-              Pricing
-            </button>
-            <button
-              onClick={() => navigate('/knowledge-base')}
-              className="hover:text-white transition-colors uppercase tracking-[0.2em]"
-            >
-              Knowledge Base
-            </button>
-            <button
-              onClick={() => navigate('/blogs')}
-              className="hover:text-white transition-colors uppercase tracking-[0.2em]"
-            >
-              Blogs
-            </button>
-            <button
-              onClick={() => navigate('/about')}
-              className="hover:text-white transition-colors uppercase tracking-[0.2em]"
-            >
-              About
-            </button>
-            <button
-              onClick={() => navigate('/faq')}
-              className="hover:text-white transition-colors uppercase tracking-[0.2em]"
-            >
-              FAQ
-            </button>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            {user && (
-              <button
-                onClick={() => navigateForUser(user)}
-                className="px-4 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all"
-              >
-                Dashboard
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section
         ref={vantaRef}
-        className={`min-h-screen flex flex-col md:flex-row relative pt-20 ${
+        className={`min-h-screen flex flex-col md:flex-row relative ${
           isLiveMode ? 'bg-black' : 'bg-[#0f0f0f]'
         }`}
       >
@@ -368,12 +302,31 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
         </div>
 
         {/* Left Column: Hero Content */}
-        <div className="w-full md:w-[55%] flex flex-col justify-center px-6 sm:px-16 lg:px-24 pt-12 pb-16 md:py-16 relative z-10">
+        <div className="w-full md:w-[55%] flex flex-col justify-center px-6 sm:px-16 lg:px-24 pt-32 pb-16 md:py-16 relative z-10 min-h-screen md:min-h-0">
+          {/* Brand/Logo Area */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="absolute top-8 left-8 sm:top-12 flex items-center gap-3"
+          >
+            <motion.div
+              whileHover={{ rotate: 180 }}
+              transition={{ duration: 0.6, ease: 'easeInOut' }}
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+            >
+              <Camera className="w-5 h-5 text-neutral-900" />
+            </motion.div>
+            <span className="bg-gradient-to-r from-neutral-200 via-neutral-600 to-neutral-200 bg-clip-text text-transparent text-[11px] font-bold tracking-[0.3em] uppercase animate-text-gradient">
+              Candei OS
+            </span>
+          </motion.div>
+
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="max-w-xl"
+            className="max-w-xl mt-32 sm:mt-40 md:mt-20"
           >
             <motion.h1
               variants={itemVariants}
