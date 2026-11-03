@@ -39,7 +39,7 @@ function AutomationContent() {
     return '';
   });
 
-  const activeUserId = userIdParam || '39530882969891710';
+  const activeUserId = userIdParam || '17841413170626603';
   const isConnected = statusParam === 'connected' || Boolean(userIdParam) || true;
 
   const [dmReplyActive, setDmReplyActive] = useState(true);

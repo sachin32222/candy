@@ -73,7 +73,7 @@ export default function Automations() {
   });
 
   const [connectedIgUserId, setConnectedIgUserId] = useState<string>(() => {
-    return urlUserId || profile?.instagramAccountId || profile?.igAccountId || (user?.email === 'reviewer@getcandei.com' ? '39530882969891710' : '');
+    return urlUserId || profile?.instagramAccountId || profile?.igAccountId || (user?.email === 'reviewer@getcandei.com' ? '17841413170626603' : '');
   });
 
   const isConnected = Boolean(

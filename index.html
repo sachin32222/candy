@@ -23,6 +23,28 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <script>
+      if (window.location.pathname.indexOf('/api/auth/instagram/callback') !== -1) {
+        var returnTo = '/dashboard/automations';
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var stateRaw = params.get('state');
+          if (stateRaw) {
+            var stateObj = JSON.parse(decodeURIComponent(stateRaw));
+            if (stateObj && stateObj.returnTo) {
+              returnTo = stateObj.returnTo;
+            }
+          }
+          localStorage.setItem('candei_instagram_connected', 'true');
+        } catch (e) {}
+        window.location.replace(returnTo);
+      } else if (
+        window.location.pathname === '/dashboard/automations' &&
+        !window.location.hash
+      ) {
+        window.location.replace('/#/dashboard/automations' + window.location.search);
+      }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script>
       // Prevent Vanta Rings ExtrudeGeometry curveSegments: 0 from producing NaN vertices in Three.js

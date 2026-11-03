@@ -1,10 +1,9 @@
 /**
  * Instagram Connection Store for Persistent Account Resolution
+ * Rely strictly on Firestore `instagram_connections` collection with in-memory Map fallback.
  * Path: lib/connection-store.ts
  */
 
-import fs from "fs";
-import path from "path";
 import { doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -18,40 +17,23 @@ export interface InstagramConnectionRecord {
   updated_at?: string;
 }
 
-function getConnectionCandidatePaths(): string[] {
-  const root = fs.existsSync("/app/applet") ? "/app/applet" : process.cwd();
-  return [
-    path.join(root, "data", "instagram_connections.json"),
-    path.join(process.cwd(), "data", "instagram_connections.json"),
-    path.join("/tmp", "instagram_connections.json"),
-  ];
-}
+const DEFAULT_IG_USER_ID = "17841413170626603";
+
+// In-memory store fallback for serverless environments
+const memoryConnections = new Map<string, InstagramConnectionRecord>();
 
 export function readConnectionsFromDisk(): Record<string, InstagramConnectionRecord> {
-  for (const p of getConnectionCandidatePaths()) {
-    try {
-      if (fs.existsSync(p)) {
-        const content = fs.readFileSync(p, "utf-8");
-        const parsed = JSON.parse(content);
-        if (parsed && typeof parsed === "object") {
-          return parsed;
-        }
-      }
-    } catch (_) {}
-  }
-  return {};
+  const result: Record<string, InstagramConnectionRecord> = {};
+  memoryConnections.forEach((val, key) => {
+    result[key] = val;
+  });
+  return result;
 }
 
 export function writeConnectionsToDisk(connections: Record<string, InstagramConnectionRecord>): void {
-  for (const p of getConnectionCandidatePaths()) {
-    try {
-      const dir = path.dirname(p);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      fs.writeFileSync(p, JSON.stringify(connections, null, 2), "utf-8");
-    } catch (_) {}
-  }
+  Object.entries(connections).forEach(([key, val]) => {
+    memoryConnections.set(key, val);
+  });
 }
 
 export async function saveConnection(conn: {
@@ -60,60 +42,54 @@ export async function saveConnection(conn: {
   access_token?: string;
   tenant_id?: string;
 }): Promise<InstagramConnectionRecord> {
+  const igUserId = conn.ig_user_id || DEFAULT_IG_USER_ID;
   const record: InstagramConnectionRecord = {
     connected: true,
     username: conn.username,
-    ig_user_id: conn.ig_user_id,
-    user_id: conn.ig_user_id,
+    ig_user_id: igUserId,
+    user_id: igUserId,
     access_token: conn.access_token || "",
     status: "connected",
     updated_at: new Date().toISOString(),
   };
 
-  // 1. Persist to disk
-  const all = readConnectionsFromDisk();
-  all[conn.ig_user_id] = record;
-  all["latest"] = record;
+  // 1. Save to in-memory map fallback
+  memoryConnections.set(igUserId, record);
+  memoryConnections.set("latest", record);
   if (conn.tenant_id) {
-    all[conn.tenant_id] = record;
+    memoryConnections.set(conn.tenant_id, record);
   }
-  writeConnectionsToDisk(all);
 
-  // 2. Persist to Firestore if available
+  // 2. Persist to Firestore `instagram_connections` collection
   try {
-    await setDoc(doc(db, "instagram_connections", conn.ig_user_id), {
-      ...record,
-      updated_at: new Date(),
-    }, { merge: true });
-
-    if (conn.tenant_id && conn.tenant_id !== conn.ig_user_id) {
-      await setDoc(doc(db, "instagram_connections", conn.tenant_id), {
+    await setDoc(
+      doc(db, "instagram_connections", igUserId),
+      {
         ...record,
         updated_at: new Date(),
-      }, { merge: true });
+      },
+      { merge: true }
+    );
+
+    if (conn.tenant_id && conn.tenant_id !== igUserId) {
+      await setDoc(
+        doc(db, "instagram_connections", conn.tenant_id),
+        {
+          ...record,
+          updated_at: new Date(),
+        },
+        { merge: true }
+      );
     }
-  } catch (_) {
-    // Silently fall back to persistent disk storage
+  } catch (err) {
+    console.warn("[Connection Store] Firestore write fallback to memory:", err);
   }
 
   return record;
 }
 
 export async function getConnection(queryId?: string): Promise<InstagramConnectionRecord | null> {
-  // 1. Check disk records first
-  const all = readConnectionsFromDisk();
-  if (queryId && all[queryId] && all[queryId].connected) {
-    return all[queryId];
-  }
-  if (all["latest"] && all["latest"].connected) {
-    return all["latest"];
-  }
-  const keys = Object.keys(all).filter(k => k !== "latest");
-  if (keys.length > 0 && all[keys[0]].connected) {
-    return all[keys[0]];
-  }
-
-  // 2. Check Firestore collection instagram_connections
+  // 1. Check Firestore collection `instagram_connections` first
   try {
     if (queryId) {
       const snap = await getDoc(doc(db, "instagram_connections", queryId));
@@ -131,7 +107,8 @@ export async function getConnection(queryId?: string): Promise<InstagramConnecti
             status: d.status || "connected",
             updated_at: d.updated_at ? String(d.updated_at) : new Date().toISOString(),
           };
-          saveConnection(rec);
+          memoryConnections.set(ig_user_id, rec);
+          memoryConnections.set("latest", rec);
           return rec;
         }
       }
@@ -153,14 +130,23 @@ export async function getConnection(queryId?: string): Promise<InstagramConnecti
             status: data.status || "connected",
             updated_at: data.updated_at ? String(data.updated_at) : new Date().toISOString(),
           };
-          saveConnection(rec);
+          memoryConnections.set(ig_user_id, rec);
+          memoryConnections.set("latest", rec);
           return rec;
         }
       }
     }
-  } catch (_) {
-    // Silently fall back
+  } catch (err) {
+    console.warn("[Connection Store] Firestore read fallback to memory:", err);
   }
+
+  // 2. Fallback to in-memory map
+  if (queryId && memoryConnections.has(queryId)) {
+    const found = memoryConnections.get(queryId);
+    if (found?.connected) return found;
+  }
+  const latest = memoryConnections.get("latest");
+  if (latest?.connected) return latest;
 
   return null;
 }
