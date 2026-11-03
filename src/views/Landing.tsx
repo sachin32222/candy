@@ -432,34 +432,6 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
                 <ChevronRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
               </motion.button>
 
-              <div className="grid grid-cols-2 gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    openAuthModal('Get Started');
-                    navigate('/login');
-                  }}
-                  className="w-full bg-gradient-to-r from-[#4A6DE1] to-indigo-600 text-white py-3.5 px-4 rounded-full text-xs font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-2 shadow-lg"
-                >
-                  <span>Get Started</span>
-                  <ChevronRight className="w-4 h-4" />
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    openAuthModal('Log In');
-                    navigate('/login');
-                  }}
-                  className="w-full bg-[#181818] border border-[#333] hover:border-white/40 text-white py-3.5 px-4 rounded-full text-xs font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-2 shadow-lg"
-                >
-                  <Key className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Log In / Sign Up</span>
-                </motion.button>
-              </div>
-
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

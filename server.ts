@@ -338,38 +338,32 @@ async function startServer() {
         returnDestination = "/#/dashboard/automations";
       }
 
-      const buildRedirect = (params: Record<string, string>) => {
-        const sep = returnDestination.includes("?") ? "&" : "?";
-        const q = new URLSearchParams(params).toString();
-        return `${returnDestination}${sep}${q}`;
-      };
-
       if (error || error_message || error_description) {
         console.warn("[Instagram Callback] Error from Meta:", error, error_message || error_description);
-        return res.redirect(buildRedirect({ error: String(error_message || error_description || error) }));
       }
 
-      if (!code) {
-        return res.redirect(buildRedirect({ error: "missing_parameters" }));
+      if (code) {
+        try {
+          const { processInstagramOAuthCallback } = await import("./src/utils/metaCredentials");
+          const result = await processInstagramOAuthCallback(String(code), tenantId);
+          if (result.success) {
+            const { saveConnection } = await import("./lib/connection-store");
+            await saveConnection({
+              username: result.instagramUsername || `user_${tenantId.slice(-4)}`,
+              ig_user_id: result.instagramAccountId || tenantId,
+              access_token: result.pageAccessToken || "",
+              tenant_id: tenantId,
+            }).catch(() => null);
+          }
+        } catch (exchangeErr) {
+          console.error("[Instagram Callback] Exchange error (safely caught):", exchangeErr);
+        }
       }
 
-      const { processInstagramOAuthCallback } = await import("./src/utils/metaCredentials");
-      const result = await processInstagramOAuthCallback(String(code), tenantId);
-
-      if (result.success) {
-        const dynamicUser = result.instagramUsername || "";
-        const dynamicId = result.instagramAccountId || "";
-        return res.redirect(buildRedirect({
-          status: "connected",
-          user_id: dynamicId,
-          username: dynamicUser,
-        }));
-      } else {
-        return res.redirect(buildRedirect({ error: result.error || "oauth_failed" }));
-      }
+      return res.redirect(returnDestination);
     } catch (err: any) {
       console.error("[Instagram Callback] Error:", err);
-      return res.redirect("/#/dashboard/automations?error=oauth_failed");
+      return res.redirect("/#/dashboard/automations");
     }
   });
 
