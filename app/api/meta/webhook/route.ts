@@ -1,51 +1,32 @@
-/**
- * Meta Webhook Handler for Instagram Comments & Direct Messages
- * Path: app/api/meta/webhook/route.ts
- */
+import { NextRequest, NextResponse } from 'next/server';
 
-import { handleMetaIncomingEvent } from "@/lib/instagram-webhook";
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const mode = searchParams.get('hub.mode');
+  const token = searchParams.get('hub.verify_token');
+  const challenge = searchParams.get('hub.challenge');
 
-export const dynamic = "force-dynamic";
+  const VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || 'candei_secret_token';
 
-// 1. GET Method: Webhook Handshake Verification
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const mode = url.searchParams.get("hub.mode");
-  const token = url.searchParams.get("hub.verify_token");
-  const challenge = url.searchParams.get("hub.challenge");
-
-  const verifyToken = process.env.META_VERIFY_TOKEN || "candei_secret_meta_webhook_2026";
-
-  if (mode === "subscribe" && token === verifyToken) {
-    console.log("[Meta Webhook] Verification handshake successful. Returning challenge:", challenge);
-    return new Response(challenge ?? "", {
-      status: 200,
-      headers: { "Content-Type": "text/plain" },
-    });
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    return new NextResponse(challenge, { status: 200 });
   }
 
-  console.warn("[Meta Webhook] Verification handshake failed - token or mode mismatch:", {
-    mode,
-    tokenProvided: token ? "[REDACTED]" : undefined,
-  });
-  return new Response("Forbidden", { status: 403 });
+  return NextResponse.json({ error: 'Verification failed' }, { status: 403 });
 }
 
-// 2. POST Method: Incoming Event Reception & Immediate 200 OK
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const payload = await request.json();
-    console.log("[Meta Webhook] Incoming webhook event received:", JSON.stringify(payload, null, 2));
+    const body = await request.json();
+    console.log('--- META WEBHOOK EVENT RECEIVED ---', JSON.stringify(body, null, 2));
 
-    // Immediately trigger asynchronous event processing without blocking HTTP response
-    handleMetaIncomingEvent(payload).catch((error) => {
-      console.error("[Meta Webhook] Asynchronous processing error:", error);
-    });
+    if (body.object === 'instagram' || body.object === 'page') {
+      return NextResponse.json({ status: 'EVENT_RECEIVED' }, { status: 200 });
+    }
 
-    // Immediately return 200 OK with { status: "EVENT_RECEIVED" }
-    return Response.json({ status: "EVENT_RECEIVED" }, { status: 200 });
+    return NextResponse.json({ error: 'Not Found' }, { status: 404 });
   } catch (error) {
-    console.error("[Meta Webhook] Error parsing incoming webhook JSON:", error);
-    return Response.json({ status: "EVENT_RECEIVED" }, { status: 200 });
+    console.error('Webhook POST Handler Error:', error);
+    return NextResponse.json({ error: 'Internal Error' }, { status: 500 });
   }
 }
