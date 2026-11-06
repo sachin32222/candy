@@ -4,103 +4,115 @@ export default function CursorStardust() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (typeof window === 'undefined') return;
+    let animationFrameId: number;
+    let handleResize: (() => void) | null = null;
+    let handleMouseMove: ((event: MouseEvent) => void) | null = null;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    try {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    let particlesArray: Particle[] = [];
-    const colors = ['#ffffff', '#f8a600', '#0D94FB', '#fff9d6', '#a1d2ff'];
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    let mouse = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    };
+      const particlesArray: Particle[] = [];
+      const colors = ['#ffffff', '#f8a600', '#0D94FB', '#fff9d6', '#a1d2ff'];
 
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
+      const mouse = {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+      };
 
-    window.addEventListener('resize', handleResize);
-    handleResize();
+      handleResize = () => {
+        if (!canvas) return;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      };
 
-    const handleMouseMove = (event: MouseEvent) => {
-      mouse.x = event.clientX;
-      mouse.y = event.clientY;
-      
-      // Add particles on mouse move
-      for (let i = 0; i < 3; i++) {
-        particlesArray.push(new Particle(mouse.x, mouse.y));
-      }
-    };
+      window.addEventListener('resize', handleResize);
+      handleResize();
 
-    window.addEventListener('mousemove', handleMouseMove);
+      class Particle {
+        x: number;
+        y: number;
+        size: number;
+        speedX: number;
+        speedY: number;
+        color: string;
+        life: number;
+        maxLife: number;
 
-    class Particle {
-      x: number;
-      y: number;
-      size: number;
-      speedX: number;
-      speedY: number;
-      color: string;
-      life: number;
-      maxLife: number;
+        constructor(x: number, y: number) {
+          this.x = x + (Math.random() * 20 - 10);
+          this.y = y + (Math.random() * 20 - 10);
+          this.size = Math.random() * 2 + 0.5;
+          this.speedX = Math.random() * 2 - 1;
+          this.speedY = Math.random() * 2 - 1;
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+          this.life = 0;
+          this.maxLife = Math.random() * 40 + 20;
+        }
 
-      constructor(x: number, y: number) {
-        this.x = x + (Math.random() * 20 - 10);
-        this.y = y + (Math.random() * 20 - 10);
-        this.size = Math.random() * 2 + 0.5;
-        this.speedX = Math.random() * 2 - 1;
-        this.speedY = Math.random() * 2 - 1;
-        this.color = colors[Math.floor(Math.random() * colors.length)];
-        this.life = 0;
-        this.maxLife = Math.random() * 40 + 20;
-      }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          this.life++;
+          this.speedY -= 0.01;
+        }
 
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        this.life++;
-        
-        // Add a bit of floating up effect
-        this.speedY -= 0.01;
-      }
-
-      draw() {
-        if (!ctx) return;
-        const opacity = 1 - (this.life / this.maxLife);
-        ctx.globalAlpha = opacity;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-    }
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-        particlesArray[i].draw();
-        
-        if (particlesArray[i].life >= particlesArray[i].maxLife) {
-          particlesArray.splice(i, 1);
-          i--;
+        draw() {
+          if (!ctx) return;
+          const opacity = 1 - this.life / this.maxLife;
+          ctx.globalAlpha = opacity;
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
         }
       }
-      
-      requestAnimationFrame(animate);
-    };
 
-    animate();
+      handleMouseMove = (event: MouseEvent) => {
+        mouse.x = event.clientX;
+        mouse.y = event.clientY;
+        for (let i = 0; i < 3; i++) {
+          particlesArray.push(new Particle(mouse.x, mouse.y));
+        }
+      };
+
+      window.addEventListener('mousemove', handleMouseMove);
+
+      const animate = () => {
+        try {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            if (particlesArray[i].life >= particlesArray[i].maxLife) {
+              particlesArray.splice(i, 1);
+              i--;
+            }
+          }
+          animationFrameId = requestAnimationFrame(animate);
+        } catch (err) {
+          // ignore animation frame errors
+        }
+      };
+
+      animate();
+    } catch (e) {
+      console.warn('CursorStardust canvas initialization skipped:', e);
+    }
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
+      try {
+        if (handleResize) window.removeEventListener('resize', handleResize);
+        if (handleMouseMove) window.removeEventListener('mousemove', handleMouseMove);
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      } catch (e) {
+        // ignore cleanup errors
+      }
     };
   }, []);
 

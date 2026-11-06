@@ -143,9 +143,16 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
   useEffect(() => {
     let vantaEffect: any = null;
     try {
-      if (vantaRef.current && (window as any).VANTA && (window as any).VANTA.RINGS) {
+      if (
+        typeof window !== 'undefined' &&
+        vantaRef.current &&
+        (window as any).THREE &&
+        (window as any).VANTA &&
+        typeof (window as any).VANTA.RINGS === 'function'
+      ) {
         vantaEffect = (window as any).VANTA.RINGS({
           el: vantaRef.current,
+          THREE: (window as any).THREE,
           mouseControls: true,
           touchControls: true,
           gyroControls: false,
@@ -156,13 +163,15 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
         });
       }
     } catch (e) {
-      console.warn('Vanta background initialization error:', e);
+      console.warn('Vanta/Three.js background initialization skipped:', e);
     }
     return () => {
       try {
-        if (vantaEffect) vantaEffect.destroy();
+        if (vantaEffect && typeof vantaEffect.destroy === 'function') {
+          vantaEffect.destroy();
+        }
       } catch (e) {
-        // ignore
+        // ignore cleanup errors
       }
     };
   }, []);
@@ -207,16 +216,16 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
   };
 
   const containerVariants: any = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 1 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
     },
   };
 
   const itemVariants: any = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
+    hidden: { opacity: 1, y: 0 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
   };
 
   const [isLiveMode, setIsLiveMode] = useState(false);
@@ -305,9 +314,9 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
         <div className="w-full md:w-[55%] flex flex-col justify-center px-6 sm:px-16 lg:px-24 pt-32 pb-16 md:py-16 relative z-10 min-h-screen md:min-h-0">
           {/* Brand/Logo Area */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 1, x: 0 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, ease: 'easeOut' }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
             className="absolute top-8 left-8 sm:top-12 flex items-center gap-3"
           >
             <motion.div
@@ -317,21 +326,21 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
             >
               <Camera className="w-5 h-5 text-neutral-900" />
             </motion.div>
-            <span className="bg-gradient-to-r from-neutral-200 via-neutral-600 to-neutral-200 bg-clip-text text-transparent text-[11px] font-bold tracking-[0.3em] uppercase animate-text-gradient">
+            <span className="bg-gradient-to-r from-neutral-200 via-neutral-400 to-neutral-200 bg-clip-text text-transparent text-[11px] font-bold tracking-[0.3em] uppercase animate-text-gradient">
               Candei OS
             </span>
           </motion.div>
 
           <motion.div
             variants={containerVariants}
-            initial="hidden"
+            initial="visible"
             animate="visible"
             className="max-w-xl mt-32 sm:mt-40 md:mt-20"
           >
             <motion.h1
               variants={itemVariants}
               style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '1px' }}
-              className="font-normal text-[4.5rem] sm:text-[5.5rem] lg:text-[7rem] leading-[0.9] tracking-normal mb-8 uppercase"
+              className="font-normal text-[4.5rem] sm:text-[5.5rem] lg:text-[7rem] leading-[0.9] tracking-normal mb-8 uppercase text-[#4A6DE1]"
             >
               <span className="bg-gradient-to-r from-[#4A6DE1] via-[#A5BDFC] to-[#4A6DE1] bg-clip-text text-transparent animate-text-gradient block pb-2">
                 Capture.
@@ -347,7 +356,7 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
 
             <motion.p
               variants={itemVariants}
-              className="text-lg font-light leading-relaxed mb-10 max-w-sm bg-gradient-to-r from-neutral-400 via-neutral-100 to-neutral-400 bg-clip-text text-transparent animate-text-gradient"
+              className="text-lg font-light leading-relaxed mb-10 max-w-sm text-neutral-200 bg-gradient-to-r from-neutral-400 via-neutral-100 to-neutral-400 bg-clip-text text-transparent animate-text-gradient"
             >
               An AI-powered operating system for photographers that automatically organizes,
               searches, delivers, markets, and monetizes event photography using computer vision and
@@ -561,9 +570,9 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
 
         {/* Right Column: Imagery / Video */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.5 }}
+          transition={{ duration: 0.8 }}
           className={`flex flex-col items-center justify-center w-full md:w-[45%] relative border-t md:border-t-0 md:border-l border-[#333] p-8 md:px-8 py-16 md:py-8 transition-colors duration-500 z-10 ${
             isLiveMode ? 'bg-transparent' : 'bg-[#0f0f0f]'
           }`}
