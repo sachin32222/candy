@@ -807,9 +807,18 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
 
 export default function Landing() {
   const inRouter = useInRouterContext();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (inRouter) {
     return <LandingContent />;
+  }
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-[#09090b] text-white" />;
   }
 
   return (

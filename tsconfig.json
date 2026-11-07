@@ -17,7 +17,8 @@
     "jsx": "preserve",
     "paths": {
       "@/*": [
-        "./*"
+        "./*",
+        "./src/*"
       ]
     },
     "allowImportingTsExtensions": true,

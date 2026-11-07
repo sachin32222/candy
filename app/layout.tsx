@@ -1,6 +1,7 @@
+import "./globals.css";
+import "../src/index.css";
 import React from "react";
 import type { Metadata } from "next";
-import "../src/index.css";
 
 export const metadata: Metadata = {
   title: "Candy — The Core System for Photographers",
@@ -29,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="bg-[#09090b] text-white">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -43,7 +44,7 @@ export default function RootLayout({
         />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" async></script>
       </head>
-      <body className="min-h-screen bg-[#0f0f0f] text-white font-sans antialiased">
+      <body className="min-h-screen bg-[#09090b] text-white font-sans antialiased">
         {children}
       </body>
     </html>
