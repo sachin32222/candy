@@ -142,30 +142,42 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
 
   useEffect(() => {
     let vantaEffect: any = null;
-    try {
-      if (
-        typeof window !== 'undefined' &&
-        vantaRef.current &&
-        (window as any).THREE &&
-        (window as any).VANTA &&
-        typeof (window as any).VANTA.RINGS === 'function'
-      ) {
-        vantaEffect = (window as any).VANTA.RINGS({
-          el: vantaRef.current,
-          THREE: (window as any).THREE,
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
-          minHeight: 200.0,
-          minWidth: 200.0,
-          scale: 1.0,
-          scaleMobile: 1.0,
-        });
+    let retryTimer: any = null;
+
+    const initVanta = () => {
+      try {
+        if (
+          !vantaEffect &&
+          typeof window !== 'undefined' &&
+          vantaRef.current &&
+          (window as any).THREE &&
+          (window as any).VANTA &&
+          typeof (window as any).VANTA.RINGS === 'function'
+        ) {
+          vantaEffect = (window as any).VANTA.RINGS({
+            el: vantaRef.current,
+            THREE: (window as any).THREE,
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.0,
+            minWidth: 200.0,
+            scale: 1.0,
+            scaleMobile: 1.0,
+          });
+        }
+      } catch (e) {
+        console.warn('Vanta/Three.js background initialization skipped:', e);
       }
-    } catch (e) {
-      console.warn('Vanta/Three.js background initialization skipped:', e);
+    };
+
+    initVanta();
+    if (!vantaEffect) {
+      retryTimer = setTimeout(initVanta, 300);
     }
+
     return () => {
+      if (retryTimer) clearTimeout(retryTimer);
       try {
         if (vantaEffect && typeof vantaEffect.destroy === 'function') {
           vantaEffect.destroy();
@@ -306,7 +318,7 @@ function LandingContent({ forceOpenAuthModal = false }: { forceOpenAuthModal?: b
               style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
             />
           ) : (
-            <div className="absolute inset-0 bg-[#0f0f0f]"></div>
+            <div className="absolute inset-0 bg-transparent"></div>
           )}
         </div>
 

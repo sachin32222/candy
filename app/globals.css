@@ -104,3 +104,12 @@ iframe, video {
   50% { background-position: 400% 0; }
   100% { background-position: 0 0; }
 }
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 20s linear infinite !important;
+}
