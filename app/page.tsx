@@ -1,6 +1,17 @@
 'use client';
-import Landing from '@/views/Landing';
+
+import dynamic from 'next/dynamic';
+import React from 'react';
+
+const LandingView = dynamic(() => import('@/views/Landing'), {
+  ssr: false,
+  loading: () => <div className="min-h-screen w-full bg-[#09090b]" />
+});
 
 export default function Page() {
-  return <Landing />;
+  return (
+    <div className="min-h-screen w-full bg-[#09090b] text-white flex flex-col">
+      <LandingView />
+    </div>
+  );
 }
