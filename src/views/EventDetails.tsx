@@ -374,6 +374,7 @@ export default function EventDetails() {
                         <th className="px-8 py-4 text-[10px] font-semibold tracking-widest uppercase text-neutral-500">Phone</th>
                         <th className="px-8 py-4 text-[10px] font-semibold tracking-widest uppercase text-neutral-500">Email</th>
                         <th className="px-8 py-4 text-[10px] font-semibold tracking-widest uppercase text-neutral-500">Date</th>
+                        <th className="py-3 px-4 text-right">ACTION</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
@@ -384,6 +385,20 @@ export default function EventDetails() {
                           <td className="px-8 py-5 text-neutral-500 font-light text-sm">{lead.email}</td>
                           <td className="px-8 py-5 text-neutral-600 text-xs font-light">
                             {new Date(lead.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const cleanPhone = lead.phone.replace(/[^0-9]/g, '');
+                                const formattedPhone = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
+                                const msg = encodeURIComponent(`Hi ${lead.name}! Thanks for joining us at Sanjana & Aryan's wedding. You can view and download all the event photos here: https://getcandei.com/gallery`);
+                                window.open(`https://wa.me/${formattedPhone}?text=${msg}`, '_blank');
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-medium transition-colors cursor-pointer"
+                            >
+                              <span>💬</span> Send Message
+                            </button>
                           </td>
                         </tr>
                       ))}
