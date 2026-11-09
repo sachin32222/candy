@@ -21,6 +21,36 @@ export async function POST(request: NextRequest) {
     console.log('--- META WEBHOOK EVENT RECEIVED ---', JSON.stringify(body, null, 2));
 
     if (body.object === 'instagram' || body.object === 'page') {
+      const entry = body.entry?.[0];
+      const changes = entry?.changes?.[0];
+
+      // Detect comment changes
+      if (changes?.field === 'comments') {
+        const commentData = changes.value;
+        const commentId = commentData?.id;
+        const commentText = (commentData?.text || '').toUpperCase();
+        const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+
+        // Auto trigger DM for keywords like PRICE, BOOK, INFO
+        if (commentId && PAGE_ACCESS_TOKEN) {
+          try {
+            await fetch(`https://graph.facebook.com/v21.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                recipient: { comment_id: commentId },
+                message: {
+                  text: `Hey! Thanks for your comment "${commentData?.text}". Candei automation starts at Rs 999/mo. Explore more here: https://www.getcandei.com`
+                }
+              })
+            });
+            console.log(`Auto-DM triggered successfully for comment ${commentId}`);
+          } catch (apiErr) {
+            console.error('Error dispatching Instagram DM:', apiErr);
+          }
+        }
+      }
+
       return NextResponse.json({ status: 'EVENT_RECEIVED' }, { status: 200 });
     }
 
