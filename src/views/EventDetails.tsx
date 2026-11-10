@@ -8,6 +8,7 @@ import { uploadFileToDrive } from '../utils/drive';
 import { QRCodeCanvas } from 'qrcode.react';
 import { ArrowLeft, Download, Users, UploadCloud, ExternalLink, Copy, Share2, Check, RefreshCw, MessageCircle } from 'lucide-react';
 import firebaseConfig from '../../firebase-applet-config.json';
+import DirectDriveUploader from '../components/DirectDriveUploader';
 
 interface Event {
   id: string;
@@ -254,18 +255,11 @@ export default function EventDetails() {
             </div>
           </div>
           <div className="relative flex items-center gap-4">
-            <label className={`cursor-pointer ${uploading ? 'bg-[#1a1a1a] text-neutral-500' : 'bg-neutral-100 text-neutral-900 hover:bg-white'} px-6 py-3 rounded-full font-medium flex items-center gap-2 transition-all`}>
-              <UploadCloud className="w-4 h-4" />
-              {uploading ? 'Uploading...' : 'Upload Media'}
-              <input
-                type="file"
-                multiple
-                accept="image/*,video/*"
-                className="hidden"
-                onChange={handleFileUpload}
-                disabled={uploading}
-              />
-            </label>
+            <DirectDriveUploader
+              eventId={event.id}
+              photographerId={event.photographerId}
+              eventName={event.name}
+            />
           </div>
         </div>
 

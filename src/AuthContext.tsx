@@ -47,6 +47,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   driveToken: string | null;
+  setDriveToken: (token: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -246,7 +247,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginAsReviewer, 
       logout, 
       updateProfile, 
-      driveToken 
+      driveToken,
+      setDriveToken
     }}>
       {children}
     </AuthContext.Provider>

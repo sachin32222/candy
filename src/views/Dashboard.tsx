@@ -91,17 +91,31 @@ export default function Dashboard() {
     setError(null);
 
     try {
-      const folderId = await createDriveFolder(`Candei - ${newEvent.name}`, activeDriveToken);
+      const folderRes = await fetch('/api/drive/create-folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName: `Candei - ${newEvent.name}`,
+          accessToken: activeDriveToken,
+          photographerId: user.uid,
+        }),
+      });
+
+      const folderData = await folderRes.json();
+      if (!folderRes.ok || !folderData.success) {
+        throw new Error(folderData.error || 'Failed to create Google Drive folder');
+      }
 
       const docRef = await addDoc(collection(db, 'events'), {
         name: newEvent.name,
         venue: newEvent.venue,
         photographerId: user.uid,
-        driveLink: folderId,
+        driveLink: folderData.folderId,
+        driveFolderId: folderData.folderId,
         createdAt: new Date().toISOString()
       });
-      
-      setEvents([{ id: docRef.id, ...newEvent, createdAt: new Date().toISOString() }, ...events]);
+
+      setEvents([{ id: docRef.id, ...newEvent, driveLink: folderData.folderId, createdAt: new Date().toISOString() }, ...events]);
       setShowCreateModal(false);
       setNewEvent({ name: '', venue: '' });
     } catch (error: any) {
