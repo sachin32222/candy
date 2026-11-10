@@ -30,6 +30,45 @@ export default function Gallery() {
   const [filteredImages, setFilteredImages] = useState<DriveFile[] | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isListening, setIsListening] = useState(false);
+
+  const handleSearch = (queryText?: string) => {
+    const q = (queryText !== undefined ? queryText : searchQuery).trim().toLowerCase();
+    if (!q) {
+      setFilteredImages(null);
+      return;
+    }
+    const matched = images.filter((img) => img.name?.toLowerCase().includes(q));
+    setFilteredImages(matched);
+  };
+
+  const handleVoiceInput = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice input is not supported in this browser. Please use Chrome or Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchQuery(transcript);
+      if (typeof handleSearch === 'function') {
+        handleSearch(transcript);
+      }
+    };
+
+    recognition.start();
+  };
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileUploadRef = useRef<HTMLInputElement>(null);
@@ -291,6 +330,41 @@ export default function Gallery() {
       {/* Gallery Grid */}
       {!isAnalyzing && (
         <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+          <div className="mb-8 max-w-xl mx-auto">
+            <div className="flex items-center bg-[#1a1a1a] border border-[#333] rounded-2xl px-4 py-2 focus-within:border-white/40 transition-colors">
+              <Sparkles className="w-4 h-4 text-emerald-400 mr-3 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  handleSearch(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSearch(searchQuery);
+                }}
+                placeholder="AI Search photos by moment, person, or voice..."
+                className="w-full bg-transparent text-sm text-white placeholder:text-zinc-500 focus:outline-none py-1.5"
+              />
+              <button
+                type="button"
+                onClick={handleVoiceInput}
+                title="Search with voice"
+                className={`p-2 transition-colors cursor-pointer ${
+                  isListening
+                    ? 'text-emerald-400 bg-emerald-500/10 rounded-lg animate-pulse border border-emerald-500/30'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
           {error ? (
             <div className="text-center py-20 bg-[#1a1a1a] border border-[#333] rounded-3xl">
               <Camera className="w-12 h-12 text-neutral-600 mx-auto mb-4" />

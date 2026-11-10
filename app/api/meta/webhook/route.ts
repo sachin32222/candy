@@ -29,7 +29,10 @@ export async function POST(request: NextRequest) {
         const commentData = changes.value;
         const commentId = commentData?.id;
         const commentText = (commentData?.text || '').toUpperCase();
-        const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+        const PAGE_ACCESS_TOKEN = 
+          process.env.PAGE_ACCESS_TOKEN || 
+          process.env.FB_PAGE_ACCESS_TOKEN || 
+          "AAPKA_PERMANENT_PAGE_ACCESS_TOKEN_YAHAN";
 
         // Auto trigger DM for keywords like PRICE, BOOK, INFO
         if (commentId && PAGE_ACCESS_TOKEN) {

@@ -20,6 +20,37 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isListening, setIsListening] = useState(false);
+
+  const setSearchQuery = (val: string) => setSearchTerm(val);
+  const handleSearch = (val: string) => setSearchTerm(val);
+
+  const handleVoiceInput = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice input is not supported in this browser. Please use Chrome or Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchQuery(transcript);
+      if (typeof handleSearch === 'function') {
+        handleSearch(transcript);
+      }
+    };
+
+    recognition.start();
+  };
 
   useEffect(() => {
     if (!user || user.email !== 'dubeyjiinmirzapur@gmail.com') {
@@ -94,15 +125,31 @@ export default function AdminPanel() {
         <div className="bg-[#1a1a1a] border border-[#333] rounded-3xl overflow-hidden shadow-2xl">
           <div className="p-6 border-b border-[#333] flex justify-between items-center bg-[#0f0f0f]/50">
             <h2 className="text-xl font-medium text-white">Users</h2>
-            <div className="relative">
+            <div className="relative flex items-center">
               <Search className="w-5 h-5 text-neutral-600 absolute left-4 top-1/2 -translate-y-1/2" />
               <input 
                 type="text" 
                 placeholder="Search users..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-[#0f0f0f] border border-[#333] rounded-full pl-12 pr-6 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-white transition-colors w-72"
+                className="bg-[#0f0f0f] border border-[#333] rounded-full pl-12 pr-12 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-white transition-colors w-72"
               />
+              <button
+                type="button"
+                onClick={handleVoiceInput}
+                title="Search with voice"
+                className={`absolute right-2 p-2 transition-colors cursor-pointer ${
+                  isListening
+                    ? 'text-emerald-400 bg-emerald-500/10 rounded-lg animate-pulse border border-emerald-500/30'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+              </button>
             </div>
           </div>
           
